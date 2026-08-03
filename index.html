@@ -604,7 +604,7 @@
   };
   // SNSで人気の系統（テイスト）。note = その系統の着こなしのコツ、sig.acc = 系統らしい小物
   const TASTES = {
-    any:      { label: "トレンドMIX", bias: [],                  note: "今っぽさは“抜け感”。どこか1点だけ肩の力を抜くとこなれます。", sig: null },
+    any:      { label: "トレンドMIX", bias: [],                  note: "2026は「構築的な甘さ＋ひねり」。バルーン・ペプラム・シアーの立体感に、多重ベルトでウエストマーク。足元は薄底スニーカーや筒太めブーツで引き締めて。", sig: null },
     simple:   { label: "シンプル",     bias: ["mono", "natural"], note: "色数は2〜3色に。無地×きれいめシルエットで上質に見せて。", sig: { acc: ["シンプルトート", "華奢アクセ", "レザーベルト"] } },
     adult:    { label: "大人きれいめ", bias: ["mono", "natural"], note: "きれいめ7:カジュアル3。とろみ素材やセンタープレスで品よく。", sig: { acc: ["きれいめバッグ", "一粒ネックレス", "上品スカーフ"] } },
     korean:   { label: "韓国系",       bias: ["mono", "cool"],    note: "モノトーン／ニュアンスカラーで、ハイウエスト＋トップスインの脚長シルエット。抜き感のあるゆるっとしたきれいめカジュアルが今っぽい。", sig: { acc: ["ミニバッグ", "ボールキャップ", "ゴールド華奢アクセ"] } },
@@ -618,8 +618,22 @@
     sporty:   { label: "スポーツMIX",      bias: ["mono", "cool"],    note: "スポーツ要素は1〜2点まで。きれいめジャケット×スウェットパンツのように、上下どちらかをきれいめにすると大人のスポーティに。" },
   };
   // 系統ごとの“全身一式”。warm=暑い/暖かい, cool=涼しい/寒い。top/bottomは性別対応。
-  // any(トレンドMIX)は下のDATA(シーン別・温度別)から引くので未定義。
+  // any(トレンドMIX)= 2026年トレンドの全身一式（最新トレンド調査を反映）。
   const TASTE_SIG = {
+    any: {
+      acc: { ladies: ["多重ベルト", "マイクロミニバッグ", "ビジューイヤリング"], mens: ["横長バッグ", "ロングマフラー", "細身スクエアメガネ"] },
+      shoes: { ladies: ["筒太めロングブーツ", "スエードブーツ", "薄底スニーカー"], mens: ["ロープロファイルスニーカー", "スエードブーツ", "スニーカーローファー"] },
+      warm: {
+        top: { ladies: ["ペプラムブラウス", "シアーシャツ", "パフスリーブブラウス", "サマーニットポロ"], mens: ["オープンカラーシャツ", "スキッパーシャツ", "シアーシャツ", "バンドカラーシャツ"] },
+        bottom: { ladies: ["バルーンパンツ", "バルーンスカート", "バレルレッグデニム", "ホワイトワイドパンツ"], mens: ["2タックワイドパンツ", "ワイドチノパンツ", "イージーワイドパンツ", "バレルレッグデニム"] },
+        outer: { ladies: ["(なしでOK)", "ツイードジャケット", "ジレ", "シアーカーディガン"], mens: ["(なしでOK)", "ショートブルゾン", "デニムカバーオール", "マウンテンパーカー"] },
+      },
+      cool: {
+        top: { ladies: ["ペプラムニット", "ボウタイブラウス", "シャギーニット", "クロップドニット"], mens: ["スタンドカラーニット", "ハーフジップニット", "コーデュロイシャツ", "ジレ"] },
+        bottom: { ladies: ["ワイドスラックス", "バレルレッグデニム", "ミディスカート", "ペプラムスカート"], mens: ["ワイドスラックス", "カーゴパンツ", "セットアップスラックス", "バレルレッグデニム"] },
+        outer: { ladies: ["ファージャケット", "コクーンコート", "ショートダウン", "レザージャケット"], mens: ["レザーブルゾン", "テーラードジャケット", "ステンカラーコート", "ダッフルコート"] },
+      },
+    },
     simple: {
       acc: ["シンプルトート", "華奢アクセ", "レザーベルト"],
       shoes: { ladies: ["白スニーカー", "ローファー"], mens: ["白スニーカー", "ローファー"] },
@@ -943,11 +957,13 @@
     const sig = TASTE_SIG[taste];
     if (sig) {
       const band = (temp === "hot" || temp === "warm") ? "warm" : "cool";
-      if (key === "acc")    return pick(sig.acc);
-      if (key === "shoes")  return pick(sig.shoes[gender]);
-      if (key === "outer")  return pick(sig[band].outer);
-      if (key === "top")    return pick(sig[band].top[gender]);
-      if (key === "bottom") return pick(sig[band].bottom[gender]);
+      // 配列（男女共通）でも {ladies,mens}（性別別）でもOKにする
+      const variant = (v) => Array.isArray(v) ? v : ((v && (v[gender] || v.ladies || v.mens)) || []);
+      if (key === "acc")    return pick(variant(sig.acc));
+      if (key === "shoes")  return pick(variant(sig.shoes));
+      if (key === "outer")  return pick(variant(sig[band].outer));
+      if (key === "top")    return pick(variant(sig[band].top));
+      if (key === "bottom") return pick(variant(sig[band].bottom));
     }
     const c = CATS.find(x => x.key === key);
     return pick(c.src(gender, base, temp));
@@ -1397,7 +1413,7 @@
     const rules = {
       top: [[/タートル/, "turtleneck sweater"], [/カーデ|カーディガン/, "cardigan"], [/ニット|セーター/, "knit sweater"], [/パーカー|フーディ|ジップ/, "hoodie"], [/スウェット|トレーナー/, "sweatshirt"], [/ワンピ/, "dress"], [/ブラウス/, "blouse"], [/シャツ|ポロ/, "shirt"], [/タンク|キャミ/, "tank top"], [/カットソー|ロンT|ロゴ|T/, "t-shirt"]],
       bottom: [[/ワンピ/, "dress"], [/ロング|マキシ/, "long skirt"], [/プリーツ/, "pleated skirt"], [/スカート/, "skirt"], [/デニム|ジーンズ|ジーパン/, "jeans"], [/ワイド/, "wide-leg trousers"], [/ショー|ハーフ|短パン/, "shorts"], [/レギンス|タイツ/, "leggings"], [/ジョガー|トラック|スウェットパンツ/, "jogger pants"], [/スラックス|パンツ|チノ|カーゴ/, "trousers"]],
-      outer: [[/トレンチ/, "trench coat"], [/チェスター/, "chester coat"], [/コート/, "long coat"], [/ダウン|中綿/, "down jacket"], [/ブルゾン|MA-1|コーチ|マウンテン|ナイロン|ボア|フリース/, "blouson jacket"], [/カーデ|カーディガン/, "cardigan"], [/ジャケット/, "jacket"], [/パーカー/, "hoodie"]],
+      outer: [[/トレンチ/, "trench coat"], [/チェスター/, "chester coat"], [/コート/, "long coat"], [/ダウン|中綿/, "down jacket"], [/カバーオール/, "denim jacket"], [/ブルゾン|MA-1|コーチ|マウンテン|ナイロン|ボア|フリース/, "blouson jacket"], [/カーデ|カーディガン/, "cardigan"], [/ジレ|ベスト/, "vest"], [/ジャケット/, "jacket"], [/パーカー/, "hoodie"]],
       shoes: [[/ブーツ/, "boots"], [/パンプス|ヒール/, "heels"], [/サンダル/, "sandals"], [/メリージェーン|バレエ/, "ballet flats"], [/厚底/, "platform shoes"], [/ローファー|プレーントゥ|革靴|レザーシューズ/, "loafers"], [/スニーカー|シューズ|スリッポン|ハイカット/, "sneakers"]],
     };
     const list = rules[key];
