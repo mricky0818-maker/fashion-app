@@ -588,10 +588,10 @@
     sturdy: { label: "がっちり", width: 1.14, advice: "すっきりめトップス＋きれいめボトムで、上半身を軽やかに。" },
   };
   const SEASONS = {
-    spring: { label: "春", bias: ["natural", "warm"], tip: "春は明るいトーンや軽やかな素材で軽さを。" },
-    summer: { label: "夏", bias: ["cool", "natural"], tip: "夏は涼しげな寒色や白でクリーンに。" },
-    autumn: { label: "秋", bias: ["warm", "natural"], tip: "秋はこっくりしたアースカラーで季節感を。" },
-    winter: { label: "冬", bias: ["mono", "cool"], tip: "冬は深みのある色や上品なダークトーンで。" },
+    spring: { label: "春", bias: ["natural", "warm"], tip: "春は明るいトーンや軽やかな素材で軽さを。", color: "白・ソフトピンク・シトラスイエローなど明るいペールトーンが2026春の人気色。" },
+    summer: { label: "夏", bias: ["cool", "natural"], tip: "夏は涼しげな寒色や白でクリーンに。", color: "アイスブルー・白・シトラス系で清涼感を。差し色にマンダリンオレンジも。" },
+    autumn: { label: "秋", bias: ["warm", "natural"], tip: "秋はこっくりしたアースカラーで季節感を。", color: "モカブラウン・オリーブグリーンに、差し色のレッドで季節感を。" },
+    winter: { label: "冬", bias: ["mono", "cool"], tip: "冬は深みのある色や上品なダークトーンで。", color: "黒・ダークグレーの深い無彩色に、レースやシアー素材で奥行きを。" },
   };
   const AGES = {
     a1: { label: "10〜15歳", fig: 0.84, head: 1.14, bias: ["natural", "warm"], tip: "元気で明るい色や、動きやすいカジュアルが好相性。" },
@@ -849,6 +849,11 @@
     { name:"ボルドー×グレー",   tags:["warm"],           colors:["#5e2129","#9c9a97","#e2ded9"] },
     { name:"フレッシュグリーン", tags:["natural"],        colors:["#3a5a40","#a3b18a","#e9ecd8"] },
     { name:"スモーキーブルー",  tags:["cool"],           colors:["#3f5f6f","#9bb8c4","#e4ecef"] },
+    { name:"ハートフェルトピンク", tags:["natural","warm"], colors:["#e39aa4","#f2c9c6","#f8ede9"] },
+    { name:"シトラスイエロー",   tags:["warm","natural"], colors:["#e3bc4a","#efdc93","#f6f1de"] },
+    { name:"アイスブルー",       tags:["cool"],           colors:["#8bb6cf","#c2dbe7","#eff6f9"] },
+    { name:"モカブラウン",       tags:["warm","natural"], colors:["#7a5a44","#b18b6c","#e8dccb"] },
+    { name:"オリーブ×レッド",    tags:["warm","natural"], colors:["#4c5333","#9aa06a","#b5423a"] },
   ];
 
   const CATS = [
@@ -1281,6 +1286,7 @@
         <p class="advice-line">📏 ${heightAdvice(cur.gender, cur.height)}</p>
         <p class="advice-line">🧍 <b>${BODY[cur.body].label}</b>さん：${BODY[cur.body].advice}</p>
         <p class="advice-line">🎂 <b>${AGES[cur.age].label}</b>：${AGES[cur.age].tip}</p>
+        <p class="advice-line">🎨 <b>${SEASONS[cur.season].label}の人気色</b>：${SEASONS[cur.season].color}</p>
       </div>
       <ul class="items">
         ${cur.items.map(i => `
