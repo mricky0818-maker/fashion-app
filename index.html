@@ -243,6 +243,12 @@
   }
   .closet-add input[type="text"] { flex: 1; min-width: 110px; }
   .closet-add .add-btn { border: none; background: var(--grad); color: #fff; font-weight: 700; border-radius: 10px; padding: 9px 16px; cursor: pointer; font-family: inherit; }
+  .aff-row { display: flex; gap: 8px; margin-top: 12px; }
+  .aff-row input {
+    flex: 1; min-width: 0; padding: 9px 12px;
+    border: 1px solid var(--line); border-radius: 10px;
+    background: transparent; color: var(--ink); font-family: inherit; font-size: 0.88rem;
+  }
   .cl-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 12px; }
   .cl-tag-label { font-size: 0.72rem; color: var(--accent-dark); font-weight: 700; margin-right: 2px; }
   .cl-tags label { display: inline-flex; align-items: center; gap: 4px; font-size: 0.84rem; cursor: pointer; }
@@ -493,6 +499,20 @@
     </div>
     <div class="closet-grid" id="closet-grid"></div>
     <p class="panel-note">写真は端末内（ブラウザ）にのみ保存され、外部へは送信されません。写真の自動判別はできないため、カテゴリはご自身で選んでください。上の「👕 手持ちの服からコーデを提案」で、登録した服からコーデを組みます。</p>
+  </details>
+
+  <details class="panel-card" id="aff">
+    <summary>💰 収益化（楽天アフィリエイト）設定</summary>
+    <div class="aff-row">
+      <input type="text" id="aff-id" placeholder="楽天アフィリエイトID を貼り付け" autocomplete="off" spellcheck="false" />
+      <button class="add-btn" id="aff-save">保存</button>
+    </div>
+    <p class="panel-note">
+      設定すると、各アイテムの🛒が「あなた専用の楽天市場アフィリエイトリンク」になり、そこから購入されると紹介料が入ります。
+      <a href="https://affiliate.rakuten.co.jp/" target="_blank" rel="noopener">楽天アフィリエイト</a>（無料）に登録して「アフィリエイトID」を取得し、上に貼り付けて保存してください。
+      未設定の場合は従来どおりZOZO検索が開きます（紹介料なし）。
+      ※アフィリエイトは広告です。収益は保証されず、各サービスの規約に従ってご利用ください。
+    </p>
   </details>
 
   <div class="result empty" id="result">
@@ -1219,9 +1239,11 @@
       </div>` : "";
 
     const promptBtn = closet ? "" : `<button class="action" id="prompt-btn" style="width:100%;margin-top:10px">🖼️ AI画像生成用プロンプトをコピー</button>`;
-    const footNote = closet
+    const affOn = !!(localStorage.getItem("rakuten_aff_id") || "").trim();
+    const affNote = affOn ? `<p class="sources-note">※ ショッピングの🛒リンクはアフィリエイト広告（楽天）を含みます。</p>` : "";
+    const footNote = (closet
       ? `<p class="sources-note">※ 手持ちの服（端末内に保存された写真）から組み合わせています。「👕 手持ちの服からもう一回」で組み直せます。</p>`
-      : `<p class="sources-note">※ 提案は「SNSで人気の系統・定番の着こなし」をもとにClaudeが構成したものです（実在する特定インフルエンサーの投稿ではありません）。各アイテムの🛒で個別に検索・購入できます。</p>`;
+      : `<p class="sources-note">※ 提案は「SNSで人気の系統・定番の着こなし」をもとにClaudeが構成したものです（実在する特定インフルエンサーの投稿ではありません）。各アイテムの🛒で個別に検索・購入できます。</p>`) + affNote;
 
     el.innerHTML = `
       <div class="result-head">
@@ -1353,10 +1375,18 @@
     window.open(urls[site] || urls.wear, "_blank", "noopener");
   }
 
-  // ZOZOTOWNの検索を開く。ZOZOは検索語をShift_JISで解釈するため、
-  // フォーム送信の accept-charset を使ってShift_JISでエンコードして渡す（文字化け防止）。
+  // 🛒 ショッピングを開く。
+  // 楽天アフィリエイトIDが設定されていれば「楽天市場のアフィリエイトリンク」を開く（購入されると紹介料）。
+  // 未設定なら従来どおりZOZO検索を開く（ZOZOはShift_JIS解釈のためフォーム送信で文字化け防止）。
   function openShop(name) {
     const kw = `${genderWord()} ${name}`;
+    const affId = (localStorage.getItem("rakuten_aff_id") || "").trim();
+    if (affId) {
+      const target = `https://search.rakuten.co.jp/search/mall/${encodeURIComponent(kw)}/`;
+      const url = `https://hb.afl.rakuten.co.jp/hgc/${encodeURIComponent(affId)}/?pc=${encodeURIComponent(target)}&m=${encodeURIComponent(target)}`;
+      window.open(url, "_blank", "noopener");
+      return;
+    }
     const f = document.createElement("form");
     f.method = "GET";
     f.action = "https://zozo.jp/search/";
@@ -1615,6 +1645,15 @@
   document.getElementById("go").onclick = suggest;
   document.getElementById("go-closet").onclick = suggestFromCloset;
   document.getElementById("cl-add").onclick = addClosetItem;
+  const affInput = document.getElementById("aff-id");
+  if (affInput) {
+    affInput.value = localStorage.getItem("rakuten_aff_id") || "";
+    document.getElementById("aff-save").onclick = () => {
+      localStorage.setItem("rakuten_aff_id", affInput.value.trim());
+      if (state.current) render();
+      showToast(affInput.value.trim() ? "保存しました 💰 🛒が楽天アフィリエイトリンクになります" : "アフィリエイトIDをクリアしました");
+    };
+  }
   renderFavs();
   renderClosetGrid();
   renderHistory();
