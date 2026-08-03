@@ -1372,18 +1372,33 @@
     copyText(outfitToPrompt(state.current), "画像生成用プロンプトをコピーしました 🖼️");
   }
 
-  // AI画像生成用の短い英語プロンプト（長い日本語だと無料AIが失敗しやすいため）
+  // 日本語のアイテム名を、AIが理解しやすい英語の服の種類に変換
+  function garmentEn(key, name) {
+    if (!name) return null;
+    const rules = {
+      top: [[/タートル/, "turtleneck sweater"], [/ニット|セーター/, "knit sweater"], [/パーカー|フーディ|ジップ/, "hoodie"], [/スウェット|トレーナー/, "sweatshirt"], [/ワンピ/, "dress"], [/ブラウス/, "blouse"], [/シャツ|ポロ/, "shirt"], [/タンク|キャミ/, "tank top"], [/カットソー|ロンT|ロゴ|T/, "t-shirt"]],
+      bottom: [[/ワンピ/, "dress"], [/ロング|マキシ/, "long skirt"], [/プリーツ/, "pleated skirt"], [/スカート/, "skirt"], [/デニム|ジーンズ|ジーパン/, "jeans"], [/ワイド/, "wide-leg trousers"], [/ショー|ハーフ|短パン/, "shorts"], [/レギンス|タイツ/, "leggings"], [/ジョガー|トラック|スウェットパンツ/, "jogger pants"], [/スラックス|パンツ|チノ|カーゴ/, "trousers"]],
+      outer: [[/トレンチ/, "trench coat"], [/チェスター/, "chester coat"], [/コート/, "long coat"], [/ダウン|中綿/, "down jacket"], [/ブルゾン|MA-1|コーチ|マウンテン|ナイロン|ボア|フリース/, "blouson jacket"], [/カーデ|カーディガン/, "cardigan"], [/ジャケット/, "jacket"], [/パーカー/, "hoodie"]],
+      shoes: [[/ブーツ/, "boots"], [/パンプス|ヒール/, "heels"], [/サンダル/, "sandals"], [/ローファー|プレーントゥ|革靴|レザーシューズ/, "loafers"], [/スニーカー|シューズ|スリッポン|ハイカット/, "sneakers"]],
+    };
+    const list = rules[key];
+    if (!list) return null;
+    for (const [re, en] of list) if (re.test(name)) return en;
+    return null;
+  }
+
+  // 実際のアイテムを反映したAI画像プロンプト（コーデとの一致度を上げる）
   function aiImagePrompt(o) {
     const g = o.gender === "ladies" ? "woman" : "man";
     const ageMap = { a1: "young teenager", a2: "teenager", a3: "young adult", a4: "person late 20s", a5: "person early 30s", a6: "person mid 30s", a7: "person in 40s" };
     const bodyMap = { slim: "slim", std: "average", plump: "plus-size curvy", sturdy: "athletic broad" };
-    const tasteMap = { any: "trendy", simple: "minimal", adult: "elegant smart-casual", korean: "korean street", feminine: "feminine", mode: "avant-garde monochrome", street: "streetwear oversized", natural: "natural earthy", kirekaji: "smart casual", y2k: "y2k 2000s", vintage: "vintage thrift", sporty: "athleisure sporty" };
-    const sceneMap = { casual: "casual", smart: "smart", biz: "business", date: "date", friends: "casual outing", sport: "sporty", relax: "loungewear", outing: "travel outing" };
+    const it = {};
+    o.items.forEach(i => { it[i.key] = i.name; });
+    const hasOuter = it.outer && !/なし|OK|羽織/.test(it.outer);
+    const wearing = [garmentEn("top", it.top), garmentEn("bottom", it.bottom), hasOuter ? garmentEn("outer", it.outer) : null, garmentEn("shoes", it.shoes)].filter(Boolean).join(", ");
     const colors = o.palette ? o.palette.colors.join(" ") : "";
-    return `professional full-body fashion editorial photo of a ${bodyMap[o.body] || ""} ${ageMap[o.age] || "adult"} ${g}, `
-      + `${tasteMap[o.taste] || ""} ${sceneMap[o.scene] || ""} ${o.season} outfit, ${colors} color tones, `
-      + `head to toe, standing centered, studio softbox lighting, plain background, `
-      + `shot on DSLR 85mm, sharp focus, photorealistic, highly detailed, realistic body proportions`;
+    return `full body fashion photo of a ${bodyMap[o.body] || ""} ${ageMap[o.age] || "adult"} ${g} wearing ${wearing}, `
+      + `${colors} color tones, standing, plain studio background, natural soft lighting, photorealistic, sharp focus, highly detailed`;
   }
 
   // ---- 無料AI画像生成（キー不要・pollinations.ai）でコーデ画像を作る ----
