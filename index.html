@@ -1229,10 +1229,9 @@
 
     const figureHtml = closet ? "" : `
       <div class="figure-wrap">
-        ${drawFigure(cur)}
-        <span class="figure-cap">👤 着用イメージ（イラスト）・ ${AGES[cur.age].label} ・ 身長${cur.height}cm ・ ${BODY[cur.body].label}</span>
-        <button class="action ai-gen-btn" id="ai-gen-btn">🎨 AIでリアルな画像を生成</button>
-        <div class="ai-image" id="ai-image"></div>
+        <div class="figure-cap" style="margin-top:2px">👗 このコーデのイメージ ・ ${AGES[cur.age].label} ・ ${BODY[cur.body].label}</div>
+        <button class="action ai-gen-btn" id="ai-gen-btn">🎨 AIでこのコーデの画像を生成</button>
+        <div class="ai-image" id="ai-image"><div class="ai-loading">ボタンを押すと、AIがこのコーデのリアルな画像を作ります（数秒〜20秒）。</div></div>
       </div>`;
 
     const tasteAdvice = closet ? "" : `<p class="advice-line">💁 <b>${TASTES[cur.taste].label}</b>の着こなし：${TASTES[cur.taste].note}</p>`;
