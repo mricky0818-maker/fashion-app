@@ -266,6 +266,14 @@
   .closet-card .cc-cat { font-size: 0.62rem; color: var(--sub); margin-top: 3px; text-align: center; line-height: 1.25; }
   .closet-card .cc-del { position: absolute; top: 5px; right: 5px; border: none; background: rgba(0,0,0,0.55); color: #fff; border-radius: 999px; width: 22px; height: 22px; cursor: pointer; font-size: 0.78rem; line-height: 1; }
   .closet-empty { font-size: 0.78rem; color: var(--sub); margin-top: 12px; }
+  .closet-card .cc-use {
+    position: absolute; top: 5px; left: 5px;
+    display: flex; align-items: center; gap: 3px;
+    background: rgba(0,0,0,0.55); color: #fff; border-radius: 8px;
+    padding: 2px 6px; font-size: 0.66rem; cursor: pointer;
+  }
+  .closet-card .cc-use input { accent-color: var(--accent); width: 13px; height: 13px; cursor: pointer; margin: 0; }
+  .closet-card.sel { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 13px; }
   .go.closet-go { background: var(--card); color: var(--accent-dark); border: 2px solid var(--accent); box-shadow: none; margin-top: 10px; font-size: 1rem; }
   .go.closet-go:hover { background: var(--soft); transform: translateY(-1px); box-shadow: none; filter: none; }
   .hist { display: flex; align-items: center; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); font-size: 0.85rem; }
@@ -480,7 +488,6 @@
     </div>
     <button class="go" id="go">今日のコーデを提案してもらう ✨</button>
     <button class="go closet-go" id="go-hybrid">✨ 手持ちを活かしてコーデを提案</button>
-    <button class="go closet-go" id="go-closet">👕 手持ちの服だけでコーデを提案</button>
   </div>
 
   <details class="panel-card" id="closet">
@@ -1382,10 +1389,10 @@
   function garmentEn(key, name) {
     if (!name) return null;
     const rules = {
-      top: [[/タートル/, "turtleneck sweater"], [/ニット|セーター/, "knit sweater"], [/パーカー|フーディ|ジップ/, "hoodie"], [/スウェット|トレーナー/, "sweatshirt"], [/ワンピ/, "dress"], [/ブラウス/, "blouse"], [/シャツ|ポロ/, "shirt"], [/タンク|キャミ/, "tank top"], [/カットソー|ロンT|ロゴ|T/, "t-shirt"]],
+      top: [[/タートル/, "turtleneck sweater"], [/カーデ|カーディガン/, "cardigan"], [/ニット|セーター/, "knit sweater"], [/パーカー|フーディ|ジップ/, "hoodie"], [/スウェット|トレーナー/, "sweatshirt"], [/ワンピ/, "dress"], [/ブラウス/, "blouse"], [/シャツ|ポロ/, "shirt"], [/タンク|キャミ/, "tank top"], [/カットソー|ロンT|ロゴ|T/, "t-shirt"]],
       bottom: [[/ワンピ/, "dress"], [/ロング|マキシ/, "long skirt"], [/プリーツ/, "pleated skirt"], [/スカート/, "skirt"], [/デニム|ジーンズ|ジーパン/, "jeans"], [/ワイド/, "wide-leg trousers"], [/ショー|ハーフ|短パン/, "shorts"], [/レギンス|タイツ/, "leggings"], [/ジョガー|トラック|スウェットパンツ/, "jogger pants"], [/スラックス|パンツ|チノ|カーゴ/, "trousers"]],
       outer: [[/トレンチ/, "trench coat"], [/チェスター/, "chester coat"], [/コート/, "long coat"], [/ダウン|中綿/, "down jacket"], [/ブルゾン|MA-1|コーチ|マウンテン|ナイロン|ボア|フリース/, "blouson jacket"], [/カーデ|カーディガン/, "cardigan"], [/ジャケット/, "jacket"], [/パーカー/, "hoodie"]],
-      shoes: [[/ブーツ/, "boots"], [/パンプス|ヒール/, "heels"], [/サンダル/, "sandals"], [/ローファー|プレーントゥ|革靴|レザーシューズ/, "loafers"], [/スニーカー|シューズ|スリッポン|ハイカット/, "sneakers"]],
+      shoes: [[/ブーツ/, "boots"], [/パンプス|ヒール/, "heels"], [/サンダル/, "sandals"], [/メリージェーン|バレエ/, "ballet flats"], [/厚底/, "platform shoes"], [/ローファー|プレーントゥ|革靴|レザーシューズ/, "loafers"], [/スニーカー|シューズ|スリッポン|ハイカット/, "sneakers"]],
     };
     const list = rules[key];
     if (!list) return null;
@@ -1402,9 +1409,27 @@
     o.items.forEach(i => { it[i.key] = i.name; });
     const hasOuter = it.outer && !/なし|OK|羽織/.test(it.outer);
     const wearing = [garmentEn("top", it.top), garmentEn("bottom", it.bottom), hasOuter ? garmentEn("outer", it.outer) : null, garmentEn("shoes", it.shoes)].filter(Boolean).join(", ");
-    const colors = o.palette ? o.palette.colors.join(" ") : "";
-    return `full body fashion photo of a ${bodyMap[o.body] || ""} ${ageMap[o.age] || "adult"} ${g} wearing ${wearing}, `
-      + `${colors} color tones, standing, plain studio background, natural soft lighting, photorealistic, sharp focus, highly detailed`;
+    const colors = o.palette ? [...new Set(o.palette.colors.map(hexToColorName).filter(Boolean))].join(", ") : "";
+    return `full body fashion lookbook photo of a ${bodyMap[o.body] || ""} ${ageMap[o.age] || "adult"} ${g} wearing ${wearing}, `
+      + `${colors} color palette, standing pose, plain studio background, soft natural lighting, photorealistic, sharp focus, detailed face and clothing`;
+  }
+
+  // 16進カラーを、AIが理解しやすい英語の色名に近似変換
+  function hexToColorName(hex) {
+    const m = /#?([0-9a-fA-F]{6})/.exec(hex || ""); if (!m) return "";
+    const n = parseInt(m[1], 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min, light = (max + min) / 2;
+    if (d < 24) { if (light > 205) return "white"; if (light < 55) return "black"; if (light < 125) return "charcoal gray"; return "gray"; }
+    let h; if (max === r) h = ((g - b) / d) % 6; else if (max === g) h = (b - r) / d + 2; else h = (r - g) / d + 4;
+    h = Math.round(h * 60); if (h < 0) h += 360;
+    if (h < 20 || h >= 345) return light > 165 ? "pink" : "red";
+    if (h < 45) return light < 115 ? "brown" : (light > 195 ? "cream" : "beige");
+    if (h < 70) return light < 135 ? "olive" : "khaki beige";
+    if (h < 160) return light < 110 ? "dark green" : "green";
+    if (h < 200) return "teal";
+    if (h < 255) return light < 105 ? "navy" : "blue";
+    if (h < 300) return "purple";
+    return "pink";
   }
 
   // ---- 無料AI画像生成（キー不要・pollinations.ai）でコーデ画像を作る ----
@@ -1551,6 +1576,7 @@
   // ---- マイクローゼット（手持ちの服・端末内保存）----
   const CLOSET_KEY = "my_closet_v1";
   const CLOSET_CATS = { top: "トップス", bottom: "ボトムス", outer: "アウター", shoes: "シューズ", acc: "バッグ・小物" };
+  const hybridSel = new Set();   // 「手持ちを活かす提案」で使うと選んだアイテムのid
   function loadCloset() { try { return JSON.parse(localStorage.getItem(CLOSET_KEY)) || []; } catch (e) { return []; } }
   function saveCloset(list) { try { localStorage.setItem(CLOSET_KEY, JSON.stringify(list)); return true; } catch (e) { showToast("保存容量が足りません。古い服を削除してください"); return false; } }
   function closetImg(id) { const it = loadCloset().find(x => x.id === id); return it ? it.img : ""; }
@@ -1613,13 +1639,19 @@
     if (!list.length) { grid.innerHTML = `<div class="closet-empty">まだ服が登録されていません。写真を選び、カテゴリを選んで「追加」してください。</div>`; return; }
     grid.innerHTML = list.map(it => {
       const catLabel = itemCats(it).map(c => CLOSET_CATS[c]).join("・");
-      return `<div class="closet-card">
+      const on = hybridSel.has(it.id);
+      return `<div class="closet-card${on ? " sel" : ""}">
         <img src="${it.img}" alt="" />
         <button class="cc-del" data-id="${it.id}" title="削除">✕</button>
+        <label class="cc-use"><input type="checkbox" class="cc-use-cb" data-id="${it.id}"${on ? " checked" : ""} />使う</label>
         <div class="cc-cat">${escapeHtml(it.name)}<br>${catLabel}<br><span style="opacity:.75">${seasonsLabel(itemSeasons(it))}</span></div>
       </div>`;
     }).join("");
     grid.querySelectorAll(".cc-del").forEach(b => b.onclick = () => delClosetItem(b.dataset.id));
+    grid.querySelectorAll(".cc-use-cb").forEach(cb => cb.onchange = () => {
+      if (cb.checked) hybridSel.add(cb.dataset.id); else hybridSel.delete(cb.dataset.id);
+      cb.closest(".closet-card").classList.toggle("sel", cb.checked);
+    });
   }
 
   function suggestFromCloset() {
@@ -1682,9 +1714,20 @@
       return { key: k, cat: (CATS.find(c => c.key === k) || {}).cat || CLOSET_CATS[k], name: it.name, id: it.id, img: it.img, own: true };
     };
     const suggestPick = (k) => ({ key: k, cat: (CATS.find(c => c.key === k) || {}).cat, name: pickItemName(k, gender, base, temp, taste), own: false });
-    const slot = (k) => (owned[k].length ? ownedPick(k) : null) || suggestPick(k);
+    const selected = list.filter(x => hybridSel.has(x.id));
+    const hasSel = selected.length > 0;
+    const selPick = (k) => {
+      const pool = selected.filter(x => itemCats(x).includes(k) && !used.has(x.id));
+      if (!pool.length) return null;
+      const it = pick(pool); used.add(it.id);
+      return { key: k, cat: (CATS.find(c => c.key === k) || {}).cat || CLOSET_CATS[k], name: it.name, id: it.id, img: it.img, own: true };
+    };
+    // 選択があれば「選んだアイテムのみ手持ち＋残りはおすすめ」、無ければ「持っている物を自動で使う」
+    const slot = (k) => hasSel ? (selPick(k) || suggestPick(k)) : ((owned[k].length ? ownedPick(k) : null) || suggestPick(k));
     const items = [slot("top"), slot("bottom")];
-    if (owned.outer.length || cold || Math.random() < 0.4) items.push(slot("outer"));
+    const wantOuter = cold || Math.random() < 0.4
+      || (hasSel ? selected.some(x => itemCats(x).includes("outer")) : owned.outer.length > 0);
+    if (wantOuter) items.push(slot("outer"));
     items.push(slot("shoes"));
     items.push(slot("acc"));
     state.current = {
@@ -1763,7 +1806,6 @@
   weightRange.oninput = () => { state.weight = Number(weightRange.value); weightVal.textContent = state.weight + " kg"; };
 
   document.getElementById("go").onclick = suggest;
-  document.getElementById("go-closet").onclick = suggestFromCloset;
   document.getElementById("go-hybrid").onclick = suggestHybrid;
   document.getElementById("cl-add").onclick = addClosetItem;
   const affInput = document.getElementById("aff-id");
