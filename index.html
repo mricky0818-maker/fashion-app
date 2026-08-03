@@ -479,7 +479,8 @@
       <div class="chips" id="age-chips"></div>
     </div>
     <button class="go" id="go">今日のコーデを提案してもらう ✨</button>
-    <button class="go closet-go" id="go-closet">👕 手持ちの服からコーデを提案</button>
+    <button class="go closet-go" id="go-hybrid">✨ 手持ちを活かしてコーデを提案</button>
+    <button class="go closet-go" id="go-closet">👕 手持ちの服だけでコーデを提案</button>
   </div>
 
   <details class="panel-card" id="closet">
@@ -961,9 +962,11 @@
   function rerollItem(key) {
     const cur = state.current;
     const it = cur.items.find(x => x.key === key);
-    if (cur.source === "closet") {
-      const pool = loadCloset().filter(x => x.cat === key);
-      if (pool.length) { const n = pick(pool); it.name = n.name; it.id = n.id; it.img = n.img; }
+    const owned = it.own || cur.source === "closet";
+    if (owned) {
+      const pool = loadCloset().filter(x => itemCats(x).includes(key) && x.id !== it.id);
+      if (pool.length) { const n = pick(pool); it.name = n.name; it.id = n.id; it.img = n.img; it.own = true; }
+      else if (cur.source === "hybrid") { it.name = pickItemName(key, cur.gender, cur.base, cur.temp, cur.taste); it.img = undefined; it.id = undefined; it.own = false; }
       render();
       return;
     }
@@ -1212,7 +1215,7 @@
       const inner = i.img
         ? `<div class="flat-icon photo"><img class="flat-photo" src="${i.img}" alt="" /></div>`
         : `<div class="flat-icon">${garmentIcon(iconType(i.key, i.name), itemColor(i.key, cur), 54)}</div>`;
-      return `<div class="flat-item">${inner}<div class="flat-cat">${i.cat}</div><div class="flat-name">${escapeHtml(i.name)}</div></div>`;
+      return `<div class="flat-item">${inner}<div class="flat-cat">${i.own ? "👕 " : ""}${i.cat}</div><div class="flat-name">${escapeHtml(i.name)}</div></div>`;
     }).join("");
   }
 
@@ -1223,9 +1226,10 @@
     el.classList.remove("empty");
     const isSaved = isFavSaved(cur);
 
-    const title = closet ? "手持ちの服のコーデ 👕" : "今日のおすすめコーデ";
+    const hybrid = cur.source === "hybrid";
+    const title = closet ? "手持ちの服のコーデ 👕" : hybrid ? "手持ちを活かしたコーデ ✨" : "今日のおすすめコーデ";
     const styleLabel = closet ? "手持ちコーデ" : TASTES[cur.taste].label;
-    const comment = closet ? "登録した手持ちの服から組んだコーデです。" : SEASONS[cur.season].tip;
+    const comment = closet ? "登録した手持ちの服から組んだコーデです。" : hybrid ? "👕は手持ちのアイテム、それ以外はおすすめで補完しています。" : SEASONS[cur.season].tip;
 
     const figureHtml = closet ? "" : `
       <div class="figure-wrap">
@@ -1249,7 +1253,9 @@
     const affOn = !!affiliateId();
     const affNote = affOn ? `<p class="sources-note">※ ショッピングの🛒リンクはアフィリエイト広告（楽天）を含みます。</p>` : "";
     const footNote = (closet
-      ? `<p class="sources-note">※ 手持ちの服（端末内に保存された写真）から組み合わせています。「👕 手持ちの服からもう一回」で組み直せます。</p>`
+      ? `<p class="sources-note">※ 手持ちの服（端末内に保存された写真）から組み合わせています。「👕 手持ちの服だけでもう一回」で組み直せます。</p>`
+      : hybrid
+      ? `<p class="sources-note">※ 👕は登録した手持ちアイテム、それ以外はおすすめです。🛒で買い足せます。「✨ 手持ちを活かしてもう一回」で組み直せます。</p>`
       : `<p class="sources-note">※ 提案は「SNSで人気の系統・定番の着こなし」をもとにClaudeが構成したものです（実在する特定インフルエンサーの投稿ではありません）。各アイテムの🛒で個別に検索・購入できます。</p>`) + affNote;
 
     el.innerHTML = `
@@ -1273,9 +1279,9 @@
         ${cur.items.map(i => `
           <li class="item">
             <span class="ic">${i.img ? `<img class="flat-photo" style="width:34px;height:34px;border-radius:9px" src="${i.img}" alt="" />` : garmentIcon(iconType(i.key, i.name), itemColor(i.key, cur), 34)}</span>
-            <span class="grow"><span class="cat">${i.cat}</span><br><span class="name">${escapeHtml(i.name)}</span></span>
+            <span class="grow"><span class="cat">${i.own ? "👕手持ち ・ " : ""}${i.cat}</span><br><span class="name">${escapeHtml(i.name)}</span></span>
             <button class="reroll" data-key="${i.key}" title="これだけ変える">🔁</button>
-            ${closet ? "" : `<button class="shop" data-name="${escapeHtml(i.name)}" title="この服を探す・買う">🛒</button>`}
+            ${(closet || i.own) ? "" : `<button class="shop" data-name="${escapeHtml(i.name)}" title="この服を探す・買う">🛒</button>`}
           </li>`).join("")}
       </ul>
       ${paletteHtml}
@@ -1657,6 +1663,45 @@
     document.getElementById("go-closet").textContent = "👕 手持ちの服からもう一回 🔁";
   }
 
+  // 手持ちアイテムを活かしつつ、無いカテゴリはおすすめで補完して提案
+  function suggestHybrid() {
+    const list = loadCloset();
+    const owned = {};
+    ["top", "bottom", "outer", "shoes", "acc"].forEach(k => owned[k] = list.filter(x => itemCats(x).includes(k)));
+    const { gender, scene, temp, taste } = state;
+    const sc = SUBSCENES[scene][state.sub];
+    const base = sc.base;
+    const seasonOk = x => { const s = itemSeasons(x); return !s.length || s.length === 4 || s.includes(state.season); };
+    const cold = state.season === "autumn" || state.season === "winter";
+    const used = new Set();
+    const ownedPick = (k) => {
+      let pool = owned[k].filter(x => !used.has(x.id));
+      if (!pool.length) return null;
+      const pref = pool.filter(seasonOk);
+      const it = pick(pref.length ? pref : pool); used.add(it.id);
+      return { key: k, cat: (CATS.find(c => c.key === k) || {}).cat || CLOSET_CATS[k], name: it.name, id: it.id, img: it.img, own: true };
+    };
+    const suggestPick = (k) => ({ key: k, cat: (CATS.find(c => c.key === k) || {}).cat, name: pickItemName(k, gender, base, temp, taste), own: false });
+    const slot = (k) => (owned[k].length ? ownedPick(k) : null) || suggestPick(k);
+    const items = [slot("top"), slot("bottom")];
+    if (owned.outer.length || cold || Math.random() < 0.4) items.push(slot("outer"));
+    items.push(slot("shoes"));
+    items.push(slot("acc"));
+    state.current = {
+      source: "hybrid",
+      gender, scene, temp, base, taste,
+      sub: state.sub, subLabel: sc.label, subTip: sc.tip,
+      season: state.season, time: state.time, age: state.age,
+      height: state.height, weight: state.weight, body: state.body,
+      items: items.filter(Boolean),
+      palette: pickPalette(),
+    };
+    render();
+    pushHistory(state.current);
+    document.getElementById("result").scrollIntoView({ block: "start" });
+    document.getElementById("go-hybrid").textContent = "✨ 手持ちを活かしてもう一回 🔁";
+  }
+
   // ---- 提案履歴 ----
   const HISTORY_KEY = "coord_history_v1";
   function loadHistory() { try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; } catch (e) { return []; } }
@@ -1719,6 +1764,7 @@
 
   document.getElementById("go").onclick = suggest;
   document.getElementById("go-closet").onclick = suggestFromCloset;
+  document.getElementById("go-hybrid").onclick = suggestHybrid;
   document.getElementById("cl-add").onclick = addClosetItem;
   const affInput = document.getElementById("aff-id");
   if (affInput) {
