@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>今日のコーデ提案 👗</title>
+<style>
+  :root {
+    --bg: #fdf4f5;
+    --bg-grad: linear-gradient(160deg, #fff0f4 0%, #fef4ea 32%, #edf8f2 66%, #eef1fd 100%);
+    --card: #ffffff;
+    --ink: #2b2432;
+    --sub: #8c8091;
+    --line: #f1e7ef;
+    --accent: #ff6a88;
+    --accent-dark: #e8517a;
+    --accent2: #ffb14e;
+    --pop: #4ec5b6;
+    --soft: #fbeef3;
+    --grad: linear-gradient(135deg, #ff9a6b 0%, #ff6a88 52%, #ff8fc7 100%);
+    --shadow: 0 14px 34px rgba(255, 120, 150, 0.16);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1d1826;
+      --bg-grad: linear-gradient(160deg, #251a2c 0%, #1d1a2e 50%, #161f27 100%);
+      --card: #2a2334;
+      --ink: #f3edf6;
+      --sub: #b2a5ba;
+      --line: #39303f;
+      --accent: #ff86a3;
+      --accent-dark: #ff6a88;
+      --accent2: #ffc06a;
+      --pop: #6fd3c2;
+      --soft: #322a3b;
+      --grad: linear-gradient(135deg, #ff9a6b 0%, #ff6a88 50%, #c983ff 100%);
+      --shadow: 0 14px 34px rgba(0, 0, 0, 0.42);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Hiragino Maru Gothic ProN", "Quicksand", "Hiragino Sans", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+    background: var(--bg);
+    background-image: var(--bg-grad);
+    background-attachment: fixed;
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px 60px;
+  }
+  @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  @keyframes pop { 0% { transform: scale(0.8); } 60% { transform: scale(1.08); } 100% { transform: scale(1); } }
+  .wrap { width: 100%; max-width: 560px; }
+  header { text-align: center; margin-bottom: 22px; }
+  h1 {
+    font-size: 1.9rem;
+    margin: 0 0 8px;
+    letter-spacing: 0.02em;
+    font-weight: 800;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: var(--accent-dark);
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+    animation: floaty 3.5s ease-in-out infinite;
+  }
+  h1 .wave {
+    -webkit-text-fill-color: initial;
+    display: inline-block;
+    animation: wave-emoji 2.2s ease-in-out infinite;
+    transform-origin: 70% 80%;
+  }
+  @keyframes wave-emoji { 0%,60%,100% { transform: rotate(0deg); } 15% { transform: rotate(14deg); } 30% { transform: rotate(-8deg); } 45% { transform: rotate(10deg); } }
+  .tagline { color: var(--sub); font-size: 0.92rem; margin: 0; }
+
+  .controls, .result, .favs {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 18px;
+  }
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  .field > label {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--accent-dark);
+    margin-bottom: 8px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+  }
+  .chip:hover { border-color: var(--accent); }
+  .chip.active {
+    background: var(--grad);
+    border-color: transparent;
+    color: #fff;
+    font-weight: 700;
+    transform: scale(1.06);
+    box-shadow: 0 5px 14px rgba(255, 106, 136, 0.34);
+    animation: pop 0.25s ease;
+  }
+  .range-row { display: flex; align-items: center; gap: 12px; }
+  .range-row input[type="range"] { flex: 1; accent-color: var(--accent); height: 4px; }
+  .range-val { font-variant-numeric: tabular-nums; font-weight: 700; min-width: 70px; text-align: right; font-size: 0.95rem; }
+
+  .go {
+    width: 100%;
+    margin-top: 6px;
+    border: none;
+    background: var(--grad);
+    color: #fff;
+    font-size: 1.08rem;
+    font-weight: 800;
+    padding: 15px;
+    border-radius: 16px;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 8px 20px rgba(255, 106, 136, 0.36);
+    transition: transform 0.12s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  }
+  .go:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(255, 106, 136, 0.44); filter: saturate(1.08); }
+  .go:active { transform: translateY(0) scale(0.98); }
+
+  .result {
+    padding: 22px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+  }
+  .result.show { opacity: 1; transform: none; }
+  .result.empty { text-align: center; color: var(--sub); padding: 40px 22px; }
+
+  .result-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+    gap: 12px;
+  }
+  .result-title { font-size: 1.15rem; font-weight: 700; margin: 0; }
+  .result-scene { font-size: 0.78rem; color: var(--sub); text-align: right; line-height: 1.5; }
+  .comment {
+    font-size: 0.95rem;
+    color: var(--sub);
+    margin: 0 0 16px;
+    line-height: 1.6;
+  }
+
+  .figure-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 0 8px;
+    margin-bottom: 16px;
+    background:
+      radial-gradient(120% 90% at 50% 0%, rgba(255, 177, 78, 0.14), transparent 60%),
+      var(--soft);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+  }
+  .figure-cap { font-size: 0.76rem; color: var(--sub); }
+
+  .advice {
+    background: var(--soft);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .advice-title { font-size: 0.72rem; color: var(--sub); letter-spacing: 0.05em; margin-bottom: 8px; font-weight: 600; }
+  .advice-line { font-size: 0.9rem; line-height: 1.65; margin: 0 0 4px; }
+  .advice-line:last-child { margin-bottom: 0; }
+  .advice-line b { color: var(--accent-dark); }
+
+  .items { list-style: none; margin: 0 0 16px; padding: 0; }
+  .item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 4px;
+    border-bottom: 1px dashed var(--line);
+  }
+  .item:last-child { border-bottom: none; }
+  .item .emoji { font-size: 1.5rem; width: 32px; text-align: center; }
+  .item .ic { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex: 0 0 36px; }
+
+  .flat-title { margin-bottom: 8px; }
+  .flatlay {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    margin-bottom: 16px;
+  }
+  .flat-item { flex: 0 0 auto; width: 92px; text-align: center; }
+  .flat-icon {
+    width: 92px;
+    height: 80px;
+    background:
+      radial-gradient(120% 100% at 50% 0%, rgba(255, 177, 78, 0.12), transparent 65%),
+      var(--soft);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .flat-cat { font-size: 0.66rem; color: var(--sub); margin-top: 6px; letter-spacing: 0.04em; }
+  .flat-name { font-size: 0.76rem; font-weight: 700; line-height: 1.3; }
+  .flat-icon.photo { padding: 0; overflow: hidden; }
+  .flat-photo { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; }
+
+  .panel-card {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 20px; padding: 14px 18px; box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .panel-card > summary { cursor: pointer; font-weight: 800; color: var(--accent-dark); font-size: 0.95rem; list-style: none; }
+  .panel-card > summary::-webkit-details-marker { display: none; }
+  .panel-card > summary::before { content: "▸ "; }
+  .panel-card[open] > summary::before { content: "▾ "; }
+  .panel-note { font-size: 0.72rem; color: var(--sub); margin: 10px 0 0; line-height: 1.6; }
+  .closet-add { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
+  .closet-add input[type="text"], .closet-add select, .closet-add input[type="file"] {
+    padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px;
+    background: transparent; color: var(--ink); font-family: inherit; font-size: 0.84rem; max-width: 100%;
+  }
+  .closet-add input[type="text"] { flex: 1; min-width: 110px; }
+  .closet-add .add-btn { border: none; background: var(--grad); color: #fff; font-weight: 700; border-radius: 10px; padding: 9px 16px; cursor: pointer; font-family: inherit; }
+  .cl-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 12px; }
+  .cl-tag-label { font-size: 0.72rem; color: var(--accent-dark); font-weight: 700; margin-right: 2px; }
+  .cl-tags label { display: inline-flex; align-items: center; gap: 4px; font-size: 0.84rem; cursor: pointer; }
+  .cl-tags input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
+  .closet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; margin-top: 14px; }
+  .closet-card { position: relative; }
+  .closet-card img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; border: 1px solid var(--line); background: var(--soft); display: block; }
+  .closet-card .cc-cat { font-size: 0.62rem; color: var(--sub); margin-top: 3px; text-align: center; line-height: 1.25; }
+  .closet-card .cc-del { position: absolute; top: 5px; right: 5px; border: none; background: rgba(0,0,0,0.55); color: #fff; border-radius: 999px; width: 22px; height: 22px; cursor: pointer; font-size: 0.78rem; line-height: 1; }
+  .closet-empty { font-size: 0.78rem; color: var(--sub); margin-top: 12px; }
+  .go.closet-go { background: var(--card); color: var(--accent-dark); border: 2px solid var(--accent); box-shadow: none; margin-top: 10px; font-size: 1rem; }
+  .go.closet-go:hover { background: var(--soft); transform: translateY(-1px); box-shadow: none; filter: none; }
+  .hist { display: flex; align-items: center; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); font-size: 0.85rem; }
+  .hist:last-child { border-bottom: none; }
+  .hist .h-text { flex: 1; line-height: 1.45; }
+  .hist .h-sub { font-size: 0.68rem; color: var(--sub); }
+  .hist .h-view { border: 1px solid var(--line); background: transparent; color: var(--accent-dark); border-radius: 8px; padding: 5px 11px; cursor: pointer; font-family: inherit; font-weight: 700; font-size: 0.78rem; }
+  .hist .h-view:hover { border-color: var(--accent); }
+  .item .cat { font-size: 0.72rem; color: var(--sub); letter-spacing: 0.05em; }
+  .item .name { font-size: 1rem; font-weight: 600; }
+  .item .grow { flex: 1; }
+  .reroll {
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--sub);
+    border-radius: 10px;
+    padding: 6px 9px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.15s ease;
+  }
+  .reroll:hover { border-color: var(--accent); color: var(--accent); }
+  .shop {
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--sub);
+    border-radius: 10px;
+    padding: 6px 9px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.15s ease;
+    margin-left: 6px;
+  }
+  .shop:hover { border-color: var(--accent); color: var(--accent); }
+
+  .sources { margin: 2px 0 16px; }
+  .sources-note { font-size: 0.72rem; color: var(--sub); margin: 8px 0 0; line-height: 1.5; }
+  .source-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+  .src {
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 0.86rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+  .src:hover { border-color: var(--accent); color: var(--accent); }
+
+  .palette { margin-bottom: 16px; }
+  .palette-label { font-size: 0.72rem; color: var(--sub); letter-spacing: 0.05em; margin-bottom: 8px; }
+  .swatches { display: flex; gap: 10px; align-items: center; }
+  .swatch {
+    width: 40px; height: 40px; border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15);
+  }
+  .palette-name { font-size: 0.9rem; font-weight: 600; margin-left: 4px; }
+
+  .actions { display: flex; gap: 10px; }
+  .action {
+    flex: 1;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    border-radius: 12px;
+    padding: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.15s ease;
+  }
+  .action:hover { border-color: var(--accent); color: var(--accent); }
+  .action.saved { background: var(--grad); border-color: transparent; color: #fff; box-shadow: 0 5px 14px rgba(255, 106, 136, 0.3); }
+
+  .favs.hidden { display: none; }
+  .favs h2 { font-size: 0.95rem; margin: 0 0 12px; }
+  .fav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 4px;
+    border-bottom: 1px dashed var(--line);
+    font-size: 0.88rem;
+  }
+  .fav:last-child { border-bottom: none; }
+  .fav .fav-text { flex: 1; line-height: 1.5; }
+  .fav .fav-scene { font-size: 0.72rem; color: var(--sub); }
+  .fav-del {
+    border: none; background: transparent; color: var(--sub);
+    cursor: pointer; font-size: 1rem; padding: 4px 8px; border-radius: 8px;
+  }
+  .fav-del:hover { color: var(--accent-dark); }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  footer { text-align: center; margin-top: 26px; color: var(--sub); font-size: 0.78rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>今日のコーデ提案 <span class="wave">👗</span></h1>
+    <p class="tagline">あなたの体型に合わせて、全身イメージ付きで提案します</p>
+  </header>
+
+  <div class="controls">
+    <div class="field">
+      <label>性別</label>
+      <div class="chips" id="gender-chips"></div>
+    </div>
+    <div class="field">
+      <label>シーン</label>
+      <div class="chips" id="scene-chips"></div>
+    </div>
+    <div class="field">
+      <label>シーンの詳細（場所）</label>
+      <div class="chips" id="sub-chips"></div>
+    </div>
+    <div class="field">
+      <label>系統（人気テイスト）</label>
+      <div class="chips" id="taste-chips"></div>
+    </div>
+    <div class="field">
+      <label>気温</label>
+      <div class="chips" id="temp-chips"></div>
+    </div>
+    <div class="field">
+      <label>季節</label>
+      <div class="chips" id="season-chips"></div>
+    </div>
+    <div class="field">
+      <label>時間帯</label>
+      <div class="chips" id="time-chips"></div>
+    </div>
+    <div class="field">
+      <label>好みの色</label>
+      <div class="chips" id="color-chips"></div>
+    </div>
+    <div class="field">
+      <label>身長</label>
+      <div class="range-row">
+        <input type="range" id="height-range" min="140" max="200" value="165" step="1" />
+        <span class="range-val" id="height-val">165 cm</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>体重</label>
+      <div class="range-row">
+        <input type="range" id="weight-range" min="35" max="120" value="58" step="1" />
+        <span class="range-val" id="weight-val">58 kg</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>体型</label>
+      <div class="chips" id="body-chips"></div>
+    </div>
+    <div class="field">
+      <label>年齢層</label>
+      <div class="chips" id="age-chips"></div>
+    </div>
+    <button class="go" id="go">今日のコーデを提案してもらう ✨</button>
+    <button class="go closet-go" id="go-closet">👕 手持ちの服からコーデを提案</button>
+  </div>
+
+  <details class="panel-card" id="closet">
+    <summary>👕 マイクローゼット（手持ちの服）</summary>
+    <div class="closet-add">
+      <input type="file" id="cl-file" accept="image/*" />
+      <input type="text" id="cl-name" placeholder="名前（任意）例：白ニット" />
+      <button class="add-btn" id="cl-add">追加</button>
+    </div>
+    <div class="cl-tags">
+      <span class="cl-tag-label">カテゴリ（複数可）</span>
+      <label><input type="checkbox" class="cl-cat" value="top" checked />トップス</label>
+      <label><input type="checkbox" class="cl-cat" value="bottom" />ボトムス</label>
+      <label><input type="checkbox" class="cl-cat" value="outer" />アウター</label>
+      <label><input type="checkbox" class="cl-cat" value="shoes" />シューズ</label>
+      <label><input type="checkbox" class="cl-cat" value="acc" />バッグ・小物</label>
+    </div>
+    <div class="cl-tags">
+      <span class="cl-tag-label">シーズン（複数可）</span>
+      <label><input type="checkbox" class="cl-season" value="spring" checked />春</label>
+      <label><input type="checkbox" class="cl-season" value="summer" checked />夏</label>
+      <label><input type="checkbox" class="cl-season" value="autumn" checked />秋</label>
+      <label><input type="checkbox" class="cl-season" value="winter" checked />冬</label>
+    </div>
+    <div class="closet-grid" id="closet-grid"></div>
+    <p class="panel-note">写真は端末内（ブラウザ）にのみ保存され、外部へは送信されません。写真の自動判別はできないため、カテゴリはご自身で選んでください。上の「👕 手持ちの服からコーデを提案」で、登録した服からコーデを組みます。</p>
+  </details>
+
+  <div class="result empty" id="result">
+    ここに提案が表示されます
+  </div>
+
+  <div class="favs hidden" id="favs">
+    <h2>♡ お気に入りコーデ</h2>
+    <div id="fav-list"></div>
+  </div>
+
+  <details class="panel-card" id="history-card">
+    <summary>🕘 提案履歴（直近20件）</summary>
+    <div id="history-list"></div>
+  </details>
+
+  <footer>ランダムに提案します。気に入らなければ何度でもどうぞ 🔁</footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  const GENDERS = {
+    ladies: { label: "レディース" },
+    mens:   { label: "メンズ" },
+  };
+  const SCENES = {
+    casual: { label: "カジュアル" },
+    smart:  { label: "きれいめ" },
+    biz:    { label: "ビジネス" },
+    date:   { label: "デート" },
+    friends:{ label: "友達と" },
+    sport:  { label: "スポーツ" },
+    relax:  { label: "リラックス" },
+    outing: { label: "おでかけ" },
+  };
+  const TEMPS = {
+    hot:  { label: "暑い" },
+    warm: { label: "暖かい" },
+    cool: { label: "涼しい" },
+    cold: { label: "寒い" },
+  };
+  const TIMES = {
+    morning: { label: "朝", bias: ["natural", "cool"], tip: "朝は明るく爽やかな色みで軽やかに。" },
+    noon:    { label: "昼", bias: ["natural", "warm", "mono", "cool"], tip: "日中は動きやすさも意識するとGood。" },
+    evening: { label: "夕方", bias: ["warm"], tip: "夕方は暖かみのある色がきれいに映えます。" },
+    night:   { label: "夜", bias: ["mono", "cool"], tip: "夜はきれいめ・落ち着いた色で上品にまとめて。" },
+  };
+  const COLORS = {
+    any:     { label: "おまかせ" },
+    mono:    { label: "モノトーン" },
+    warm:    { label: "暖色" },
+    cool:    { label: "寒色" },
+    natural: { label: "ナチュラル" },
+  };
+  const BODY = {
+    slim:   { label: "スリム",   width: 0.86, advice: "華奢さを活かしつつ、重ね着やボリュームで立体感をプラス。" },
+    std:    { label: "標準",     width: 1.00, advice: "バランス型。好きなシルエットを楽しめます。" },
+    plump:  { label: "ぽっちゃり", width: 1.20, advice: "Iライン（縦長）・Vネック・ロング丈でたて長にすっきり見え。" },
+    sturdy: { label: "がっちり", width: 1.14, advice: "すっきりめトップス＋きれいめボトムで、上半身を軽やかに。" },
+  };
+  const SEASONS = {
+    spring: { label: "春", bias: ["natural", "warm"], tip: "春は明るいトーンや軽やかな素材で軽さを。" },
+    summer: { label: "夏", bias: ["cool", "natural"], tip: "夏は涼しげな寒色や白でクリーンに。" },
+    autumn: { label: "秋", bias: ["warm", "natural"], tip: "秋はこっくりしたアースカラーで季節感を。" },
+    winter: { label: "冬", bias: ["mono", "cool"], tip: "冬は深みのある色や上品なダークトーンで。" },
+  };
+  const AGES = {
+    a1: { label: "10〜15歳", fig: 0.84, head: 1.14, bias: ["natural", "warm"], tip: "元気で明るい色や、動きやすいカジュアルが好相性。" },
+    a2: { label: "15〜18歳", fig: 0.93, head: 1.07, bias: ["natural", "cool"], tip: "トレンド感のあるカジュアル×きれいめミックスを楽しんで。" },
+    a3: { label: "18歳〜",   fig: 1.00, head: 1.00, bias: [],                  tip: "幅広いスタイルが似合う年代。なりたい印象で自由に。" },
+    a4: { label: "25歳〜",   fig: 1.00, head: 0.99, bias: ["natural", "mono"], tip: "上品さと今っぽさのバランスで大人カジュアルに。" },
+    a5: { label: "30歳〜",   fig: 1.00, head: 0.98, bias: ["mono", "natural"], tip: "上質な素材ときれいめシルエットで落ち着いた華やかさを。" },
+    a6: { label: "35歳〜",   fig: 1.00, head: 0.97, bias: ["mono", "cool"],    tip: "シンプルで洗練された配色が大人の余裕を演出。" },
+    a7: { label: "40歳〜",   fig: 1.00, head: 0.96, bias: ["mono", "natural", "cool"], tip: "上品な色みとIラインでエレガントに。" },
+  };
+  // SNSで人気の系統（テイスト）。note = その系統の着こなしのコツ、sig.acc = 系統らしい小物
+  const TASTES = {
+    any:      { label: "トレンドMIX", bias: [],                  note: "今っぽさは“抜け感”。どこか1点だけ肩の力を抜くとこなれます。", sig: null },
+    simple:   { label: "シンプル",     bias: ["mono", "natural"], note: "色数は2〜3色に。無地×きれいめシルエットで上質に見せて。", sig: { acc: ["シンプルトート", "華奢アクセ", "レザーベルト"] } },
+    adult:    { label: "大人きれいめ", bias: ["mono", "natural"], note: "きれいめ7:カジュアル3。とろみ素材やセンタープレスで品よく。", sig: { acc: ["きれいめバッグ", "一粒ネックレス", "上品スカーフ"] } },
+    korean:   { label: "韓国系",       bias: ["mono", "cool"],    note: "ハイウエスト＋トップスインで脚長に。抜き襟やゆるシルエットが今っぽい。", sig: { acc: ["ミニバッグ", "ボールキャップ", "ゴールド華奢アクセ"] } },
+    feminine: { label: "フェミニン",   bias: ["natural"],         note: "曲線シルエット＆やわらか素材。差し色は淡いトーンで甘さを調整。", sig: { acc: ["リボンバッグ", "パールアクセ", "ヘアクリップ"] } },
+    mode:     { label: "モード",       bias: ["mono"],            note: "モノトーンで統一し、素材と抜き感で勝負。小物はミニマルに。", sig: { acc: ["レザーバッグ", "シルバーアクセ", "ミニマルバッグ"] } },
+    street:   { label: "ストリート",   bias: ["mono", "cool"],    note: "オーバーサイズ＋スニーカー。上下のボリューム差でメリハリを。", sig: { acc: ["ショルダーバッグ", "キャップ", "チェーンアクセ"] } },
+    natural:  { label: "ナチュラル",   bias: ["natural", "warm"], note: "リネンやコットンの素材感。アースカラーでゆるっと心地よく。", sig: { acc: ["カゴバッグ", "天然素材アクセ", "エコバッグ"] } },
+    kirekaji: { label: "きれいめカジュアル", bias: ["natural", "mono"], note: "きれいめ5:カジュアル5。ラフさと上品さのバランスがこなれの鍵。" },
+    y2k:      { label: "Y2K",              bias: ["mono", "cool"],    note: "ショート丈×厚底×ロゴで2000年代ムード。1点投入でも今っぽい。" },
+    vintage:  { label: "古着MIX",          bias: ["warm", "natural"], note: "サイズ感で遊ぶ。1点を主役に、ヴィンテージ小物でこなれ感を。" },
+    sporty:   { label: "スポーツMIX",      bias: ["mono", "cool"],    note: "上下どちらかをきれいめにすると、大人のスポーティに。" },
+  };
+  // 系統ごとの“全身一式”。warm=暑い/暖かい, cool=涼しい/寒い。top/bottomは性別対応。
+  // any(トレンドMIX)は下のDATA(シーン別・温度別)から引くので未定義。
+  const TASTE_SIG = {
+    simple: {
+      acc: ["シンプルトート", "華奢アクセ", "レザーベルト"],
+      shoes: { ladies: ["白スニーカー", "ローファー"], mens: ["白スニーカー", "ローファー"] },
+      warm: { top: { ladies: ["無地T", "シンプルブラウス"], mens: ["無地T", "バンドカラーシャツ"] }, bottom: { ladies: ["ストレートデニム", "きれいめパンツ"], mens: ["ストレートデニム", "アンクルスラックス"] }, outer: ["(なしでOK)", "シャツ羽織り"] },
+      cool: { top: { ladies: ["ハイゲージニット", "無地スウェット"], mens: ["クルーネックニット", "無地スウェット"] }, bottom: { ladies: ["テーパードパンツ", "ストレートデニム"], mens: ["テーパードスラックス", "ストレートデニム"] }, outer: ["ステンカラーコート", "無地ブルゾン"] },
+    },
+    adult: {
+      acc: ["きれいめバッグ", "一粒ネックレス", "上品スカーフ"],
+      shoes: { ladies: ["パンプス", "ローファー"], mens: ["レザーローファー", "プレーントゥ"] },
+      warm: { top: { ladies: ["とろみブラウス", "きれいめカットソー"], mens: ["リネンシャツ", "きれいめポロ"] }, bottom: { ladies: ["センタープレスパンツ", "きれいめスカート"], mens: ["センタープレススラックス", "アンクルパンツ"] }, outer: ["(なしでOK)", "薄手ジャケット"] },
+      cool: { top: { ladies: ["ハイゲージタートル", "上品ニット"], mens: ["ハイゲージニット", "タートルニット"] }, bottom: { ladies: ["ウールパンツ", "タイトスカート"], mens: ["ウールスラックス", "きれいめスラックス"] }, outer: ["チェスターコート", "トレンチコート"] },
+    },
+    korean: {
+      acc: ["ミニバッグ", "ボールキャップ", "ゴールド華奢アクセ"],
+      shoes: { ladies: ["きれいめスニーカー", "ローファー"], mens: ["きれいめスニーカー", "ローファー"] },
+      warm: { top: { ladies: ["クロップドT", "抜き襟シャツ"], mens: ["オーバーT", "オープンカラーシャツ"] }, bottom: { ladies: ["ハイウエストワイドパンツ", "ロングスカート"], mens: ["ワイドスラックス", "ワイドデニム"] }, outer: ["(なしでOK)", "ショート丈カーデ"] },
+      cool: { top: { ladies: ["ゆるニット", "クロップドニット"], mens: ["オーバーサイズニット", "ハーフジップニット"] }, bottom: { ladies: ["ハイウエストスラックス", "ロングタイトスカート"], mens: ["ワイドスラックス", "ストレートスラックス"] }, outer: ["ロングコート", "オーバーサイズジャケット"] },
+    },
+    feminine: {
+      acc: ["リボンバッグ", "パールアクセ", "ヘアクリップ"],
+      shoes: { ladies: ["バレエシューズ", "パンプス"], mens: ["ローファー", "きれいめスニーカー"] },
+      warm: { top: { ladies: ["レースブラウス", "フリルカットソー"], mens: ["きれいめシャツ", "無地T+シャツ"] }, bottom: { ladies: ["フレアスカート", "プリーツスカート"], mens: ["アンクルスラックス", "きれいめデニム"] }, outer: ["(なしでOK)", "カーディガン"] },
+      cool: { top: { ladies: ["ふんわりニット", "ハイネックニット"], mens: ["きれいめニット", "タートルニット"] }, bottom: { ladies: ["ロングフレアスカート", "ニットスカート"], mens: ["きれいめスラックス", "ウールパンツ"] }, outer: ["ノーカラーコート", "ロングカーデ"] },
+    },
+    mode: {
+      acc: ["レザーバッグ", "シルバーアクセ", "ミニマルバッグ"],
+      shoes: { ladies: ["レザーシューズ", "厚底ブーツ"], mens: ["レザーシューズ", "レザーブーツ"] },
+      warm: { top: { ladies: ["モノトーンT", "アシンメトリーブラウス"], mens: ["モードT", "バンドカラーシャツ"] }, bottom: { ladies: ["ワイドパンツ", "マキシスカート"], mens: ["ワイドスラックス", "テーパードパンツ"] }, outer: ["(なしでOK)", "シアーシャツ羽織り"] },
+      cool: { top: { ladies: ["タートルニット", "オーバーニット"], mens: ["タートルニット", "オーバーニット"] }, bottom: { ladies: ["ワイドスラックス", "ロングタイトスカート"], mens: ["ワイドスラックス", "スラックス"] }, outer: ["ロングチェスターコート", "オーバーサイズコート"] },
+    },
+    street: {
+      acc: ["ショルダーバッグ", "キャップ", "チェーンアクセ"],
+      shoes: { ladies: ["ボリュームスニーカー", "ハイカットスニーカー"], mens: ["ボリュームスニーカー", "ハイカットスニーカー"] },
+      warm: { top: { ladies: ["オーバーサイズT", "ロゴT"], mens: ["オーバーサイズT", "ロゴT"] }, bottom: { ladies: ["ワイドデニム", "カーゴパンツ"], mens: ["ワイドデニム", "カーゴパンツ"] }, outer: ["(なしでOK)", "オープンシャツ"] },
+      cool: { top: { ladies: ["ビッグパーカー", "オーバースウェット"], mens: ["ビッグパーカー", "オーバースウェット"] }, bottom: { ladies: ["ワイドデニム", "ナイロンパンツ"], mens: ["ワイドデニム", "ナイロンパンツ"] }, outer: ["オーバーサイズブルゾン", "MA-1"] },
+    },
+    natural: {
+      acc: ["カゴバッグ", "天然素材アクセ", "エコバッグ"],
+      shoes: { ladies: ["フラットサンダル", "レザーフラット"], mens: ["ローテクスニーカー", "レザーサンダル"] },
+      warm: { top: { ladies: ["リネンブラウス", "ゆるコットンT"], mens: ["リネンシャツ", "コットンT"] }, bottom: { ladies: ["リネンパンツ", "ギャザースカート"], mens: ["リネンパンツ", "ワイドチノ"] }, outer: ["(なしでOK)", "リネンシャツ羽織り"] },
+      cool: { top: { ladies: ["ざっくりニット", "コットンスウェット"], mens: ["ざっくりニット", "コットンスウェット"] }, bottom: { ladies: ["コーデュロイパンツ", "ロングスカート"], mens: ["コーデュロイパンツ", "ワイドチノ"] }, outer: ["ウールコート", "ボアジャケット"] },
+    },
+    kirekaji: {
+      acc: ["レザートート", "華奢アクセ", "キャップ"],
+      shoes: { ladies: ["白スニーカー", "ローファー"], mens: ["白スニーカー", "ローファー"] },
+      warm: { top: { ladies: ["きれいめカットソー", "バンドカラーシャツ"], mens: ["バンドカラーシャツ", "きれいめポロ"] }, bottom: { ladies: ["テーパードパンツ", "ストレートデニム"], mens: ["アンクルスラックス", "ストレートデニム"] }, outer: ["(なしでOK)", "シャツ羽織り"] },
+      cool: { top: { ladies: ["ハイゲージニット", "きれいめスウェット"], mens: ["クルーネックニット", "きれいめスウェット"] }, bottom: { ladies: ["センタープレスパンツ", "きれいめデニム"], mens: ["テーパードスラックス", "きれいめデニム"] }, outer: ["ステンカラーコート", "きれいめジャケット"] },
+    },
+    y2k: {
+      acc: ["ミニハンドバッグ", "カラーサングラス", "ヘアクリップ"],
+      shoes: { ladies: ["厚底スニーカー", "厚底ブーツ"], mens: ["厚底スニーカー", "スケートスニーカー"] },
+      warm: { top: { ladies: ["クロップドタンク", "ロゴベビーT"], mens: ["ロゴT", "ボウリングシャツ"] }, bottom: { ladies: ["ローライズデニム", "ミニスカート"], mens: ["バギーデニム", "カーゴショーツ"] }, outer: ["(なしでOK)", "ショート丈ジップパーカー"] },
+      cool: { top: { ladies: ["クロップドニット", "ジップアップ"], mens: ["ハーフジップ", "ロゴスウェット"] }, bottom: { ladies: ["ローライズバギー", "ミニスカート+タイツ"], mens: ["バギーデニム", "ナイロンパンツ"] }, outer: ["ショート丈ダウン", "ナイロンブルゾン"] },
+    },
+    vintage: {
+      acc: ["ヴィンテージバッグ", "バンダナ", "レザーベルト"],
+      shoes: { ladies: ["レトロスニーカー", "レザーブーツ"], mens: ["レトロスニーカー", "ワークブーツ"] },
+      warm: { top: { ladies: ["プリントT", "開襟シャツ"], mens: ["プリントT", "開襟シャツ"] }, bottom: { ladies: ["リメイクデニム", "ワークパンツ"], mens: ["ヴィンテージデニム", "ワークパンツ"] }, outer: ["(なしでOK)", "デニムジャケット"] },
+      cool: { top: { ladies: ["レトロニット", "チェックシャツ"], mens: ["レトロニット", "ネルシャツ"] }, bottom: { ladies: ["コーデュロイパンツ", "ロングスカート"], mens: ["ヴィンテージデニム", "コーデュロイパンツ"] }, outer: ["ヴィンテージコート", "ボアジャケット"] },
+    },
+    sporty: {
+      acc: ["ナイロンサコッシュ", "キャップ", "スポーツウォッチ"],
+      shoes: { ladies: ["ランニングスニーカー", "ボリュームスニーカー"], mens: ["ランニングスニーカー", "ボリュームスニーカー"] },
+      warm: { top: { ladies: ["ドライT", "ロゴT"], mens: ["ドライT", "ロゴT"] }, bottom: { ladies: ["ジョガーパンツ", "レギンス"], mens: ["ジョガーパンツ", "トラックパンツ"] }, outer: ["(なしでOK)", "ウインドブレーカー"] },
+      cool: { top: { ladies: ["スウェット", "ハーフジップ"], mens: ["スウェット", "ハーフジップ"] }, bottom: { ladies: ["トラックパンツ", "裏起毛ジョガー"], mens: ["トラックパンツ", "裏起毛ジョガー"] }, outer: ["ナイロンブルゾン", "中綿ジャケット"] },
+    },
+  };
+  // 各シーンのサブシーン。base = アイテムを引く元シーン、tip = 場所別ヒント
+  const SUBSCENES = {
+    casual: [
+      { label:"買い物",     base:"casual", tip:"歩きやすさ重視で身軽に。" },
+      { label:"散歩",       base:"casual", tip:"肩の力を抜いた楽ちんコーデで。" },
+      { label:"学び・学校", base:"casual", tip:"きちんと感のあるシンプルカジュアルで。" },
+      { label:"カフェ",     base:"smart",  tip:"少しだけきれいめに寄せて大人っぽく。" },
+    ],
+    smart: [
+      { label:"お出かけ",     base:"smart", tip:"清潔感のあるきれいめでまとめて。" },
+      { label:"食事会",       base:"smart", tip:"上品な素材できちんと感を。" },
+      { label:"観劇・美術館", base:"smart", tip:"落ち着いた配色で静かに華やかに。" },
+    ],
+    biz: [
+      { label:"オフィス",           base:"biz",   tip:"清潔感と機能性のバランスを。" },
+      { label:"商談・会議",         base:"biz",   tip:"信頼感のあるきちんとした印象を最優先に。" },
+      { label:"オフィスカジュアル", base:"smart", tip:"堅すぎない、きれいめカジュアルで。" },
+      { label:"出張",               base:"biz",   tip:"動きやすくシワになりにくい素材を。" },
+    ],
+    date: [
+      { label:"ランチ",     base:"date",    tip:"軽やかで親しみやすい雰囲気に。" },
+      { label:"ディナー",   base:"smart",   tip:"少しドレッシーに、上品な色で。" },
+      { label:"ピクニック", base:"casual",  tip:"動きやすくナチュラルに、汚れてもOKな素材で。" },
+      { label:"水族館",     base:"casual",  tip:"館内は歩くので歩きやすい靴＆羽織りが安心。" },
+      { label:"映画",       base:"casual",  tip:"リラックスできる楽な服装で。" },
+      { label:"遊園地",     base:"friends", tip:"たくさん歩くのでスニーカー＆動きやすさ重視。" },
+    ],
+    friends: [
+      { label:"ランチ・カフェ",   base:"casual", tip:"リラックスした親しみやすいコーデで。" },
+      { label:"ショッピング",     base:"casual", tip:"歩きやすさ重視で身軽に。" },
+      { label:"飲み会",           base:"smart",  tip:"少しだけおしゃれ感をプラス。" },
+      { label:"女子会・集まり",   base:"smart",  tip:"華やかさを一点投入して。" },
+    ],
+    sport: [
+      { label:"ジム",         base:"sport", tip:"動きやすさと吸汗速乾を重視。" },
+      { label:"ランニング",   base:"sport", tip:"軽量で動きやすいウェアを。" },
+      { label:"ヨガ",         base:"sport", tip:"伸縮性のある楽な素材で。" },
+      { label:"アウトドア",   base:"sport", tip:"気温変化に羽織りで対応、歩きやすい靴で。" },
+    ],
+    relax: [
+      { label:"家・部屋着",   base:"relax",  tip:"とにかく楽で心地よい素材で。" },
+      { label:"近所",         base:"relax",  tip:"サッと羽織れる楽ちんコーデで。" },
+      { label:"ワンマイル",   base:"casual", tip:"楽だけど少しだけきちんと感を。" },
+    ],
+    outing: [
+      { label:"旅行",           base:"outing",  tip:"動きやすく着回しやすいものを。" },
+      { label:"観光",           base:"outing",  tip:"たくさん歩くので靴は歩きやすさ重視。" },
+      { label:"イベント・フェス", base:"friends", tip:"動きやすさ＋気分の上がる差し色を。" },
+      { label:"ドライブ",       base:"casual",  tip:"リラックスできてサマになる楽ちんコーデ。" },
+    ],
+  };
+
+  const DATA = {
+    ladies: {
+      tops: {
+        casual: { hot:["ゆるT","フレンチスリーブ"], warm:["長袖カットソー","ボーダーT"], cool:["薄手ニット","スウェット"], cold:["厚手ニット","タートルネック"] },
+        smart:  { hot:["きれいめブラウス","ノースリーブブラウス"], warm:["とろみブラウス","きれいめカットソー"], cool:["ハイゲージニット","カーディガン"], cold:["タートルニット","上品セーター"] },
+        biz:    { hot:["半袖ブラウス","リネンシャツ"], warm:["ブラウス","シャツ"], cool:["ニットカーデ","タートルネック"], cold:["厚手ニット","ニット+シャツ重ね着"] },
+        date:   { hot:["レースブラウス","フレンチスリーブ"], warm:["とろみブラウス","シャツワンピ"], cool:["ふんわりニット","カーディガン"], cold:["もこもこニット","上品セーター"] },
+        friends:{ hot:["カジュアルブラウス","ロゴT"], warm:["ゆるニット","カットソー"], cool:["スウェット","ビッグシャツ"], cold:["ざっくりニット","裏起毛パーカー"] },
+        sport:  { hot:["ドライTシャツ","スポブラ+タンク"], warm:["長袖ドライ","ジャージトップ"], cool:["トレーニングトップ","ウインドシェル"], cold:["裏起毛スウェット","保温トップ+パーカー"] },
+        relax:  { hot:["ゆるT","ルームキャミ"], warm:["スウェット","ロンT"], cool:["パーカー","厚手ロンT"], cold:["もこもこパーカー","裏起毛スウェット"] },
+        outing: { hot:["半袖ブラウス","カットソー"], warm:["長袖ブラウス","シャツ"], cool:["薄手ニット","カーディガン"], cold:["厚手ニット","フリース"] },
+      },
+      bottoms: {
+        casual: { hot:["デニムスカート","リネンパンツ"], warm:["デニム","フレアスカート"], cool:["ロングスカート","スラックス"], cold:["ニットスカート+タイツ","裏起毛パンツ"] },
+        smart:  { hot:["きれいめスカート","ワイドパンツ"], warm:["プリーツスカート","テーパードパンツ"], cool:["タイトスカート","ウールパンツ"], cold:["ロングタイトスカート+タイツ","ウールパンツ"] },
+        biz:    { hot:["ひざ丈スカート","テーパードパンツ"], warm:["タイトスカート","センタープレスパンツ"], cool:["プリーツスカート","スラックス"], cold:["厚手スカート+タイツ","ウールパンツ"] },
+        date:   { hot:["フレアスカート","ミニスカート"], warm:["ロングスカート","きれいめデニム"], cool:["タイトスカート","コーデュロイスカート"], cold:["ニットスカート+タイツ","ロングフレア+タイツ"] },
+        friends:{ hot:["ショートパンツ","ギャザースカート"], warm:["ワイドデニム","フレアスカート"], cool:["ワイドパンツ","ロングスカート"], cold:["厚手パンツ","ロングスカート+タイツ"] },
+        sport:  { hot:["スポーツショーツ","スポーツレギンス"], warm:["ジャージパンツ","レギンス"], cool:["トラックパンツ","ロングタイツ"], cold:["裏起毛レギンス","厚手スウェットパンツ"] },
+        relax:  { hot:["ルームショーツ","リラックスパンツ"], warm:["スウェットパンツ","ワイドパンツ"], cool:["裏毛パンツ","もこもこパンツ"], cold:["裏起毛パンツ","ふわもこパンツ"] },
+        outing: { hot:["リネンパンツ","フレアスカート"], warm:["デニム","ロングスカート"], cool:["ワイドパンツ","ロングスカート"], cold:["厚手パンツ","ロングスカート+タイツ"] },
+      },
+      shoes: {
+        casual:["白スニーカー","バレエシューズ","サンダル"],
+        smart:["パンプス","きれいめフラット","ローファー"],
+        biz:["パンプス","ローファー","きれいめフラット"],
+        date:["バレエシューズ","ヒールパンプス","きれいめブーツ"],
+        friends:["スニーカー","フラットサンダル","ローファー"],
+        sport:["ランニングシューズ","トレーニングシューズ"],
+        relax:["サンダル","ルームシューズ","もこもこブーツ"],
+        outing:["スニーカー","フラットシューズ","ショートブーツ"],
+      },
+      acc: {
+        casual:["トートバッグ","シルバーピアス","腕時計"],
+        smart:["きれいめバッグ","華奢ネックレス","スカーフ"],
+        biz:["きれいめバッグ","シンプルネックレス","腕時計"],
+        date:["小ぶりバッグ","華奢アクセ","ヘアクリップ"],
+        friends:["ショルダーバッグ","フープピアス","キャップ"],
+        sport:["スポーツウォッチ","キャップ","サコッシュ"],
+        relax:["ヘアバンド","エコバッグ","もこもこ靴下"],
+        outing:["ショルダーバッグ","サングラス","ハット"],
+      },
+      outer: {
+        hot:["(アウターなしでOK)","薄手カーディガン(冷房対策)"],
+        warm:["デニムジャケット","カーディガン","薄手ジャケット"],
+        cool:["トレンチコート","ジャケット","ロングカーデ"],
+        cold:["ウールコート","ダウンジャケット","チェスターコート"],
+      },
+    },
+    mens: {
+      tops: {
+        casual: { hot:["半袖Tシャツ","オープンカラーシャツ"], warm:["長袖カットソー","チェックシャツ"], cool:["薄手ニット","スウェット"], cold:["厚手ニット","裏起毛パーカー"] },
+        smart:  { hot:["半袖ポロ","リネンシャツ"], warm:["オックスフォードシャツ","きれいめカットソー"], cool:["ハイゲージニット","シャツ+カーデ"], cold:["タートルニット","ウールセーター"] },
+        biz:    { hot:["半袖ワイシャツ","クールビズシャツ"], warm:["ワイシャツ","ボタンダウンシャツ"], cool:["シャツ+ベスト","ニット+シャツ"], cold:["シャツ+Vネックニット","厚手シャツ+ジャケット"] },
+        date:   { hot:["きれいめ半袖シャツ","無地T+シャツ"], warm:["とろみシャツ","モックネックT"], cool:["きれいめニット","シャツ+カーデ"], cold:["タートルニット","上品セーター"] },
+        friends:{ hot:["グラフィックT","アロハシャツ"], warm:["ロンT","ネルシャツ"], cool:["スウェット","フーディ"], cold:["ビッグニット","裏起毛スウェット"] },
+        sport:  { hot:["ドライTシャツ","メッシュタンク"], warm:["長袖ドライ","ジャージトップ"], cool:["トレーニングトップ","ウインドシェル"], cold:["裏起毛スウェット","保温インナー+パーカー"] },
+        relax:  { hot:["ゆるT","ルームタンク"], warm:["スウェット","ロンT"], cool:["パーカー","厚手ロンT"], cold:["もこもこパーカー","裏起毛スウェット"] },
+        outing: { hot:["半袖シャツ","ドライポロ"], warm:["長袖シャツ","カットソー"], cool:["薄手ニット","シャツ+ライトアウター"], cold:["フリース","厚手ニット"] },
+      },
+      bottoms: {
+        casual: { hot:["ハーフパンツ","チノショーツ"], warm:["デニム","チノパン"], cool:["スラックス","コーデュロイパンツ"], cold:["裏起毛パンツ","厚手デニム"] },
+        smart:  { hot:["リネンパンツ","アンクルスラックス"], warm:["センタープレスパンツ","きれいめデニム"], cool:["ウールパンツ","スラックス"], cold:["厚手スラックス","ウールトラウザー"] },
+        biz:    { hot:["クールビズスラックス","ノータックパンツ"], warm:["スラックス","チノトラウザー"], cool:["ウールスラックス","センタープレスパンツ"], cold:["厚手ウールパンツ","起毛スラックス"] },
+        date:   { hot:["アンクルパンツ","リネンパンツ"], warm:["きれいめデニム","テーパードパンツ"], cool:["スラックス","コーデュロイパンツ"], cold:["ウールパンツ","厚手スラックス"] },
+        friends:{ hot:["デニムショーツ","イージーショーツ"], warm:["ワイドデニム","カーゴパンツ"], cool:["スウェットパンツ","ワイドパンツ"], cold:["裏起毛パンツ","厚手カーゴ"] },
+        sport:  { hot:["ランニングショーツ","ジャージハーフ"], warm:["ジャージパンツ","ジョガーパンツ"], cool:["トラックパンツ","裏毛パンツ"], cold:["裏起毛ジョガー","厚手スウェットパンツ"] },
+        relax:  { hot:["ルームショーツ","短パン"], warm:["スウェットパンツ","イージーパンツ"], cool:["裏毛パンツ","ワイドスウェット"], cold:["裏起毛パンツ","厚手スウェット"] },
+        outing: { hot:["ショートパンツ","リネンパンツ"], warm:["デニム","カーゴパンツ"], cool:["ストレッチパンツ","チノパン"], cold:["厚手パンツ","起毛パンツ"] },
+      },
+      shoes: {
+        casual:["白スニーカー","ローカットスニーカー","ローファー"],
+        smart:["レザースニーカー","ローファー","プレーントゥ"],
+        biz:["革靴(ストレートチップ)","プレーントゥ","ローファー"],
+        date:["きれいめスニーカー","ローファー","レザーシューズ"],
+        friends:["スニーカー","サンダル","ハイカット"],
+        sport:["ランニングシューズ","トレーニングシューズ"],
+        relax:["サンダル","スリッポン","ルームシューズ"],
+        outing:["スニーカー","トレッキングシューズ","スリッポン"],
+      },
+      acc: {
+        casual:["キャップ","腕時計","トートバッグ"],
+        smart:["レザーベルト","腕時計","ミニショルダー"],
+        biz:["ビジネスバッグ","腕時計","ネクタイ"],
+        date:["腕時計","レザーブレス","ミニバッグ"],
+        friends:["キャップ","サコッシュ","サングラス"],
+        sport:["スポーツウォッチ","キャップ","リストバンド"],
+        relax:["キャップ","エコバッグ","サンダル用ソックス"],
+        outing:["バックパック","キャップ","サングラス"],
+      },
+      outer: {
+        hot:["(アウターなしでOK)","シャツ羽織り"],
+        warm:["デニムジャケット","コーチジャケット","カーディガン"],
+        cool:["ジャケット","マウンテンパーカー","ブルゾン"],
+        cold:["ウールコート","ダウンジャケット","チェスターコート"],
+      },
+    },
+  };
+
+  const PALETTES = [
+    { name:"モノトーン",       tags:["mono"],           colors:["#3a3a3a","#8b8b8b","#e9e9e9"] },
+    { name:"アースカラー",     tags:["warm","natural"], colors:["#6b4f3a","#b08968","#ede0d4"] },
+    { name:"ペールトーン",     tags:["natural"],        colors:["#e79f98","#e8c1a0","#cfe0e8"] },
+    { name:"ネイビー基調",     tags:["cool"],           colors:["#22314f","#5b7db1","#dbe4f0"] },
+    { name:"くすみカラー",     tags:["natural"],        colors:["#7c8b6d","#c8b6a6","#a3958a"] },
+    { name:"ビビッド差し色",   tags:["warm"],           colors:["#2b2b2b","#e63946","#e9e4d8"] },
+    { name:"ワントーンベージュ", tags:["warm","natural"], colors:["#b7a488","#e6dccb","#a08e78"] },
+    { name:"ボルドー×グレー",   tags:["warm"],           colors:["#5e2129","#9c9a97","#e2ded9"] },
+    { name:"フレッシュグリーン", tags:["natural"],        colors:["#3a5a40","#a3b18a","#e9ecd8"] },
+    { name:"スモーキーブルー",  tags:["cool"],           colors:["#3f5f6f","#9bb8c4","#e4ecef"] },
+  ];
+
+  const CATS = [
+    { key:"top",    cat:"トップス", emoji:"👕", src:(g,s,t)=>DATA[g].tops[s][t] },
+    { key:"bottom", cat:"ボトムス", emoji:"👖", src:(g,s,t)=>DATA[g].bottoms[s][t] },
+    { key:"outer",  cat:"アウター", emoji:"🧥", src:(g,s,t)=>DATA[g].outer[t] },
+    { key:"shoes",  cat:"シューズ", emoji:"👟", src:(g,s,t)=>DATA[g].shoes[s] },
+    { key:"acc",    cat:"小物",     emoji:"👜", src:(g,s,t)=>DATA[g].acc[s] },
+  ];
+
+  const FAV_KEY = "coord_favs_v4";
+  const state = { gender:"ladies", scene:"casual", sub:0, taste:"any", temp:"warm", season:"spring", time:"noon", color:"any", height:165, weight:58, body:"std", age:"a3", current:null };
+  const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  // 時間帯・季節・年齢のカラー傾向をまとめる
+  function currentBias() {
+    const set = new Set();
+    [TIMES[state.time].bias, SEASONS[state.season].bias, AGES[state.age].bias, TASTES[state.taste].bias]
+      .forEach(arr => arr.forEach(t => set.add(t)));
+    return set;
+  }
+
+  function pickPalette() {
+    let pool = PALETTES;
+    if (state.color !== "any") {
+      const f = PALETTES.filter(p => p.tags.includes(state.color));
+      if (f.length) pool = f;
+    } else {
+      const bias = currentBias();
+      if (bias.size) {
+        const f = PALETTES.filter(p => p.tags.some(t => bias.has(t)));
+        if (f.length) pool = f;
+      }
+    }
+    return pick(pool);
+  }
+
+  function buildChips(containerId, dict, key, onSelect) {
+    const box = document.getElementById(containerId);
+    box.innerHTML = "";
+    Object.entries(dict).forEach(([id, v]) => {
+      const b = document.createElement("button");
+      b.className = "chip" + (state[key] === id ? " active" : "");
+      b.textContent = v.label;
+      b.onclick = () => {
+        state[key] = id;
+        box.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+        b.classList.add("active");
+        if (onSelect) onSelect(id);
+      };
+      box.appendChild(b);
+    });
+  }
+
+  // サブシーン（選んだシーンに応じて動的に生成）
+  function buildSubChips() {
+    const box = document.getElementById("sub-chips");
+    const list = SUBSCENES[state.scene] || [];
+    if (state.sub >= list.length) state.sub = 0;
+    box.innerHTML = "";
+    list.forEach((sc, idx) => {
+      const b = document.createElement("button");
+      b.className = "chip" + (state.sub === idx ? " active" : "");
+      b.textContent = sc.label;
+      b.onclick = () => {
+        state.sub = idx;
+        box.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+        b.classList.add("active");
+      };
+      box.appendChild(b);
+    });
+  }
+
+  function heightAdvice(gender, h) {
+    const low = gender === "ladies" ? 156 : 166;
+    const high = gender === "ladies" ? 168 : 178;
+    if (h < low)  return "ハイウエストやトップスインで重心を上げると、脚長効果でスタイルアップ。";
+    if (h >= high) return "ロング丈やゆったりシルエットも、きれいに着こなせる高さです。";
+    return "ウエストマークやトップスインで、メリハリを付けるとバランス◎。";
+  }
+
+  // 系統(テイスト)を選ぶと、その系統の“全身一式”から引く。
+  // トレンドMIX(any)はシーン別・温度別のベースから引く。
+  function pickItemName(key, gender, base, temp, taste) {
+    const sig = TASTE_SIG[taste];
+    if (sig) {
+      const band = (temp === "hot" || temp === "warm") ? "warm" : "cool";
+      if (key === "acc")    return pick(sig.acc);
+      if (key === "shoes")  return pick(sig.shoes[gender]);
+      if (key === "outer")  return pick(sig[band].outer);
+      if (key === "top")    return pick(sig[band].top[gender]);
+      if (key === "bottom") return pick(sig[band].bottom[gender]);
+    }
+    const c = CATS.find(x => x.key === key);
+    return pick(c.src(gender, base, temp));
+  }
+
+  function suggest() {
+    const { gender, scene, temp, taste } = state;
+    const sc = SUBSCENES[scene][state.sub];
+    const base = sc.base;                       // アイテムを引く元シーン
+    const items = CATS.map(c => ({ key:c.key, cat:c.cat, emoji:c.emoji, name: pickItemName(c.key, gender, base, temp, taste) }));
+    state.current = {
+      gender, scene, temp, base, taste,
+      sub: state.sub, subLabel: sc.label, subTip: sc.tip,
+      season: state.season, time: state.time, age: state.age,
+      height: state.height, weight: state.weight, body: state.body,
+      items,
+      palette: pickPalette(),
+    };
+    render();
+    pushHistory(state.current);
+    document.getElementById("go").textContent = "もう一回シャッフル 🔁";
+  }
+
+  function rerollItem(key) {
+    const cur = state.current;
+    const it = cur.items.find(x => x.key === key);
+    if (cur.source === "closet") {
+      const pool = loadCloset().filter(x => x.cat === key);
+      if (pool.length) { const n = pick(pool); it.name = n.name; it.id = n.id; it.img = n.img; }
+      render();
+      return;
+    }
+    it.name = pickItemName(key, cur.gender, cur.base, cur.temp, cur.taste);
+    render();
+  }
+
+  // ---- コーデ全身イラスト (SVG) ----
+  function drawFigure(o) {
+    const cx = 100;
+    const ag = AGES[o.age];
+    const hs = clamp((o.height - 140) / 60, 0, 1);      // 0..1
+    const scaleY = (0.9 + hs * 0.35) * (0.9 + ag.fig * 0.1);
+    const legBoost = 0.92 + hs * 0.16;
+    const bmiStd = 22 * Math.pow(o.height / 100, 2);
+    const wAdj = clamp((o.weight - bmiStd) / bmiStd, -0.2, 0.4);
+    const w = BODY[o.body].width * (o.gender === "ladies" ? 0.97 : 1.06) * (1 + wAdj * 0.32) * (0.93 + ag.fig * 0.07);
+
+    const headR = 15 * ag.head;
+    const cyHead = 12 + headR;
+    const neckY = cyHead + headR - 1;
+    const shoulderY = neckY + 6;
+    const shoulderHalf = (o.gender === "ladies" ? 22 : 26) * w;
+    const waistY = shoulderY + 44 * scaleY;
+    const waistHalf = (o.gender === "ladies" ? 15 : 19) * w;
+    const hipY = shoulderY + 74 * scaleY;
+    const hipHalf = (o.gender === "ladies" ? 23 : 20) * w;
+    const legH = 116 * scaleY * legBoost;
+    const ankleY = hipY + legH;
+    const vbH = Math.round(ankleY + 40);
+
+    const topItem = o.items.find(i => i.key === "top").name;
+    const bottomItem = o.items.find(i => i.key === "bottom").name;
+    const outerItem = o.items.find(i => i.key === "outer").name;
+    const shoeItem = o.items.find(i => i.key === "shoes").name;
+    const accItem = o.items.find(i => i.key === "acc").name;
+    const isDress = /ワンピ/.test(bottomItem) || /ワンピ/.test(topItem);
+    const isSkirt = /スカート/.test(bottomItem) || isDress;
+    const isLong = /ロング|マキシ/.test(bottomItem);
+    const hasOuter = !!outerItem && !/なし|OK|羽織/.test(outerItem);
+    const hasBag = /バッグ|トート|ショルダー|サコッシュ|リュック|バックパック|クラッチ/.test(accItem);
+    const heel = o.gender === "ladies" && /パンプス|ヒール/.test(shoeItem);
+    const boots = /ブーツ/.test(shoeItem);
+    const sandal = /サンダル/.test(shoeItem);
+
+    const pal = o.palette.colors;
+    const bottomColor = pal[1];
+    const outerColor = pal[0];
+    const topColor = hasOuter ? pal[2] : pal[0];
+    const skin = "#e6bd91", hair = "#3b302b", shoe = "#33302c";
+    const bagColor = outerColor;
+
+    const f = n => n.toFixed(1);
+    const rrect = (x, y, wd, ht, fill, r=6) =>
+      `<rect x="${f(x)}" y="${f(y)}" width="${f(wd)}" height="${f(ht)}" rx="${r}" fill="${fill}"/>`;
+
+    let s = "";
+    // 影
+    s += `<ellipse cx="${cx}" cy="${f(ankleY + 20)}" rx="${f(shoulderHalf + 22)}" ry="9" fill="rgba(0,0,0,0.10)"/>`;
+
+    // ---- 脚 ----
+    const legTopHalf = hipHalf - 2;
+    const ankleHalf = Math.max(6, (o.gender === "ladies" ? 6.5 : 8) * w);
+    const inseamY = hipY + 6;
+    const skirtHemY = hipY + (isDress ? 118 : (isLong ? 104 : 66)) * scaleY;
+    const footLX = isSkirt ? cx - 5 : cx - ankleHalf / 2 - 1;
+    const footRX = isSkirt ? cx + 5 : cx + ankleHalf / 2 + 1;
+
+    if (isSkirt) {
+      const calfTop = Math.min(skirtHemY, ankleY - 6);
+      s += rrect(cx - 8, calfTop, 6.5, ankleY - calfTop, skin, 3);
+      s += rrect(cx + 1.5, calfTop, 6.5, ankleY - calfTop, skin, 3);
+    } else {
+      s += `<path d="M ${f(cx-hipHalf)} ${f(hipY-2)} L ${f(cx+hipHalf)} ${f(hipY-2)} L ${f(cx+legTopHalf)} ${f(inseamY+4)} L ${f(cx-legTopHalf)} ${f(inseamY+4)} Z" fill="${bottomColor}"/>`;
+      s += `<path d="M ${f(cx-legTopHalf)} ${f(inseamY)} L ${f(cx-1)} ${f(inseamY)} L ${f(cx-1)} ${f(ankleY)} L ${f(cx-ankleHalf-1)} ${f(ankleY)} Z" fill="${bottomColor}"/>`;
+      s += `<path d="M ${f(cx+legTopHalf)} ${f(inseamY)} L ${f(cx+1)} ${f(inseamY)} L ${f(cx+1)} ${f(ankleY)} L ${f(cx+ankleHalf+1)} ${f(ankleY)} Z" fill="${bottomColor}"/>`;
+    }
+
+    // ---- 靴 ----
+    const shoeSvg = (x) => {
+      if (boots) return `<rect x="${f(x-7)}" y="${f(ankleY-24)}" width="14" height="30" rx="4" fill="${shoe}"/><ellipse cx="${f(x+2)}" cy="${f(ankleY+5)}" rx="11" ry="5" fill="${shoe}"/>`;
+      if (heel)  return `<ellipse cx="${f(x+2)}" cy="${f(ankleY+4)}" rx="11" ry="4.5" fill="${shoe}"/><rect x="${f(x-7)}" y="${f(ankleY+4)}" width="3" height="9" rx="1" fill="${shoe}"/>`;
+      if (sandal) return `<ellipse cx="${f(x)}" cy="${f(ankleY+6)}" rx="11" ry="3.5" fill="${shoe}"/><line x1="${f(x-6)}" y1="${f(ankleY+2)}" x2="${f(x+6)}" y2="${f(ankleY+2)}" stroke="${shoe}" stroke-width="2"/>`;
+      return `<ellipse cx="${f(x)}" cy="${f(ankleY+5)}" rx="12" ry="6" fill="${shoe}"/><path d="M ${f(x-8)} ${f(ankleY+4)} Q ${f(x)} ${f(ankleY+1)} ${f(x+8)} ${f(ankleY+4)}" stroke="rgba(255,255,255,0.22)" stroke-width="1" fill="none"/>`;
+    };
+    s += shoeSvg(footLX);
+    s += shoeSvg(footRX);
+
+    // ---- スカート / ワンピース ----
+    if (isSkirt) {
+      const hemHalf = isDress ? hipHalf + 24 : hipHalf + 20;
+      const topSkirtY = isDress ? shoulderY : hipY - 2;
+      const topSkirtHalf = isDress ? shoulderHalf : hipHalf;
+      const skColor = isDress ? topColor : bottomColor;
+      const midY = (topSkirtY + skirtHemY) / 2;
+      s += `<path d="M ${f(cx-topSkirtHalf)} ${f(topSkirtY)} C ${f(cx-topSkirtHalf-2)} ${f(midY)} ${f(cx-hemHalf)} ${f(skirtHemY-8)} ${f(cx-hemHalf)} ${f(skirtHemY)} Q ${f(cx)} ${f(skirtHemY+10)} ${f(cx+hemHalf)} ${f(skirtHemY)} C ${f(cx+hemHalf)} ${f(skirtHemY-8)} ${f(cx+topSkirtHalf+2)} ${f(midY)} ${f(cx+topSkirtHalf)} ${f(topSkirtY)} Z" fill="${skColor}"/>`;
+    }
+
+    // ---- コート（トップの背面）----
+    if (hasOuter) {
+      const coatHemY = hipY + (/コート|トレンチ|チェスター|ロング/.test(outerItem) ? 60 : 30) * scaleY;
+      s += `<path d="M ${f(cx-shoulderHalf-5)} ${f(shoulderY-2)} Q ${f(cx-waistHalf-8)} ${f(waistY)} ${f(cx-hipHalf-9)} ${f(coatHemY)} L ${f(cx+hipHalf+9)} ${f(coatHemY)} Q ${f(cx+waistHalf+8)} ${f(waistY)} ${f(cx+shoulderHalf+5)} ${f(shoulderY-2)} Z" fill="${outerColor}"/>`;
+    }
+
+    // ---- 腕 ----
+    const armW = Math.max(6, 6.5 * w);
+    const armColor = hasOuter ? outerColor : topColor;
+    const armTopY = shoulderY + 1;
+    const wristY = hipY - 4;
+    s += rrect(cx - shoulderHalf - armW + 3, armTopY, armW, wristY - armTopY, armColor, 5);
+    s += rrect(cx + shoulderHalf - 3, armTopY, armW, wristY - armTopY, armColor, 5);
+    s += `<circle cx="${f(cx - shoulderHalf - armW/2 + 3)}" cy="${f(wristY + 3)}" r="4.5" fill="${skin}"/>`;
+    s += `<circle cx="${f(cx + shoulderHalf + armW/2 - 3)}" cy="${f(wristY + 3)}" r="4.5" fill="${skin}"/>`;
+
+    // ---- トップス（胴・くびれ入り）----
+    if (!isDress) {
+      s += `<path d="M ${f(cx-shoulderHalf)} ${f(shoulderY)} C ${f(cx-shoulderHalf)} ${f(shoulderY+10)} ${f(cx-waistHalf-2)} ${f(waistY-8)} ${f(cx-waistHalf)} ${f(waistY)} C ${f(cx-waistHalf)} ${f(waistY+8)} ${f(cx-hipHalf)} ${f(hipY-8)} ${f(cx-hipHalf)} ${f(hipY)} L ${f(cx+hipHalf)} ${f(hipY)} C ${f(cx+hipHalf)} ${f(hipY-8)} ${f(cx+waistHalf)} ${f(waistY+8)} ${f(cx+waistHalf)} ${f(waistY)} C ${f(cx+waistHalf+2)} ${f(waistY-8)} ${f(cx+shoulderHalf)} ${f(shoulderY+10)} ${f(cx+shoulderHalf)} ${f(shoulderY)} Z" fill="${topColor}"/>`;
+      s += `<path d="M ${f(cx-7)} ${f(shoulderY)} Q ${f(cx)} ${f(shoulderY+9)} ${f(cx+7)} ${f(shoulderY)} Z" fill="${skin}"/>`;
+    }
+
+    // ---- コートの襟・前立て ----
+    if (hasOuter) {
+      s += `<path d="M ${f(cx-2)} ${f(shoulderY-1)} L ${f(cx-13)} ${f(shoulderY+5)} L ${f(cx-3)} ${f(shoulderY+20)} Z" fill="${outerColor}" stroke="rgba(0,0,0,0.12)" stroke-width="0.6"/>`;
+      s += `<path d="M ${f(cx+2)} ${f(shoulderY-1)} L ${f(cx+13)} ${f(shoulderY+5)} L ${f(cx+3)} ${f(shoulderY+20)} Z" fill="${outerColor}" stroke="rgba(0,0,0,0.12)" stroke-width="0.6"/>`;
+      s += `<line x1="${cx}" y1="${f(shoulderY+18)}" x2="${cx}" y2="${f(hipY + 20*scaleY)}" stroke="rgba(0,0,0,0.16)" stroke-width="1.4"/>`;
+    }
+
+    // ---- バッグ ----
+    if (hasBag) {
+      const bx = cx + shoulderHalf + armW / 2 - 1;
+      const by = hipY - 8;
+      s += `<line x1="${f(cx+shoulderHalf-2)}" y1="${f(shoulderY+4)}" x2="${f(bx)}" y2="${f(by)}" stroke="${bagColor}" stroke-width="2.2"/>`;
+      s += rrect(bx - 8, by, 16, 13, bagColor, 3);
+    }
+
+    // ---- 首・頭・髪・顔 ----
+    s += rrect(cx - 4.5, neckY - 5, 9, 10, skin, 3);
+    if (o.gender === "ladies") {
+      s += `<path d="M ${f(cx-headR-2)} ${f(cyHead-2)} Q ${f(cx-headR-4)} ${f(cyHead+headR+18)} ${f(cx-headR+3)} ${f(shoulderY+6)} L ${f(cx-headR+7)} ${f(shoulderY+3)} Q ${f(cx-headR+2)} ${f(cyHead+headR)} ${f(cx-headR+2)} ${f(cyHead)} Z" fill="${hair}"/>`;
+      s += `<path d="M ${f(cx+headR+2)} ${f(cyHead-2)} Q ${f(cx+headR+4)} ${f(cyHead+headR+18)} ${f(cx+headR-3)} ${f(shoulderY+6)} L ${f(cx+headR-7)} ${f(shoulderY+3)} Q ${f(cx+headR-2)} ${f(cyHead+headR)} ${f(cx+headR-2)} ${f(cyHead)} Z" fill="${hair}"/>`;
+    }
+    s += `<circle cx="${cx}" cy="${f(cyHead)}" r="${f(headR)}" fill="${skin}"/>`;
+    if (o.gender === "ladies") {
+      s += `<path d="M ${f(cx-headR-1)} ${f(cyHead+3)} Q ${f(cx-headR)} ${f(cyHead-headR-4)} ${f(cx)} ${f(cyHead-headR-3)} Q ${f(cx+headR)} ${f(cyHead-headR-4)} ${f(cx+headR+1)} ${f(cyHead+3)} Q ${f(cx+headR-4)} ${f(cyHead-headR+4)} ${f(cx+3)} ${f(cyHead-headR+3)} Q ${f(cx-2)} ${f(cyHead-headR+2)} ${f(cx-headR+3)} ${f(cyHead-1)} Z" fill="${hair}"/>`;
+    } else {
+      s += `<path d="M ${f(cx-headR)} ${f(cyHead+1)} Q ${f(cx-headR+1)} ${f(cyHead-headR-5)} ${f(cx)} ${f(cyHead-headR-4)} Q ${f(cx+headR-1)} ${f(cyHead-headR-5)} ${f(cx+headR)} ${f(cyHead+1)} Q ${f(cx+headR-3)} ${f(cyHead-headR+3)} ${f(cx)} ${f(cyHead-headR+2)} Q ${f(cx-headR+3)} ${f(cyHead-headR+3)} ${f(cx-headR)} ${f(cyHead+1)} Z" fill="${hair}"/>`;
+    }
+    const eyeY = cyHead + headR * 0.18;
+    const eyeDx = headR * 0.36;
+    s += `<circle cx="${f(cx-eyeDx)}" cy="${f(eyeY)}" r="1.5" fill="#3b302b"/>`;
+    s += `<circle cx="${f(cx+eyeDx)}" cy="${f(eyeY)}" r="1.5" fill="#3b302b"/>`;
+    s += `<line x1="${f(cx-eyeDx-2.4)}" y1="${f(eyeY-3.6)}" x2="${f(cx-eyeDx+2)}" y2="${f(eyeY-3.8)}" stroke="#3b302b" stroke-width="0.8" stroke-linecap="round"/>`;
+    s += `<line x1="${f(cx+eyeDx-2)}" y1="${f(eyeY-3.8)}" x2="${f(cx+eyeDx+2.4)}" y2="${f(eyeY-3.6)}" stroke="#3b302b" stroke-width="0.8" stroke-linecap="round"/>`;
+    s += `<path d="M ${f(cx-3)} ${f(eyeY+5)} Q ${f(cx)} ${f(eyeY+8)} ${f(cx+3)} ${f(eyeY+5)}" stroke="#b5766a" stroke-width="1" fill="none" stroke-linecap="round"/>`;
+    if (o.gender === "ladies" || o.age === "a1" || o.age === "a2") {
+      s += `<circle cx="${f(cx-eyeDx-2.5)}" cy="${f(eyeY+3.2)}" r="2.2" fill="rgba(230,120,110,0.22)"/>`;
+      s += `<circle cx="${f(cx+eyeDx+2.5)}" cy="${f(eyeY+3.2)}" r="2.2" fill="rgba(230,120,110,0.22)"/>`;
+    }
+
+    const figPx = Math.round((235 + hs * 115) * (0.9 + ag.fig * 0.1));
+    return `<svg viewBox="0 0 200 ${vbH}" style="height:${figPx}px;width:auto;max-width:100%" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
+  }
+
+  // ---- アイテム別アイコン（服の形＋色で一目で分かる）----
+  const IST = "rgba(0,0,0,0.34)";
+  function iconType(key, name) {
+    if (key === "top") {
+      if (/ワンピ/.test(name)) return "dress";
+      if (/ニット|セーター|タートル/.test(name)) return "knit";
+      if (/パーカー|スウェット|フーディ|ジップ|トレーナー/.test(name)) return "hoodie";
+      if (/ブラウス|シャツ/.test(name)) return "blouse";
+      return "tshirt";
+    }
+    if (key === "bottom") {
+      if (/ワンピ/.test(name)) return "dress";
+      if (/スカート/.test(name)) return "skirt";
+      if (/ショー|ハーフ|短パン/.test(name)) return "shorts";
+      return "pants";
+    }
+    if (key === "outer") {
+      if (!name || /なし|OK|羽織/.test(name)) return "none";
+      if (/コート|トレンチ|チェスター|ロング/.test(name)) return "coat";
+      if (/カーデ|カーディガン/.test(name)) return "cardigan";
+      return "jacket";
+    }
+    if (key === "shoes") {
+      if (/ブーツ/.test(name)) return "boots";
+      if (/パンプス|ヒール/.test(name)) return "heel";
+      if (/サンダル/.test(name)) return "sandal";
+      return "sneaker";
+    }
+    if (/バッグ|トート|ショルダー|サコッシュ|リュック|バックパック|クラッチ|ハンドバッグ|バッグ|カゴ/.test(name)) return "bag";
+    if (/キャップ|ハット|帽/.test(name)) return "cap";
+    if (/サングラス|メガネ|眼鏡/.test(name)) return "glasses";
+    return "jewel";
+  }
+
+  const ICONS = {
+    tshirt: f => `<path d="M23 15 L41 15 L52 24 L45.5 31 L41 27.5 L41 50 Q41 51.5 39.5 51.5 L24.5 51.5 Q23 51.5 23 50 L23 27.5 L18.5 31 L12 24 Z" fill="${f}" stroke="${IST}" stroke-width="2.4" stroke-linejoin="round"/><path d="M27 15 Q32 20 37 15" fill="none" stroke="${IST}" stroke-width="2"/>`,
+    knit: f => `<path d="M22 16 L42 16 L53 22 L49 43 L43 43 L43 51 Q43 52.5 41.5 52.5 L22.5 52.5 Q21 52.5 21 51 L21 43 L15 43 L11 22 Z" fill="${f}" stroke="${IST}" stroke-width="2.4" stroke-linejoin="round"/><path d="M27 16 L37 16 L35 20 L29 20 Z" fill="${f}" stroke="${IST}" stroke-width="1.9" stroke-linejoin="round"/>`,
+    hoodie: f => `<path d="M22 21 L42 21 L52 27 L47 34 L43 31 L43 52 L21 52 L21 31 L17 34 L12 27 Z" fill="${f}" stroke="${IST}" stroke-width="2.4" stroke-linejoin="round"/><path d="M25 21 Q32 13 39 21 Z" fill="${f}" stroke="${IST}" stroke-width="2.1" stroke-linejoin="round"/><path d="M28 39 L36 39 L36 46 L28 46 Z" fill="none" stroke="${IST}" stroke-width="1.7"/>`,
+    blouse: f => `<path d="M23 16 L41 16 L52 24 L45.5 31 L41 27.5 L41 50 L23 50 L23 27.5 L18.5 31 L12 24 Z" fill="${f}" stroke="${IST}" stroke-width="2.4" stroke-linejoin="round"/><path d="M28 16 L32 22 L36 16" fill="none" stroke="${IST}" stroke-width="2"/><line x1="32" y1="22" x2="32" y2="49" stroke="${IST}" stroke-width="1.3"/><circle cx="32" cy="31" r="1" fill="${IST}"/><circle cx="32" cy="38" r="1" fill="${IST}"/><circle cx="32" cy="45" r="1" fill="${IST}"/>`,
+    dress: f => `<path d="M25 15 L39 15 L43 22 L39 29 L48 53 L16 53 L25 29 L21 22 Z" fill="${f}" stroke="${IST}" stroke-width="2.4" stroke-linejoin="round"/><path d="M28 15 Q32 19 36 15" fill="none" stroke="${IST}" stroke-width="2"/>`,
+    skirt: f => `<path d="M19 20 L45 20 L53 51 L11 51 Z" fill="${f}" stroke="${IST}" stroke-width="2.4" stroke-linejoin="round"/><path d="M19 20 L45 20 L45 25 L19 25 Z" fill="${f}" stroke="${IST}" stroke-width="1.6" stroke-linejoin="round"/><path d="M28 25 L25 51 M36 25 L39 51" stroke="${IST}" stroke-width="1.1" fill="none"/>`,
+    shorts: f => `<path d="M17 19 L47 19 L46 42 L36 42 L33 27 L31 27 L28 42 L18 42 Z" fill="${f}" stroke="${IST}" stroke-width="2.4" stroke-linejoin="round"/><line x1="17" y1="24" x2="47" y2="24" stroke="${IST}" stroke-width="1.3"/>`,
+    pants: f => `<path d="M19 16 L45 16 L44 53 L35 53 L33 30 L31 30 L29 53 L20 53 Z" fill="${f}" stroke="${IST}" stroke-width="2.4" stroke-linejoin="round"/><line x1="19" y1="21" x2="45" y2="21" stroke="${IST}" stroke-width="1.3"/>`,
+    coat: f => `<path d="M22 15 L42 15 L52 24 L46 31 L43 28 L43 54 L21 54 L21 28 L18 31 L12 24 Z" fill="${f}" stroke="${IST}" stroke-width="2.4" stroke-linejoin="round"/><path d="M32 15 L26 21 L30 40 M32 15 L38 21 L34 40" fill="none" stroke="${IST}" stroke-width="1.9"/><line x1="32" y1="21" x2="32" y2="52" stroke="${IST}" stroke-width="1.3"/><circle cx="32" cy="35" r="1.1" fill="${IST}"/><circle cx="32" cy="43" r="1.1" fill="${IST}"/>`,
+    jacket: f => `<path d="M22 16 L42 16 L51 24 L45.5 30 L42 27 L42 47 L22 47 L22 27 L18.5 30 L13 24 Z" fill="${f}" stroke="${IST}" stroke-width="2.4" stroke-linejoin="round"/><path d="M32 16 L27 21 L31 34 M32 16 L37 21 L33 34" fill="none" stroke="${IST}" stroke-width="1.9"/>`,
+    cardigan: f => `<path d="M42 16 L52 22 L48 43 L43 43 L43 52 L34 52 L34 22 Z" fill="${f}" stroke="${IST}" stroke-width="2.2" stroke-linejoin="round"/><path d="M22 16 L12 22 L16 43 L21 43 L21 52 L30 52 L30 22 Z" fill="${f}" stroke="${IST}" stroke-width="2.2" stroke-linejoin="round"/><path d="M22 16 L42 16" stroke="${IST}" stroke-width="2.2" stroke-linecap="round"/>`,
+    none: () => `<circle cx="32" cy="32" r="15" fill="none" stroke="${IST}" stroke-width="2" stroke-dasharray="4 5"/><line x1="24" y1="40" x2="40" y2="24" stroke="${IST}" stroke-width="2"/>`,
+    sneaker: f => `<path d="M10 42 L13 33 L24 33 L38 39 L52 41 Q57 41 57 45.5 L57 47 Q57 48.5 55.5 48.5 L11 48.5 Q10 48.5 10 47 Z" fill="${f}" stroke="${IST}" stroke-width="2.2" stroke-linejoin="round"/><line x1="11" y1="46" x2="56" y2="46" stroke="${IST}" stroke-width="1.5"/><path d="M24 35 L27 40 M29 36 L32 41 M34 37 L37 42" stroke="${IST}" stroke-width="1.3"/>`,
+    boots: f => `<path d="M24 12 L33 12 L33 40 L50 40 Q54 40 54 44 L54 48 L22 48 Q20 48 20 46 L20 16 Q20 12 24 12 Z" fill="${f}" stroke="${IST}" stroke-width="2.2" stroke-linejoin="round"/><line x1="20" y1="44" x2="54" y2="44" stroke="${IST}" stroke-width="1.5"/>`,
+    heel: f => `<path d="M14 38 Q30 33 48 40 L50 44 L46 44 L44 52 L41 44 L16 44 Q14 44 14 42 Z" fill="${f}" stroke="${IST}" stroke-width="2.2" stroke-linejoin="round"/>`,
+    sandal: f => `<ellipse cx="32" cy="45" rx="20" ry="5" fill="${f}" stroke="${IST}" stroke-width="2"/><path d="M20 43 Q32 31 44 43" fill="none" stroke="${IST}" stroke-width="2.3"/><path d="M28 42 L32 35 L36 42" fill="none" stroke="${IST}" stroke-width="2.1"/>`,
+    bag: f => `<path d="M18 26 L46 26 L48 51 L16 51 Z" fill="${f}" stroke="${IST}" stroke-width="2.4" stroke-linejoin="round"/><path d="M24 26 Q24 15 32 15 Q40 15 40 26" fill="none" stroke="${IST}" stroke-width="2.5"/>`,
+    cap: f => `<path d="M15 38 Q16 24 32 24 Q48 24 49 38 Z" fill="${f}" stroke="${IST}" stroke-width="2.4" stroke-linejoin="round"/><path d="M49 38 L59 41 L49 41 Z" fill="${f}" stroke="${IST}" stroke-width="2" stroke-linejoin="round"/>`,
+    glasses: f => `<circle cx="24" cy="34" r="9" fill="${f}" stroke="${IST}" stroke-width="2.3"/><circle cx="42" cy="34" r="9" fill="${f}" stroke="${IST}" stroke-width="2.3"/><line x1="31" y1="32" x2="35" y2="32" stroke="${IST}" stroke-width="2.3"/><line x1="15" y1="31" x2="10" y2="27" stroke="${IST}" stroke-width="2.3"/><line x1="51" y1="31" x2="56" y2="27" stroke="${IST}" stroke-width="2.3"/>`,
+    jewel: f => `<path d="M20 22 Q32 40 44 22" fill="none" stroke="${IST}" stroke-width="2.3"/><circle cx="32" cy="37" r="3.4" fill="${f}" stroke="${IST}" stroke-width="1.9"/>`,
+  };
+
+  function garmentIcon(type, fill, px) {
+    const inner = (ICONS[type] || ICONS.tshirt)(fill);
+    return `<svg viewBox="0 0 64 64" width="${px}" height="${px}" xmlns="http://www.w3.org/2000/svg" style="display:block">${inner}</svg>`;
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, c =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  function itemColor(key, cur) {
+    if (!cur.palette) return "#9a94a0";
+    const pal = cur.palette.colors;
+    const outerItem = cur.items.find(i => i.key === "outer");
+    const outer = outerItem ? outerItem.name : "";
+    const hasOuter = !!outer && !/なし|OK|羽織/.test(outer);
+    if (key === "top")    return hasOuter ? pal[2] : pal[0];
+    if (key === "bottom") return pal[1];
+    if (key === "outer")  return pal[0];
+    if (key === "shoes")  return "#6a6470";
+    return pal[1];
+  }
+
+  function buildFlatlay(cur) {
+    return cur.items.map(i => {
+      const inner = i.img
+        ? `<div class="flat-icon photo"><img class="flat-photo" src="${i.img}" alt="" /></div>`
+        : `<div class="flat-icon">${garmentIcon(iconType(i.key, i.name), itemColor(i.key, cur), 54)}</div>`;
+      return `<div class="flat-item">${inner}<div class="flat-cat">${i.cat}</div><div class="flat-name">${escapeHtml(i.name)}</div></div>`;
+    }).join("");
+  }
+
+  function render() {
+    const cur = state.current;
+    const closet = cur.source === "closet";
+    const el = document.getElementById("result");
+    el.classList.remove("empty");
+    const isSaved = isFavSaved(cur);
+
+    const title = closet ? "手持ちの服のコーデ 👕" : "今日のおすすめコーデ";
+    const styleLabel = closet ? "手持ちコーデ" : TASTES[cur.taste].label;
+    const comment = closet ? "登録した手持ちの服から組んだコーデです。" : SEASONS[cur.season].tip;
+
+    const figureHtml = closet ? "" : `
+      <div class="figure-wrap">
+        ${drawFigure(cur)}
+        <span class="figure-cap">👤 着用イメージ ・ ${AGES[cur.age].label} ・ 身長${cur.height}cm ・ ${BODY[cur.body].label}</span>
+      </div>`;
+
+    const tasteAdvice = closet ? "" : `<p class="advice-line">💁 <b>${TASTES[cur.taste].label}</b>の着こなし：${TASTES[cur.taste].note}</p>`;
+
+    const paletteHtml = cur.palette ? `
+      <div class="palette">
+        <div class="palette-label">おすすめカラーパレット</div>
+        <div class="swatches">
+          ${cur.palette.colors.map(c => `<span class="swatch" style="background:${c}"></span>`).join("")}
+          <span class="palette-name">${cur.palette.name}</span>
+        </div>
+      </div>` : "";
+
+    const promptBtn = closet ? "" : `<button class="action" id="prompt-btn" style="width:100%;margin-top:10px">🖼️ AI画像生成用プロンプトをコピー</button>`;
+    const footNote = closet
+      ? `<p class="sources-note">※ 手持ちの服（端末内に保存された写真）から組み合わせています。「👕 手持ちの服からもう一回」で組み直せます。</p>`
+      : `<p class="sources-note">※ 提案は「SNSで人気の系統・定番の着こなし」をもとにClaudeが構成したものです（実在する特定インフルエンサーの投稿ではありません）。各アイテムの🛒で個別に検索・購入できます。</p>`;
+
+    el.innerHTML = `
+      <div class="result-head">
+        <p class="result-title">${title}</p>
+        <span class="result-scene">${GENDERS[cur.gender].label} ・ ${styleLabel} ・ ${SCENES[cur.scene].label}・${cur.subLabel}<br>${SEASONS[cur.season].label} ・ ${TIMES[cur.time].label} ・ ${TEMPS[cur.temp].label}日</span>
+      </div>
+      <p class="comment">${comment}</p>
+      <div class="flat-title palette-label">コーデ全体イメージ（アイテム別）</div>
+      <div class="flatlay">${buildFlatlay(cur)}</div>
+      ${figureHtml}
+      <div class="advice">
+        <div class="advice-title">あなたに合わせたポイント</div>
+        ${tasteAdvice}
+        <p class="advice-line">📍 <b>${cur.subLabel}</b>：${cur.subTip}</p>
+        <p class="advice-line">📏 ${heightAdvice(cur.gender, cur.height)}</p>
+        <p class="advice-line">🧍 <b>${BODY[cur.body].label}</b>さん：${BODY[cur.body].advice}</p>
+        <p class="advice-line">🎂 <b>${AGES[cur.age].label}</b>：${AGES[cur.age].tip}</p>
+      </div>
+      <ul class="items">
+        ${cur.items.map(i => `
+          <li class="item">
+            <span class="ic">${i.img ? `<img class="flat-photo" style="width:34px;height:34px;border-radius:9px" src="${i.img}" alt="" />` : garmentIcon(iconType(i.key, i.name), itemColor(i.key, cur), 34)}</span>
+            <span class="grow"><span class="cat">${i.cat}</span><br><span class="name">${escapeHtml(i.name)}</span></span>
+            <button class="reroll" data-key="${i.key}" title="これだけ変える">🔁</button>
+            ${closet ? "" : `<button class="shop" data-name="${escapeHtml(i.name)}" title="この服を探す・買う">🛒</button>`}
+          </li>`).join("")}
+      </ul>
+      ${paletteHtml}
+      <div class="sources">
+        <div class="palette-label">この雰囲気の実例を見る（実際のSNS投稿）</div>
+        <div class="source-btns">
+          <button class="src" data-site="wear">👗 WEAR</button>
+          <button class="src" data-site="pinterest">📌 Pinterest</button>
+          <button class="src" data-site="instagram">📷 Instagram</button>
+        </div>
+        <p class="sources-note">条件に合う実在の人気コーデ検索が開きます（要ネット接続）。</p>
+      </div>
+      <div class="actions">
+        <button class="action ${isSaved ? "saved" : ""}" id="save-btn">${isSaved ? "♥ 保存済み" : "♡ お気に入り"}</button>
+        <button class="action" id="copy-btn">📋 コピー</button>
+      </div>
+      ${promptBtn}
+      ${footNote}
+    `;
+    el.querySelectorAll(".reroll").forEach(b => b.onclick = () => rerollItem(b.dataset.key));
+    el.querySelectorAll(".shop").forEach(b => b.onclick = () => openShop(b.dataset.name));
+    el.querySelectorAll(".src").forEach(b => b.onclick = () => openSource(b.dataset.site));
+    document.getElementById("save-btn").onclick = toggleFav;
+    document.getElementById("copy-btn").onclick = copyOutfit;
+    if (!closet) document.getElementById("prompt-btn").onclick = copyPrompt;
+    el.classList.remove("show");
+    void el.offsetWidth;
+    el.classList.add("show");
+  }
+
+  function outfitToText(o) {
+    const lines = o.items.map(i => `・${i.cat}: ${i.name}`);
+    const head = o.source === "closet" ? "【手持ちの服コーデ】" : "【今日のコーデ】";
+    return `${head}${GENDERS[o.gender].label} / ${SCENES[o.scene].label}・${o.subLabel} / ${SEASONS[o.season].label} / ${TIMES[o.time].label} / ${TEMPS[o.temp].label}日\n`
+      + `（${AGES[o.age].label}・身長${o.height}cm・${o.weight}kg・${BODY[o.body].label}）\n`
+      + lines.join("\n")
+      + (o.palette ? `\n🎨 カラー: ${o.palette.name}` : "");
+  }
+
+  // file:// でも動くコピー（クリップボードAPIがだめなら旧方式にフォールバック）
+  function copyText(text, okMsg) {
+    const fallback = () => {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "fixed";
+        ta.style.top = "-1000px";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        ta.setSelectionRange(0, text.length);
+        const ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+        showToast(ok ? okMsg : "コピーできませんでした");
+      } catch (e) {
+        showToast("コピーできませんでした");
+      }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => showToast(okMsg)).catch(fallback);
+    } else {
+      fallback();
+    }
+  }
+
+  function copyOutfit() {
+    copyText(outfitToText(state.current), "コピーしました 📋");
+  }
+
+  // 画像生成AIに貼り付ける用のプロンプトを組み立てる
+  function outfitToPrompt(o) {
+    const genderJp = o.gender === "ladies" ? "女性" : "男性";
+    const it = {};
+    o.items.forEach(i => { it[i.key] = i.name; });
+    const hasOuter = !!it.outer && !/なし|OK|羽織/.test(it.outer);
+    const wear = [it.top, it.bottom, hasOuter ? it.outer : null, it.shoes]
+      .filter(Boolean).join("、");
+    const colors = o.palette.colors.join("、");
+    return `全身が頭から足先まで写ったリアルなファッション写真。`
+      + `${AGES[o.age].label}の${genderJp}、身長約${o.height}cm、${BODY[o.body].label}体型。`
+      + `${wear}を着用し、小物は${it.acc}。`
+      + `配色は「${o.palette.name}」（${colors}）。`
+      + `シーンは${SCENES[o.scene].label}・${o.subLabel}、${SEASONS[o.season].label}、${TIMES[o.time].label}、${TEMPS[o.temp].label}日。`
+      + `明るいスタジオ背景、自然な立ちポーズ、高解像度、写実的。`;
+  }
+
+  function copyPrompt() {
+    copyText(outfitToPrompt(state.current), "画像生成用プロンプトをコピーしました 🖼️");
+  }
+
+  // ---- 実例(SNS)・買い物への誘導（外部サイトの検索を開くだけ）----
+  function genderWord() { return state.current.gender === "ladies" ? "レディース" : "メンズ"; }
+
+  function openSource(site) {
+    const o = state.current;
+    const q = encodeURIComponent(`${genderWord()} ${TASTES[o.taste].label} ${SCENES[o.scene].label} ${o.subLabel} ${SEASONS[o.season].label} コーデ`);
+    const urls = {
+      wear:      `https://wear.jp/search/?keyword=${q}`,
+      pinterest: `https://www.pinterest.jp/search/pins/?q=${q}`,
+      instagram: `https://www.instagram.com/explore/search/keyword/?q=${q}`,
+    };
+    window.open(urls[site] || urls.wear, "_blank", "noopener");
+  }
+
+  // ZOZOTOWNの検索を開く。ZOZOは検索語をShift_JISで解釈するため、
+  // フォーム送信の accept-charset を使ってShift_JISでエンコードして渡す（文字化け防止）。
+  function openShop(name) {
+    const kw = `${genderWord()} ${name}`;
+    const f = document.createElement("form");
+    f.method = "GET";
+    f.action = "https://zozo.jp/search/";
+    f.acceptCharset = "Shift_JIS";
+    f.target = "_blank";
+    f.style.display = "none";
+    const i = document.createElement("input");
+    i.type = "hidden";
+    i.name = "p_keyv";
+    i.value = kw;
+    f.appendChild(i);
+    document.body.appendChild(f);
+    f.submit();
+    document.body.removeChild(f);
+  }
+
+  // ---- お気に入り (localStorage) ----
+  function loadFavs() {
+    try { return JSON.parse(localStorage.getItem(FAV_KEY)) || []; }
+    catch (e) { return []; }
+  }
+  function saveFavs(list) {
+    try { localStorage.setItem(FAV_KEY, JSON.stringify(list)); } catch (e) {}
+  }
+  function favSignature(o) {
+    return [o.source || "n", o.gender, o.scene, o.sub, o.taste, o.temp, o.season, o.time, o.age, o.body, o.items.map(i => i.name).join(","), o.palette ? o.palette.name : ""].join("|");
+  }
+  // 保存用に画像を外す（手持ちコーデは容量が大きいのでidだけ保持）
+  function stripImages(o) {
+    const c = JSON.parse(JSON.stringify(o));
+    if (c.source === "closet") c.items = c.items.map(i => ({ key: i.key, cat: i.cat, name: i.name, id: i.id }));
+    return c;
+  }
+  function isFavSaved(o) {
+    if (!o) return false;
+    const sig = favSignature(o);
+    return loadFavs().some(f => f.sig === sig);
+  }
+  function toggleFav() {
+    const cur = state.current;
+    const sig = favSignature(cur);
+    let favs = loadFavs();
+    if (favs.some(f => f.sig === sig)) {
+      favs = favs.filter(f => f.sig !== sig);
+      showToast("お気に入りから外しました");
+    } else {
+      favs.unshift({ sig, data: stripImages(cur) });
+      showToast("お気に入りに保存しました ♥");
+    }
+    saveFavs(favs);
+    render();
+    renderFavs();
+  }
+  function renderFavs() {
+    const favs = loadFavs();
+    const box = document.getElementById("favs");
+    const list = document.getElementById("fav-list");
+    if (!favs.length) { box.classList.add("hidden"); return; }
+    box.classList.remove("hidden");
+    list.innerHTML = favs.map((f, idx) => {
+      const o = f.data;
+      const names = o.items.map(i => i.name).join(" / ");
+      return `
+        <div class="fav">
+          <div class="fav-text">
+            <span class="fav-scene">${GENDERS[o.gender].label} ・ ${o.source === "closet" ? "👕手持ち" : (o.palette ? o.palette.name : "")} ・ ${SCENES[o.scene].label}・${o.subLabel} ・ ${SEASONS[o.season].label} ・ ${TEMPS[o.temp].label}日</span><br>
+            ${escapeHtml(names)}
+          </div>
+          <button class="fav-del" data-idx="${idx}" title="削除">✕</button>
+        </div>`;
+    }).join("");
+    list.querySelectorAll(".fav-del").forEach(b => b.onclick = () => {
+      const favs2 = loadFavs();
+      favs2.splice(Number(b.dataset.idx), 1);
+      saveFavs(favs2);
+      renderFavs();
+      if (state.current) render();
+    });
+  }
+
+  // ---- マイクローゼット（手持ちの服・端末内保存）----
+  const CLOSET_KEY = "my_closet_v1";
+  const CLOSET_CATS = { top: "トップス", bottom: "ボトムス", outer: "アウター", shoes: "シューズ", acc: "バッグ・小物" };
+  function loadCloset() { try { return JSON.parse(localStorage.getItem(CLOSET_KEY)) || []; } catch (e) { return []; } }
+  function saveCloset(list) { try { localStorage.setItem(CLOSET_KEY, JSON.stringify(list)); return true; } catch (e) { showToast("保存容量が足りません。古い服を削除してください"); return false; } }
+  function closetImg(id) { const it = loadCloset().find(x => x.id === id); return it ? it.img : ""; }
+  // 旧データ(cat/warm)との互換をとりつつ、カテゴリ/シーズンを配列で返す
+  function itemCats(x) { return x.cats && x.cats.length ? x.cats : (x.cat ? [x.cat] : []); }
+  function itemSeasons(x) { return x.seasons && x.seasons.length ? x.seasons : []; }
+  function seasonsLabel(seasons) {
+    if (!seasons || !seasons.length || seasons.length === 4) return "オールシーズン";
+    return seasons.map(s => (SEASONS[s] ? SEASONS[s].label : s)).join("/");
+  }
+
+  function resizeImage(file, cb) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const max = 360;
+        let w = img.width, h = img.height;
+        if (w > h && w > max) { h = Math.round(h * max / w); w = max; }
+        else if (h >= w && h > max) { w = Math.round(w * max / h); h = max; }
+        const cv = document.createElement("canvas");
+        cv.width = w; cv.height = h;
+        cv.getContext("2d").drawImage(img, 0, 0, w, h);
+        cb(cv.toDataURL("image/jpeg", 0.8));
+      };
+      img.onerror = () => cb(null);
+      img.src = e.target.result;
+    };
+    reader.onerror = () => cb(null);
+    reader.readAsDataURL(file);
+  }
+
+  function addClosetItem() {
+    const fileEl = document.getElementById("cl-file");
+    const file = fileEl.files[0];
+    if (!file) { showToast("写真を選んでください"); return; }
+    const cats = [...document.querySelectorAll(".cl-cat:checked")].map(c => c.value);
+    if (!cats.length) { showToast("カテゴリを1つ以上選んでください"); return; }
+    const seasons = [...document.querySelectorAll(".cl-season:checked")].map(c => c.value);
+    const name = document.getElementById("cl-name").value.trim() || CLOSET_CATS[cats[0]];
+    resizeImage(file, dataUrl => {
+      if (!dataUrl) { showToast("画像の読み込みに失敗しました"); return; }
+      const list = loadCloset();
+      list.push({ id: "c" + Math.floor(Math.random() * 1e9) + "_" + list.length, cats, seasons, name, img: dataUrl });
+      if (saveCloset(list)) {
+        fileEl.value = "";
+        document.getElementById("cl-name").value = "";
+        renderClosetGrid();
+        showToast("クローゼットに追加しました 👕");
+      }
+    });
+  }
+
+  function delClosetItem(id) { saveCloset(loadCloset().filter(x => x.id !== id)); renderClosetGrid(); }
+
+  function renderClosetGrid() {
+    const grid = document.getElementById("closet-grid");
+    if (!grid) return;
+    const list = loadCloset();
+    if (!list.length) { grid.innerHTML = `<div class="closet-empty">まだ服が登録されていません。写真を選び、カテゴリを選んで「追加」してください。</div>`; return; }
+    grid.innerHTML = list.map(it => {
+      const catLabel = itemCats(it).map(c => CLOSET_CATS[c]).join("・");
+      return `<div class="closet-card">
+        <img src="${it.img}" alt="" />
+        <button class="cc-del" data-id="${it.id}" title="削除">✕</button>
+        <div class="cc-cat">${escapeHtml(it.name)}<br>${catLabel}<br><span style="opacity:.75">${seasonsLabel(itemSeasons(it))}</span></div>
+      </div>`;
+    }).join("");
+    grid.querySelectorAll(".cc-del").forEach(b => b.onclick = () => delClosetItem(b.dataset.id));
+  }
+
+  function suggestFromCloset() {
+    const list = loadCloset();
+    const byCat = {};
+    ["top", "bottom", "outer", "shoes", "acc"].forEach(k => byCat[k] = list.filter(x => itemCats(x).includes(k)));
+    if (!byCat.top.length || !byCat.bottom.length) {
+      showToast("トップスとボトムスを最低1枚ずつ登録してください");
+      const c = document.getElementById("closet"); if (c) c.open = true;
+      return;
+    }
+    // 選択中の「季節」に合う服を優先（シーズン無指定＝オールシーズン扱い）
+    const seasonOk = x => { const s = itemSeasons(x); return !s.length || s.length === 4 || s.includes(state.season); };
+    const cold = state.season === "autumn" || state.season === "winter";
+    const used = new Set();
+    const pickCat = (k, required) => {
+      let pool = byCat[k].filter(x => !used.has(x.id));   // 同じ服を2枠で使わない
+      if (!pool.length && required) pool = byCat[k];       // 必須枠(トップス/ボトムス)は他になければ許容
+      if (!pool.length) return null;                       // 任意枠は使い回さずスキップ
+      const pref = pool.filter(seasonOk);
+      const it = pick(pref.length ? pref : pool);
+      used.add(it.id);
+      const catName = (CATS.find(c => c.key === k) || {}).cat || CLOSET_CATS[k];
+      return { key: k, cat: catName, name: it.name, id: it.id, img: it.img };
+    };
+    const sc = SUBSCENES[state.scene][state.sub];
+    const items = [pickCat("top", true), pickCat("bottom", true)];
+    if (byCat.outer.length && (cold || Math.random() < 0.4)) items.push(pickCat("outer", false));
+    if (byCat.shoes.length) items.push(pickCat("shoes", false));
+    if (byCat.acc.length) items.push(pickCat("acc", false));
+    state.current = {
+      source: "closet",
+      gender: state.gender, scene: state.scene, sub: state.sub, subLabel: sc.label, subTip: sc.tip,
+      taste: state.taste, temp: state.temp, season: state.season, time: state.time, age: state.age,
+      height: state.height, weight: state.weight, body: state.body,
+      items: items.filter(Boolean),
+    };
+    render();
+    pushHistory(state.current);
+    document.getElementById("result").scrollIntoView({ block: "start" });
+    document.getElementById("go-closet").textContent = "👕 手持ちの服からもう一回 🔁";
+  }
+
+  // ---- 提案履歴 ----
+  const HISTORY_KEY = "coord_history_v1";
+  function loadHistory() { try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; } catch (e) { return []; } }
+  function pushHistory(cur) {
+    let list = loadHistory();
+    list.unshift(stripImages(cur));
+    list = list.slice(0, 20);
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(list)); } catch (e) {}
+    renderHistory();
+  }
+  function renderHistory() {
+    const box = document.getElementById("history-list");
+    if (!box) return;
+    const list = loadHistory();
+    if (!list.length) { box.innerHTML = `<div class="closet-empty">まだ履歴がありません。コーデを提案すると自動で記録されます。</div>`; return; }
+    box.innerHTML = list.map((o, idx) => {
+      const names = o.items.map(i => i.name).join(" / ");
+      const tag = o.source === "closet" ? "👕手持ち" : (TASTES[o.taste] ? TASTES[o.taste].label : "");
+      return `<div class="hist">
+        <div class="h-text"><span class="h-sub">${GENDERS[o.gender].label} ・ ${tag} ・ ${SCENES[o.scene].label}・${o.subLabel || ""} ・ ${TEMPS[o.temp].label}日</span><br>${escapeHtml(names)}</div>
+        <button class="h-view" data-idx="${idx}">見る</button>
+      </div>`;
+    }).join("");
+    box.querySelectorAll(".h-view").forEach(b => b.onclick = () => viewHistory(Number(b.dataset.idx)));
+  }
+  function viewHistory(idx) {
+    const o = JSON.parse(JSON.stringify(loadHistory()[idx]));
+    if (o.source === "closet") o.items = o.items.map(i => ({ ...i, img: closetImg(i.id) }));
+    state.current = o;
+    render();
+    document.getElementById("result").scrollIntoView({ block: "start" });
+  }
+
+  let toastTimer = null;
+  function showToast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove("show"), 1800);
+  }
+
+  buildChips("gender-chips", GENDERS, "gender");
+  buildChips("scene-chips", SCENES, "scene", () => { state.sub = 0; buildSubChips(); });
+  buildSubChips();
+  buildChips("taste-chips", TASTES, "taste");
+  buildChips("temp-chips", TEMPS, "temp");
+  buildChips("season-chips", SEASONS, "season");
+  buildChips("time-chips", TIMES, "time");
+  buildChips("color-chips", COLORS, "color");
+  buildChips("body-chips", BODY, "body");
+  buildChips("age-chips", AGES, "age");
+
+  const heightRange = document.getElementById("height-range");
+  const heightVal = document.getElementById("height-val");
+  heightRange.oninput = () => { state.height = Number(heightRange.value); heightVal.textContent = state.height + " cm"; };
+  const weightRange = document.getElementById("weight-range");
+  const weightVal = document.getElementById("weight-val");
+  weightRange.oninput = () => { state.weight = Number(weightRange.value); weightVal.textContent = state.weight + " kg"; };
+
+  document.getElementById("go").onclick = suggest;
+  document.getElementById("go-closet").onclick = suggestFromCloset;
+  document.getElementById("cl-add").onclick = addClosetItem;
+  renderFavs();
+  renderClosetGrid();
+  renderHistory();
+</script>
+</body>
+</html>
