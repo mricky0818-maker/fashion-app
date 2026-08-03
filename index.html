@@ -508,9 +508,8 @@
       <button class="add-btn" id="aff-save">保存</button>
     </div>
     <p class="panel-note">
-      設定すると、各アイテムの🛒が「あなた専用の楽天市場アフィリエイトリンク」になり、そこから購入されると紹介料が入ります。
-      <a href="https://affiliate.rakuten.co.jp/" target="_blank" rel="noopener">楽天アフィリエイト</a>（無料）に登録して「アフィリエイトID」を取得し、上に貼り付けて保存してください。
-      未設定の場合は従来どおりZOZO検索が開きます（紹介料なし）。
+      このアプリには<b>オーナーの楽天アフィリエイトIDが設定済み</b>です。各アイテムの🛒は楽天市場のアフィリエイトリンクで開き、そこから購入されるとオーナーに紹介料が入ります。
+      別のIDに変えたい場合のみ、上の欄に自分の楽天アフィリエイトIDを入れて保存してください（空欄でオーナーIDに戻ります）。
       ※アフィリエイトは広告です。収益は保証されず、各サービスの規約に従ってご利用ください。
     </p>
   </details>
@@ -1239,7 +1238,7 @@
       </div>` : "";
 
     const promptBtn = closet ? "" : `<button class="action" id="prompt-btn" style="width:100%;margin-top:10px">🖼️ AI画像生成用プロンプトをコピー</button>`;
-    const affOn = !!(localStorage.getItem("rakuten_aff_id") || "").trim();
+    const affOn = !!affiliateId();
     const affNote = affOn ? `<p class="sources-note">※ ショッピングの🛒リンクはアフィリエイト広告（楽天）を含みます。</p>` : "";
     const footNote = (closet
       ? `<p class="sources-note">※ 手持ちの服（端末内に保存された写真）から組み合わせています。「👕 手持ちの服からもう一回」で組み直せます。</p>`
@@ -1375,15 +1374,20 @@
     window.open(urls[site] || urls.wear, "_blank", "noopener");
   }
 
+  // このアプリのオーナーの楽天アフィリエイトID（購入時の紹介料はオーナーに入る）
+  const RAKUTEN_AFF_ID = "56490013.c21395ce.56490014.4d2b0d54";
+  // 端末側で上書き設定があればそれを、なければオーナーIDを使う
+  function affiliateId() { return (localStorage.getItem("rakuten_aff_id") || "").trim() || RAKUTEN_AFF_ID; }
+
   // 🛒 ショッピングを開く。
-  // 楽天アフィリエイトIDが設定されていれば「楽天市場のアフィリエイトリンク」を開く（購入されると紹介料）。
-  // 未設定なら従来どおりZOZO検索を開く（ZOZOはShift_JIS解釈のためフォーム送信で文字化け防止）。
+  // 楽天アフィリエイトIDがあれば「楽天市場のアフィリエイトリンク」を開く（購入されると紹介料）。
+  // IDが空のときのみ従来どおりZOZO検索（ZOZOはShift_JIS解釈のためフォーム送信で文字化け防止）。
   function openShop(name) {
     const kw = `${genderWord()} ${name}`;
-    const affId = (localStorage.getItem("rakuten_aff_id") || "").trim();
+    const affId = affiliateId();
     if (affId) {
       const target = `https://search.rakuten.co.jp/search/mall/${encodeURIComponent(kw)}/`;
-      const url = `https://hb.afl.rakuten.co.jp/hgc/${encodeURIComponent(affId)}/?pc=${encodeURIComponent(target)}&m=${encodeURIComponent(target)}`;
+      const url = `https://hb.afl.rakuten.co.jp/ichiba/${encodeURIComponent(affId)}/?pc=${encodeURIComponent(target)}&m=${encodeURIComponent(target)}`;
       window.open(url, "_blank", "noopener");
       return;
     }
