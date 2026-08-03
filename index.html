@@ -1380,9 +1380,10 @@
     const tasteMap = { any: "trendy", simple: "minimal", adult: "elegant smart-casual", korean: "korean street", feminine: "feminine", mode: "avant-garde monochrome", street: "streetwear oversized", natural: "natural earthy", kirekaji: "smart casual", y2k: "y2k 2000s", vintage: "vintage thrift", sporty: "athleisure sporty" };
     const sceneMap = { casual: "casual", smart: "smart", biz: "business", date: "date", friends: "casual outing", sport: "sporty", relax: "loungewear", outing: "travel outing" };
     const colors = o.palette ? o.palette.colors.join(" ") : "";
-    return `full body fashion lookbook photo of a ${bodyMap[o.body] || ""} ${ageMap[o.age] || "adult"} ${g}, `
-      + `${tasteMap[o.taste] || ""} style, ${sceneMap[o.scene] || ""} ${o.season} outfit, `
-      + `color palette ${colors}, standing pose, plain light studio background, photorealistic, high detail`;
+    return `professional full-body fashion editorial photo of a ${bodyMap[o.body] || ""} ${ageMap[o.age] || "adult"} ${g}, `
+      + `${tasteMap[o.taste] || ""} ${sceneMap[o.scene] || ""} ${o.season} outfit, ${colors} color tones, `
+      + `head to toe, standing centered, studio softbox lighting, plain background, `
+      + `shot on DSLR 85mm, sharp focus, photorealistic, highly detailed, realistic body proportions`;
   }
 
   // ---- 無料AI画像生成（キー不要・pollinations.ai）でコーデ画像を作る ----
