@@ -622,10 +622,12 @@
     natural: { label: "ナチュラル" },
   };
   const BODY = {
+    xslim:  { label: "痩せ型",   width: 0.78, advice: "きゃしゃさは大きな魅力。ボリューム袖・フリル・レイヤードでふんわり立体感を足すと、より軽やかで華やかな印象に。" },
     slim:   { label: "スリム",   width: 0.86, advice: "華奢さを活かしつつ、重ね着やボリュームで立体感をプラス。" },
     std:    { label: "標準",     width: 1.00, advice: "バランス型。好きなシルエットを楽しめます。" },
     plump:  { label: "ぽっちゃり", width: 1.20, advice: "Iライン（縦長）・Vネック・ロング丈でたて長にすっきり見え。" },
-    sturdy: { label: "がっちり", width: 1.14, advice: "すっきりめトップス＋きれいめボトムで、上半身を軽やかに。" },
+    chubby: { label: "ふくよか", width: 1.34, advice: "縦のIラインと落ち感素材でストンと縦長に。Vあき・ロング丈・センタープレスで、すっと軽やかな印象を楽しめます。" },
+    sturdy: { label: "がっしり", width: 1.14, advice: "すっきりめトップス＋きれいめボトムで、上半身を軽やかに。" },
   };
   const SEASONS = {
     spring: { label: "春", bias: ["natural", "warm"], tip: "春は明るいトーンや軽やかな素材で軽さを。", color: "白・ソフトピンク・シトラスイエローなど明るいペールトーンが2026春の人気色。" },
@@ -644,8 +646,56 @@
   };
   const AGE_BAND = { a1:"teen", a2:"teen", a3:"young", a4:"young", a5:"adult", a6:"adult", a7:"mature" };
   const AGE_TREND = {"teen":{"favor":["クロップド","ミニ","ロゴ","オーバーサイズ","バギー","プリーツ","リボン","ポロ","厚底","カーゴ"],"avoid":["とろみ","センタープレス","チェスターコート","ウール","タイト"],"note":"Y2K・韓国プレッピー・量産型をミックスする年代。クロップドやミニ丈で軽く肌見せしつつ、ロゴや柄・色で元気に遊ぶのが今っぽい。きれいめより「今っぽく楽しい」を優先し、厚底やバギーでトレンド感を出す。","adds":{"y2k":{"top":{"ladies":["クロップドロゴT","ベビーT","ショート丈ジップパーカー"],"mens":["ロゴT","ハーフジップ","ボウリングシャツ"]},"bottom":{"ladies":["ローライズバギーデニム","プリーツミニスカート","カーゴミニスカート"],"mens":["バギーデニム","カーゴパンツ"]}},"korean":{"top":{"ladies":["クロップドニットポロ","リボンブラウス","オーバーサイズカーデ"],"mens":["ニットポロ","オープンカラーシャツ"]},"bottom":{"ladies":["ハイウエストワイドデニム","プリーツスカート"],"mens":["ワイドスラックス","ワイドデニム"]}},"street":{"top":{"ladies":["オーバーサイズロゴT","ビッグパーカー"],"mens":["オーバーサイズT","ビッグパーカー"]},"bottom":{"ladies":["ワイドカーゴパンツ","バギーデニム"],"mens":["バギーデニム","ナイロンカーゴパンツ"]}},"feminine":{"top":{"ladies":["リボンブラウス","フリルクロップドニット"],"mens":["きれいめニットポロ","開襟シャツ"]},"bottom":{"ladies":["ミニフレアスカート","チュールプリーツスカート"],"mens":["アンクルパンツ","きれいめワイドパンツ"]}}}},"young":{"favor":["バレル","バルーン","ワイド","とろみ","シアー","ジャケット","セットアップ","ローファー","クロップド","ハイウエスト","フレア","リボン"],"avoid":["スキニー","ガウチョ","ダメージ","極細"],"note":"トレンドのど真ん中を楽しめる年代。バレル/バルーンデニムやセットアップ、シアー・リボンで旬に寄せる。上下どちらかにゆるさを残し、抜け感でこなれ見せするのが2026年らしい。","adds":{"korean":{"top":{"ladies":["クロップドニット","とろみ抜き襟シャツ","ニットポロ"],"mens":["オーバーシャツ","ニットポロ","ハーフジップニット"]},"bottom":{"ladies":["ハイウエストワイドデニム","ロングタイトスカート"],"mens":["ワイドスラックス","バレルデニム"]}},"y2k":{"top":{"ladies":["クロップドロゴT","ショート丈ジップパーカー"],"mens":["ロゴT","ハーフジップ"]},"bottom":{"ladies":["ローライズバレルデニム","ミニスカート"],"mens":["バギーデニム","カーゴパンツ"]}},"feminine":{"top":{"ladies":["シアーブラウス","リボンブラウス"],"mens":["とろみバンドカラーシャツ","きれいめニットポロ"]},"bottom":{"ladies":["ロングフレアスカート","サテンプリーツスカート"],"mens":["アンクルスラックス","きれいめワイドパンツ"]}},"street":{"top":{"ladies":["オーバーサイズT","ビッグスウェット"],"mens":["オーバーサイズT","中綿ブルゾン"]},"bottom":{"ladies":["ワイドデニム","ナイロンパンツ"],"mens":["バギーデニム","カーゴパンツ"]}},"mode":{"top":{"ladies":["とろみシアートップス","タックブラウス"],"mens":["モードT","バンドカラーシャツ"]},"bottom":{"ladies":["バレルパンツ","マキシスカート"],"mens":["ワイドスラックス","バレルスラックス"]}}}},"adult":{"favor":["とろみ","センタープレス","ジャケット","セットアップ","ローファー","ワイド","バレル","ロング","ハイゲージ","きれいめ"],"avoid":["ローライズ","クロップド","ミニ","ダメージ","厚底"],"note":"今っぽさは1〜2点投入で十分な年代。とろみ素材やセットアップ、上質見えするワイド/バレルデニムで大人の余裕を演出。肌見せは手首・足首中心に品よくまとめる。","adds":{"adult":{"top":{"ladies":["とろみブラウス","ハイゲージニット","きれいめカットソー"],"mens":["リネンシャツ","ハイゲージニット","きれいめポロ"]},"bottom":{"ladies":["センタープレスパンツ","ロングタイトスカート"],"mens":["センタープレススラックス","きれいめバレルデニム"]}},"korean":{"top":{"ladies":["とろみ抜き襟シャツ","ゆるハイゲージニット"],"mens":["オーバーシャツ","ニットポロ"]},"bottom":{"ladies":["ハイウエストワイドスラックス","ロングスカート"],"mens":["ワイドスラックス","ストレートスラックス"]}},"feminine":{"top":{"ladies":["シアーブラウス","ふんわりブラウス"],"mens":["とろみシャツ","きれいめニットポロ"]},"bottom":{"ladies":["ロングフレアスカート","サテンスカート"],"mens":["アンクルスラックス","きれいめワイドパンツ"]}},"mode":{"top":{"ladies":["タックブラウス","ハイゲージタートル"],"mens":["モードT","バンドカラーシャツ"]},"bottom":{"ladies":["バレルパンツ","ロングタイトスカート"],"mens":["ワイドスラックス","テーパードスラックス"]}}}},"mature":{"favor":["とろみ","ロング","ジャケット","ノーカラー","ハイゲージ","リネン","ワイド","センタープレス","きれいめ"],"avoid":["ローライズ","クロップド","ミニ","ダメージ","ロゴ","厚底","バギー"],"note":"上質素材と落ち感で高見えを狙う年代。トレンドはシアー羽織りやワイド1点で軽く取り入れ、Iライン&ロング丈で縦長に。肌見せは手首・足首だけで上品にまとめる。","adds":{"adult":{"top":{"ladies":["とろみブラウス","上質ハイゲージニット","きれいめカットソー"],"mens":["リネンシャツ","ハイゲージニット"]},"bottom":{"ladies":["センタープレスパンツ","ロングタイトスカート"],"mens":["ウールスラックス","センタープレススラックス"]}},"mode":{"top":{"ladies":["とろみタックブラウス","ハイネックニット"],"mens":["バンドカラーシャツ","モックネックニット"]},"bottom":{"ladies":["ワイドパンツ","マキシスカート"],"mens":["ワイドスラックス","テーパードスラックス"]}},"korean":{"top":{"ladies":["とろみ抜き襟シャツ","きれいめニット"],"mens":["きれいめオーバーシャツ","ニットポロ"]},"bottom":{"ladies":["ハイウエストワイドスラックス","ロングスカート"],"mens":["ワイドスラックス","ストレートスラックス"]}},"feminine":{"top":{"ladies":["シアー羽織りブラウス","上品フリルブラウス"],"mens":["とろみシャツ","きれいめポロ"]},"bottom":{"ladies":["ロングフレアスカート","プリーツロングスカート"],"mens":["アンクルスラックス","きれいめワイドパンツ"]}}}}};
-  const BODY_STYLE = {"slim":{"favor":["ハイウエスト","フレア","プリーツ","パフ","ギャザー","チュール","ボリューム","とろみ","ペプラム","ハイネック","レース","クロップド"],"avoid":["タイト","スキニー","ローライズ","オーバーサイズ","ビッグ"],"note":"華奢さんは体のラインを拾いすぎると頼りなく見えがち。ボリューム袖・フリル・とろみ素材やレイヤードで立体感を足し、ウエストは高い位置でマークすると華奢さが魅力に変わる。"},"std":{"favor":["ハイウエスト","Iライン","センタープレス","ストレート","テーパード","Vネック","とろみ","ワイド"],"avoid":["全身タイト","全身オーバーサイズ"],"note":"標準体型はほとんどのシルエットが似合う恵まれたバランス。ウエスト位置を高く見せ、上下でボリュームのメリハリをつければトレンドを幅広く楽しめる。"},"plump":{"favor":["Iライン","ロング","センタープレス","ハイウエスト","とろみ","Vネック","ストレート","開襟"],"avoid":["タイト","クロップド","ミニ","ホルター","ローライズ","ビッグ","パフ","ギャザー"],"note":"縦のラインを意識してIライン・ロング丈・Vあきで“たて長”にすっきり。体を拾いすぎるタイトや上半身の横広がりは避け、とろみ素材でストンと落とすのが好バランス。"},"sturdy":{"favor":["とろみ","Iライン","Vネック","開襟","センタープレス","ストレート","テーパード","ロング","きれいめ"],"avoid":["オーバーサイズ","ビッグ","パフ","ホルター","タイト","ハイネック","ボリューム","シャギー"],"note":"がっちり・骨感さんは、とろみやドレープで上半身をやわらかく軽やかに。ぴったりも過度なボリュームも厚みを強調するので、Vあき・開襟＋きれいめボトムですっきり縦長に。"}};
+  const BODY_STYLE = {"slim":{"favor":["ハイウエスト","フレア","プリーツ","パフ","ギャザー","チュール","ボリューム","とろみ","ペプラム","ハイネック","レース","クロップド"],"avoid":["タイト","スキニー","ローライズ","オーバーサイズ","ビッグ"],"note":"華奢さんは体のラインを拾いすぎると頼りなく見えがち。ボリューム袖・フリル・とろみ素材やレイヤードで立体感を足し、ウエストは高い位置でマークすると華奢さが魅力に変わる。"},"std":{"favor":["ハイウエスト","Iライン","センタープレス","ストレート","テーパード","Vネック","とろみ","ワイド"],"avoid":["全身タイト","全身オーバーサイズ"],"note":"標準体型はほとんどのシルエットが似合う恵まれたバランス。ウエスト位置を高く見せ、上下でボリュームのメリハリをつければトレンドを幅広く楽しめる。"},"plump":{"favor":["Iライン","ロング","センタープレス","ハイウエスト","とろみ","Vネック","ストレート","開襟"],"avoid":["タイト","クロップド","ミニ","ホルター","ローライズ","ビッグ","パフ","ギャザー"],"note":"縦のラインを意識してIライン・ロング丈・Vあきで“たて長”にすっきり。体を拾いすぎるタイトや上半身の横広がりは避け、とろみ素材でストンと落とすのが好バランス。"},"sturdy":{"favor":["とろみ","Iライン","Vネック","開襟","センタープレス","ストレート","テーパード","ロング","きれいめ"],"avoid":["オーバーサイズ","ビッグ","パフ","ホルター","タイト","ハイネック","ボリューム","シャギー"],"note":"がっちり・骨感さんは、とろみやドレープで上半身をやわらかく軽やかに。ぴったりも過度なボリュームも厚みを強調するので、Vあき・開襟＋きれいめボトムですっきり縦長に。"},"xslim":{"favor":["パフ","ギャザー","フリル","チュール","ボリューム","レイヤード","シャギー","とろみ","ペプラム","ハイネック","ハイウエスト","ボウタイ","リボン","クロップド"],"avoid":["タイト","スキニー","極細","ローライズ","オーバーサイズ","ビッグ"],"note":"痩せ型さんは体のラインを拾いすぎると頼りなく見えがち。パフ袖・フリル・とろみ素材やレイヤードでふんわり立体感を足し、ウエストを高い位置でマークすると華奢さが上品な魅力に。"},"chubby":{"favor":["Iライン","ロング","マキシ","センタープレス","とろみ","Vネック","ストレート","開襟","ハイウエスト","ワイド"],"avoid":["タイト","クロップド","ミニ","ホルター","ローライズ","ビッグ","パフ","ギャザー","ボリューム","シャギー"],"note":"縦のIラインを強めに意識して、ロング・マキシ丈＋Vあき・開襟で“たて長”にすっきり。とろみ・落ち感素材でストンと縦に落とし、体を拾うタイトや上半身の横広がりは控えめにするのが好バランス。"}};
   const HEIGHT_STYLE = {"petite":{"favor":["ハイウエスト","クロップド","ショート丈","Iライン","センタープレス","コンパクト","タイト","ミニ"],"avoid":["ロング","マキシ","オーバーサイズ","ビッグ","ボリューム","ローライズ"],"note":"低身長さんはウエストを高くして上重心に。ハイウエスト＋トップスイン、ショート丈アウターやコンパクトなIラインで脚長・すっきり見せを。長すぎ・ボリューム過多は埋もれるので注意。"},"mid":{"favor":["ハイウエスト","Iライン","センタープレス","ストレート","とろみ","ワイド","ロング","テーパード"],"avoid":["半端丈","全身オーバーサイズ"],"note":"標準身長はもっとも着こなしの自由度が高い。ウエスト位置と裾丈のバランスだけ意識すれば、ロングもワイドもトレンドを自由に楽しめる。"},"tall":{"favor":["ロング","マキシ","ワイド","オーバーサイズ","ボリューム","センタープレス","Iライン","ストレート"],"avoid":["半端丈","アンクル","ミニ","ショート丈"],"note":"高身長さんはロング・マキシ・ワイド・オーバーサイズなど“縦と量”を生かせる貴重な体型。丈が短すぎたり小さくまとまると物足りないので、ゆとりと長さで堂々と着こなして。"}};
+  // シーン別のフォーマル度（好む/避けるキーワード）。SUBSCENESのbaseで引く。選定の傾け＋biz/smartの底上げに使う。
+  const SCENE_STYLE = {
+    biz: {
+      favor: ["ジャケット","テーラード","スラックス","センタープレス","シャツ","ブラウス","とろみ","ニット","カーディガン","ローファー","パンプス","きれいめ","テーパード","タイトスカート","トレンチ","チノ","Vネック","ハイゲージ"],
+      avoid: ["ロゴ","パーカー","スウェット","カーゴ","バギー","クロップド","ミニ","サンダル","メッシュ","ドライ","ゲームシャツ","トラック","ジャージ","ダメージ","デニム","スニーカー","T","ナイロン","タンク","ショート","ホルター","Y2K","ビッグ","プリント","オーバーサイズ","MA-1","アノラック","マウンテン","ウインドブレーカー","ブルゾン","ボア","フリース","スタジャン","コーチ","パデッド","中綿","ダウン","ジップ","キルティング","ムートン","ダッフル","モッズ","カレッジ","ベースボール","ボウリング","ネル","バンダナ","ビーニー","ボール"]
+    },
+    smart: {
+      favor: ["きれいめ","とろみ","シャツ","ブラウス","スラックス","テーパード","センタープレス","ニット","ジャケット","ローファー","パンプス","ロング","Iライン","ワンピース","カーディガン","プリーツ","サテン","フレア","ハイゲージ"],
+      avoid: ["ロゴ","パーカー","スウェット","カーゴ","バギー","ダメージ","ゲームシャツ","トラック","ジャージ","メッシュ","ドライ","タンク","ショート","ビッグ","MA-1","アノラック","マウンテン","ウインドブレーカー","ボア","フリース","中綿","パデッド","ゲームシャツ","ベースボール","ボウリング"]
+    },
+    casual:  { favor: ["デニム","スニーカー","Tシャツ","パーカー","ニット","シャツ","チノ","スウェット","カジュアル"], avoid: [] },
+    friends: { favor: ["デニム","スニーカー","Tシャツ","パーカー","ロゴ","スウェット","カジュアル"], avoid: [] },
+    relax:   { favor: ["スウェット","パーカー","ニット","リラックス","ワイド","ゆったり","とろみ","カットソー","ジャージ","フリース","ロング"], avoid: ["テーラード","スラックス","パンプス","きれいめ","タイト","革靴","センタープレス"] },
+    date:    { favor: ["ワンピース","フレア","スカート","きれいめ","とろみ","ニット","ブラウス","パンプス","ローファー","フェミニン","レース","シャツ","カーディガン"], avoid: ["ジャージ","トラック","カーゴ","ドライ","メッシュ","ゲームシャツ","スウェット","バギー"] },
+    sport:   { favor: ["ドライ","メッシュ","トラック","ジャージ","スウェット","パーカー","レギンス","スニーカー","ショート","ナイロン","アクティブ","ハーフ"], avoid: ["スラックス","テーラード","ジャケット","パンプス","ローファー","ワンピース","とろみ","サテン","ドレス","きれいめ","革靴","タイトスカート"] },
+    outing:  { favor: ["デニム","スニーカー","ニット","シャツ","スカート","カジュアル","ジャケット","パーカー","ワンピース","チノ"], avoid: ["テーラード","スーツ"] }
+  };
+  // biz/smartで、系統プールに適切な服が無いときに差し替える最小のフォーマル服（性別対応）
+  const FORMAL_FALLBACK = {
+    biz: {
+      top:    { ladies: ["白ブラウス","とろみブラウス","きれいめニット","襟付きシャツ"], mens: ["白シャツ","襟付きシャツ","ハイゲージニット"] },
+      bottom: { ladies: ["センタープレススラックス","テーパードパンツ","タイトスカート"], mens: ["スラックス","センタープレスチノパン","テーパードスラックス"] },
+      outer:  { ladies: ["テーラードジャケット","きれいめカーディガン"], mens: ["テーラードジャケット","きれいめジャケット"] },
+      shoes:  { ladies: ["パンプス","ローファー"], mens: ["革靴","ローファー"] }
+    },
+    smart: {
+      top:    { ladies: ["とろみブラウス","きれいめニット","シャツ"], mens: ["きれいめシャツ","ハイゲージニット"] },
+      bottom: { ladies: ["テーパードパンツ","ロングスカート","センタープレスパンツ"], mens: ["スラックス","テーパードパンツ"] },
+      outer:  { ladies: ["きれいめジャケット","カーディガン"], mens: ["きれいめジャケット","きれいめブルゾン"] },
+      shoes:  { ladies: ["ローファー","パンプス","きれいめフラット"], mens: ["ローファー","白レザースニーカー"] }
+    }
+  };
+  // biz/smartで、選ばれた服がそのシーンに不適（avoidに該当）なら、フォーマル服に差し替える。空は返さない。
+  function formalFloor(key, gender, base, chosen) {
+    if (base !== "biz" && base !== "smart") return chosen;
+    const slot = FORMAL_FALLBACK[base] && FORMAL_FALLBACK[base][key];
+    if (!slot) return chosen;
+    const avoid = (SCENE_STYLE[base] && SCENE_STYLE[base].avoid) || [];
+    let bad = !chosen || avoid.some(k => k && chosen.indexOf(k) !== -1);
+    // bizの靴は「きれいめ靴」以外は不可（"スニーカー"を含まない名称ゆれ＝トレイルランナー等も弾く）
+    if (!bad && key === "shoes" && base === "biz" &&
+        !/(ローファー|パンプス|革靴|レザーシューズ|プレーントゥ|ダービー|チャッカ|モカシン|フラット|バレエ|ブーツ|オックスフォード|ヒール)/.test(chosen)) {
+      bad = true;
+    }
+    if (!bad) return chosen;
+    const arr = slot[gender] || slot.ladies || slot.mens;
+    return (arr && arr.length) ? pick(arr) : chosen;
+  }
   // SNSで人気の系統（テイスト）。note = その系統の着こなしのコツ、sig.acc = 系統らしい小物
   const TASTES = {
     any:      { label: "トレンドMIX", bias: [],                  note: "2026年SNS発。レディースはバレエコア（チビT・スカパン・シアー・リボン）、メンズは韓国レイヤード（開襟シャツ・バレルデニム）。ボルドー/ブラウン/くすみ系、小物はバッグチャームやスカーフで差を。", sig: null },
@@ -966,13 +1016,15 @@
     if (bs) { favor.push(...bs.favor); avoid.push(...bs.avoid); }
     const hs = (ctx.height != null) ? HEIGHT_STYLE[heightBand(gender, ctx.height)] : null;
     if (hs) { favor.push(...hs.favor); avoid.push(...hs.avoid); }
+    const ss = SCENE_STYLE[ctx.base];                                              // シーンのフォーマル度を反映
+    if (ss) { favor.push(...(ss.favor || [])); avoid.push(...(ss.avoid || [])); }
     return { favor, avoid };
   }
 
   // 系統(テイスト)を選ぶと、その系統の“全身一式”から引く。
   // さらに年齢バンドの系統別トレンドを加え、体型・身長の好みで選定を傾ける。
   function pickItemName(key, gender, base, temp, taste, ctx) {
-    ctx = ctx || {};
+    ctx = Object.assign({}, ctx || {}, { base });   // シーンbaseをstyleFavorAvoidへ（呼び出し側のctxは汚さない）
     const sig = TASTE_SIG[taste];
     if (sig) {
       const band = (temp === "hot" || temp === "warm") ? "warm" : "cool";
@@ -995,7 +1047,7 @@
         }
         pool = dedupe(pool);
         const fa = styleFavorAvoid(gender, ctx);
-        return pickPreferred(pool, fa.favor, fa.avoid);
+        return formalFloor(key, gender, base, pickPreferred(pool, fa.favor, fa.avoid));
       }
     }
     const c = CATS.find(x => x.key === key);
@@ -1489,16 +1541,49 @@
     window.open(urls[kind] || urls.chatgpt, "_blank", "noopener");
   }
 
-  // 系統ごとの英語スタイル表現（画像全体の世界観を指定）
+  // 体型：主語に添える短い形容（性別中立・敬意ある表現）。未成年には付けない（aiImagePrompt側で制御）。
+  const BODY_ADJ = {
+    xslim: "very slim, slender", slim: "slim, lean", std: "average-build",
+    plump: "curvy, plump", chubby: "plus-size, full-figured", sturdy: "sturdy, athletic, broad-built",
+  };
+  // 体型の再現を強める補足文（画像モデルが細身に寄せるのを防ぐ）。細身系は付けない（矛盾回避）。
+  const BODY_EMPH = {
+    xslim: "", slim: "", std: "",
+    plump: "The figure has a soft, curvy, fuller body at a realistic higher body weight — render this fuller figure faithfully and do not slim it",
+    chubby: "The figure is genuinely plus-size, fuller and heavier at a realistic high body weight — render this larger body faithfully and do not slim, shrink, or idealize it",
+    sturdy: "The figure has a solid, muscular, broad-shouldered build — render this strong sturdy physique faithfully and do not slim it",
+  };
+  // 系統ごとの英語スタイル表現＝“雰囲気・シルエット・色ムード”のみ（具体的な服名は入れない＝選んだコーデと矛盾させない）
   const STYLE_EN = {
-    any: "trendy 2026 SNS street style", simple: "minimalist clean style", adult: "elegant refined grown-up style",
-    korean: "Korean minimalist chic style", feminine: "romantic feminine style", mode: "avant-garde monochrome mode style",
-    street: "urban streetwear style", natural: "natural earthy relaxed style", kirekaji: "smart-casual style",
-    y2k: "Y2K early-2000s retro style", vintage: "vintage retro mix style", sporty: "sporty athleisure style",
+    any: "2026 SNS trend-mix vibe, relaxed oversized-meets-fitted layering, playful modern styling",
+    simple: "refined minimalist vibe, clean sculptural silhouettes, understated neutral palette",
+    adult: "quiet-luxury elegance, refined tailored silhouettes, warm neutral mood",
+    korean: "2026 Korean minimalist-chic vibe, relaxed soft tailoring, high-waist balanced silhouette, muted neutral palette",
+    feminine: "romantic feminine vibe, soft delicate silhouettes, ruffle-and-lace mood, soft pastel tones",
+    mode: "avant-garde mode vibe, architectural monochrome silhouettes, sharp structured lines, black-on-black drama",
+    street: "urban streetwear vibe, baggy relaxed layered silhouettes, bold logo-mixed mood",
+    natural: "earthy natural vibe, relaxed flowy silhouettes, warm earth-tone mood",
+    kirekaji: "smart-casual vibe, softly tailored relaxed silhouettes, muted neutral palette",
+    y2k: "Y2K-revival vibe, low-rise body-conscious silhouettes, shiny-metallic candy-bright accents",
+    vintage: "vintage retro-mix vibe, faded washes, warm earthy retro mood",
+    sporty: "sportsmart athleisure vibe, sleek sporty lines, tonal mood with a bright accent",
   };
   const SCENE_EN = {
-    casual: "casual city street", smart: "chic city outing", biz: "modern office", date: "romantic date",
-    friends: "friends hangout", sport: "athletic", relax: "relaxed at-home", outing: "weekend outdoor trip",
+    casual: "relaxed everyday city street, easygoing casual styling",
+    smart: "chic upscale outing, polished put-together smart styling",
+    biz: "modern corporate office, business-formal tailored attire",
+    date: "romantic date, softly elegant styling",
+    friends: "laid-back hangout with friends, fun casual styling",
+    sport: "athletic training setting, sporty performance activewear",
+    relax: "cozy relaxed at-home setting, soft loungewear ease",
+    outing: "weekend outdoor day-out, comfortable versatile casual styling",
+  };
+  // 年齢帯ごとの“styling vibe”（語彙のみ・服名やローマ字は入れない）。AGE_BAND[o.age]で引く。
+  const AGE_PROMPT_HINT = {
+    teen: "youthful Gen-Z trend styling, playful proportions",
+    young: "fresh young-adult styling, balanced trend-aware silhouette",
+    adult: "polished grown-up styling, effortless refined ease",
+    mature: "elegant grown-up styling, understated sophisticated ease",
   };
   // 慣用的な固有アイテム（先にここで確定）
   const GARMENT_SPECIAL = [
@@ -1643,11 +1728,15 @@
   // 実際のアイテムを反映したAI画像プロンプト（コーデとの一致度を上げる）
   function aiImagePrompt(o) {
     const it = {}; o.items.forEach(i => { it[i.key] = i.name; });
-    const young = (o.age === "a1" || o.age === "a2");
-    const person = young ? (o.gender === "ladies" ? "teenage girl" : "teenage boy") : (o.gender === "ladies" ? "woman" : "man");
+    const isTeen = (o.age === "a1" || o.age === "a2");
+    const person = isTeen ? (o.gender === "ladies" ? "teenage girl" : "teenage boy") : (o.gender === "ladies" ? "woman" : "man");
     const ageEn = { a1: "about 13 years old", a2: "about 17 years old", a3: "in early 20s", a4: "in late 20s", a5: "in early 30s", a6: "in mid 30s", a7: "in 40s" }[o.age] || "";
-    const bodyEn = { slim: "slim slender", std: "average build", plump: "plus-size curvy", sturdy: "athletic broad-shouldered" }[o.body] || "";
+    // 体型：未成年(a1/a2)には体重・体格の記述を一切付けない（安全配慮）。それ以外は主語に前置＋補足文で再現を強める。
+    const bodyLead = isTeen ? "" : (BODY_ADJ[o.body] || "");
+    const bodyEmph = isTeen ? "" : (BODY_EMPH[o.body] || "");
     const styleEn = STYLE_EN[o.taste] || "trendy 2026 fashion";
+    // 年齢ヒントはスポーツ/リラックスでは付けない（雰囲気の矛盾回避）
+    const ageHintEn = (o.scene === "sport" || o.scene === "relax") ? "" : (AGE_PROMPT_HINT[AGE_BAND[o.age]] || "");
     const seasonEn = { spring: "spring", summer: "summer", autumn: "autumn", winter: "winter" }[o.season] || "";
     const sceneEn = SCENE_EN[o.scene] || "everyday";
     const parts = [];
@@ -1659,8 +1748,14 @@
     const ag = garmentEn("acc", it.acc);
     if (ag) { const bagish = /(bag|tote|backpack|clutch|briefcase|charm|purse)/.test(ag); const ap = garmentPhrase("acc", it.acc, o); if (ap) parts.push((bagish ? "carrying " : "accessorized with ") + ap); }
     const outfit = parts.join(", ");
-    return `full-body fashion lookbook photograph of a ${bodyEn} ${person} ${ageEn}, ${styleEn}, ${outfit}. `
-      + `${sceneEn} setting, ${seasonEn}. Full body from head to shoes visible, entire outfit in frame, standing front-facing pose, single person alone, natural body proportions, realistic anatomy, soft natural daylight, photorealistic editorial fashion photography, sharp focus, highly detailed fabric textures and true-to-description colors, no text, no watermark, no extra people.`;
+    let subject = "a " + (bodyLead ? bodyLead + " " : "") + person + (ageEn ? " " + ageEn : "");
+    subject = subject.replace(/^a ([aeiou])/i, "an $1");
+    const vibe = [styleEn, ageHintEn].filter(Boolean).join(", ");
+    // 選んだコーデ(outfit)を主語直後に置いて最優先に。体型補足→雰囲気→シーン/季節→撮影指定の順。
+    return `full-body fashion lookbook photograph of ${subject}, ${outfit}. `
+      + (bodyEmph ? bodyEmph + ". " : "")
+      + `${vibe}. ${sceneEn}, ${seasonEn} season. `
+      + `Full body from head to shoes visible, entire outfit in frame, standing front-facing pose, single person alone, realistic anatomy, soft natural daylight, photorealistic editorial fashion photography, sharp focus, highly detailed fabric textures and true-to-description colors, no text, no watermark.`;
   }
 
   // 16進カラーを、AIが理解しやすい英語の色名に近似変換
