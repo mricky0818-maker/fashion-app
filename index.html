@@ -536,6 +536,7 @@
       <input type="text" id="cl-name" placeholder="名前（任意）例：白ニット" />
       <button class="add-btn" id="cl-add">追加</button>
     </div>
+    <div class="cl-detect" id="cl-detect" aria-live="polite" style="min-height:1.1em;margin:2px 2px 8px;font-size:.82rem;color:var(--accent-dark)"></div>
     <div class="cl-tags">
       <span class="cl-tag-label">カテゴリ（複数可）</span>
       <label><input type="checkbox" class="cl-cat" value="top" checked />トップス</label>
@@ -552,7 +553,7 @@
       <label><input type="checkbox" class="cl-season" value="winter" checked />冬</label>
     </div>
     <div class="closet-grid" id="closet-grid"></div>
-    <p class="panel-note">写真は端末内（ブラウザ）にのみ保存され、外部へは送信されません。写真の自動判別はできないため、カテゴリはご自身で選んでください。上の「👕 手持ちの服からコーデを提案」で、登録した服からコーデを組みます。</p>
+    <p class="panel-note">写真は端末内（ブラウザ）にのみ保存され、外部へは送信されません。写真を選ぶと、端末内のAIが色と種類をその場で判別し、カテゴリ・名前・シーズンを自動で下書きします（写真は一切アップロードされず、判別に使うAIデータだけが初回に一度だけ読み込まれます）。判別結果はあくまで目安ですので、いつでも自由に直せます。オフラインや対応していない端末、うまく判別できないときは、色と入力名からの簡易判定に切り替わり、「追加」はいつでも押せます。最終的に登録されるのは、チェックした項目と名前がそのままの内容です。上の「👕 手持ちの服からコーデを提案」で、登録した服からコーデを組みます。</p>
   </details>
 
   <details class="panel-card" id="aff">
@@ -1957,6 +1958,440 @@
     reader.readAsDataURL(file);
   }
 
+  /* ===================================================================
+     手持ちの服 自動判別レイヤー（端末内で完結・写真は送信しない）
+     (A) AI: TensorFlow.js + MobileNet で写真から種類を推定
+     (B) 色: ピクセルから主要色を抽出し日本語色名へ
+     (C) 名前/ファイル名から種類・季節を推定（フォールバック兼補強）
+     モデルの重みだけをCDNから初回に取得。写真は一切アップロードしない。
+     オフライン/非対応端末/低信頼のときは (B)+(C) に自動フォールバックし、
+     「追加」は常に押せる（addClosetItem がチェック内容の最終決定権を持つ）。
+     =================================================================== */
+  const TFJS_URL      = "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js";
+  const TFJS_SRI      = "sha384-vE8hbVJ4lezako5rlvE7bY0BVzWlFhZncPlckrqNwcUQpVtgbENTgZ8TBbnPjZre";
+  const MOBILENET_URL = "https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js";
+  const MOBILENET_SRI = "sha384-oBAqwJ0tv9zzKlbIZyBhhXlEvU/PMrSMqDyOHlEZVC8xWHx4yPySuS7vRikRcYFq";
+  const DETECTOR_TIMEOUT_MS = 12000;
+  const CLASSIFY_TIMEOUT_MS = 8000;
+  const GARMENT_THRESHOLD   = 0.22;  // 勝ちバケットの合算確率がこれ未満なら不採用
+  const GARMENT_MARGIN      = 1.5;   // 1位が2位のこの倍未満なら曖昧→不採用
+  const SOFT_CONF           = 0.34;  // これ未満は表現をやわらげる（もしかして…）
+
+  // ImageNetクラス名(部分一致) -> {category, jp}。具体名を汎用名より前に置く。
+  const GARMENT_MAP = [
+    { match: "t-shirt",     category: "top",    jp: "Tシャツ" },
+    { match: "jersey",      category: "top",    jp: "Tシャツ" },
+    { match: "sweatshirt",  category: "top",    jp: "スウェット" },
+    { match: "cardigan",    category: "top",    jp: "カーディガン" },
+    { match: "maillot",     category: "top",    jp: "タンクトップ" },
+    { match: "brassiere",   category: "top",    jp: "インナー" },
+    { match: "bikini",      category: "top",    jp: "水着" },
+    { match: "gown",        category: "top",    jp: "ワンピース" },
+    { match: "abaya",       category: "top",    jp: "ワンピース" },
+    { match: "jean",        category: "bottom", jp: "デニム" },
+    { match: "denim",       category: "bottom", jp: "デニム" },
+    { match: "skirt",       category: "bottom", jp: "スカート" },
+    { match: "sarong",      category: "bottom", jp: "巻きスカート" },
+    { match: "trunks",      category: "bottom", jp: "ショートパンツ" },
+    { match: "trench coat", category: "outer",  jp: "トレンチコート" },
+    { match: "fur coat",    category: "outer",  jp: "ファーコート" },
+    { match: "coat",        category: "outer",  jp: "コート" },
+    { match: "suit",        category: "outer",  jp: "ジャケット" },
+    { match: "kimono",      category: "outer",  jp: "着物" },
+    { match: "poncho",      category: "outer",  jp: "ポンチョ" },
+    { match: "running shoe",category: "shoes",  jp: "スニーカー" },
+    { match: "sandal",      category: "shoes",  jp: "サンダル" },
+    { match: "loafer",      category: "shoes",  jp: "ローファー" },
+    { match: "clog",        category: "shoes",  jp: "サボ" },
+    { match: "cowboy boot", category: "shoes",  jp: "ブーツ" },
+    { match: "boot",        category: "shoes",  jp: "ブーツ" },
+    { match: "sock",        category: "shoes",  jp: "ソックス" },
+    { match: "backpack",    category: "acc",    jp: "リュック" },
+    { match: "knapsack",    category: "acc",    jp: "リュック" },
+    { match: "purse",       category: "acc",    jp: "バッグ" },
+    { match: "wallet",      category: "acc",    jp: "財布" },
+    { match: "sombrero",    category: "acc",    jp: "帽子" },
+    { match: "cowboy hat",  category: "acc",    jp: "帽子" },
+    { match: "bonnet",      category: "acc",    jp: "帽子" },
+    { match: "sunglass",    category: "acc",    jp: "サングラス" },
+    { match: "mitten",      category: "acc",    jp: "手袋" },
+    { match: "necklace",    category: "acc",    jp: "ネックレス" },
+    { match: "hair slide",  category: "acc",    jp: "ヘアアクセ" },
+    { match: "feather boa", category: "acc",    jp: "ストール" }
+  ];
+
+  let _detectorPromise = null;
+  const _scriptPromises = {};
+  function _injectScript(src, integrity) {
+    if (_scriptPromises[src]) return _scriptPromises[src];   // 同srcは1つのPromiseを共有（未完了の早期resolveを防ぐ）
+    _scriptPromises[src] = new Promise((resolve, reject) => {
+      const el = document.createElement("script");
+      el.src = src; el.async = true; el.crossOrigin = "anonymous";
+      if (integrity) el.integrity = integrity;               // SRI：改ざん配信を拒否（写真非送信の実効担保）
+      el.onload = () => resolve();
+      el.onerror = () => { _scriptPromises[src] = null; reject(new Error("script load failed: " + src)); };
+      document.head.appendChild(el);
+    });
+    return _scriptPromises[src];
+  }
+  function loadDetector() {
+    if (_detectorPromise) return _detectorPromise;
+    const work = (async () => {
+      await _injectScript(TFJS_URL, TFJS_SRI);
+      if (!window.tf) throw new Error("tfjs missing after load");
+      try { await window.tf.setBackend("webgl"); } catch (e) {}
+      await window.tf.ready();
+      if (window.tf.getBackend() !== "webgl") throw new Error("no-webgl"); // CPU推論でUIを固めない
+      await _injectScript(MOBILENET_URL, MOBILENET_SRI);
+      if (!window.mobilenet) throw new Error("mobilenet wrapper missing after load");
+      return await window.mobilenet.load({ version: 1, alpha: 0.5 }); // 軽量（重み約1.3MB）
+    })();
+    const timeout = new Promise((_, rej) =>
+      setTimeout(() => rej(new Error("detector load timeout")), DETECTOR_TIMEOUT_MS));
+    _detectorPromise = Promise.race([work, timeout]).catch(err => {
+      _detectorPromise = null; // 接続回復後の再試行を許す
+      throw err;
+    });
+    return _detectorPromise;
+  }
+  // -> { category, confidence, garmentWordJP } | throws（呼び出し側でcatch）
+  async function classifyGarment(imgEl) {
+    const model = await loadDetector();
+    const raw = await Promise.race([
+      model.classify(imgEl, 25), // topk=25 を5バケットに合算（top-1に頼らない）
+      new Promise((_, rej) => setTimeout(() => rej(new Error("classify timeout")), CLASSIFY_TIMEOUT_MS))
+    ]);
+    const buckets = { top: 0, bottom: 0, outer: 0, shoes: 0, acc: 0 };
+    const bestOf = {};
+    for (const p of raw) {
+      const cn = (p.className || "").toLowerCase();
+      for (const rule of GARMENT_MAP) {
+        if (cn.indexOf(rule.match) !== -1) {
+          buckets[rule.category] += p.probability;
+          const cur = bestOf[rule.category];
+          if (!cur || p.probability > cur.prob) bestOf[rule.category] = { jp: rule.jp, prob: p.probability };
+          break; // このクラス名は最も具体的なルールで確定
+        }
+      }
+    }
+    const ranked = Object.keys(buckets).map(k => ({ k, v: buckets[k] })).sort((a, b) => b.v - a.v);
+    const best = ranked[0], second = ranked[1];
+    if (!best || best.v < GARMENT_THRESHOLD) return { category: null, confidence: best ? best.v : 0, garmentWordJP: "" };
+    if (second && second.v > 0 && best.v < GARMENT_MARGIN * second.v) return { category: null, confidence: best.v, garmentWordJP: "" };
+    return { category: best.k, confidence: best.v, garmentWordJP: (bestOf[best.k] || {}).jp || "" };
+  }
+
+  /* (B) 主要色抽出（背景に強い・絶対に例外を投げない） */
+  function _rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const l = (max + min) / 2, d = max - min;
+    let h = 0, s = 0;
+    if (d > 1e-6) {
+      s = d / (1 - Math.abs(2 * l - 1));
+      if (max === r) h = ((g - b) / d) % 6;
+      else if (max === g) h = (b - r) / d + 2;
+      else h = (r - g) / d + 4;
+      h *= 60; if (h < 0) h += 360;
+    }
+    return [h, s, l];
+  }
+  function _toHex(r, g, b) {
+    const c = n => ('0' + Math.max(0, Math.min(255, Math.round(n))).toString(16)).slice(-2);
+    return '#' + c(r) + c(g) + c(b);
+  }
+  function dominantColor(imgEl) {
+    const FALLBACK = { hex: '#9aa0a6', rgb: [154, 160, 166] };
+    try {
+      if (!imgEl) return FALLBACK;
+      const iw = imgEl.naturalWidth || imgEl.width, ih = imgEl.naturalHeight || imgEl.height;
+      if (!iw || !ih) return FALLBACK;
+      const S = 40;
+      const cv = document.createElement('canvas'); cv.width = S; cv.height = S;
+      const ctx = cv.getContext('2d', { willReadFrequently: true });
+      if (!ctx) return FALLBACK;
+      ctx.drawImage(imgEl, 0, 0, S, S);
+      let data;
+      try { data = ctx.getImageData(0, 0, S, S).data; }
+      catch (e) { return FALLBACK; }
+      const HB = 12, seg = 360 / HB;
+      const hW = new Float64Array(HB), hR = new Float64Array(HB), hG = new Float64Array(HB), hBl = new Float64Array(HB);
+      let nW = 0, nR = 0, nG = 0, nB = 0;
+      for (let y = 0; y < S; y++) {
+        const ny = (y + 0.5) / S - 0.5;
+        for (let x = 0; x < S; x++) {
+          const i = (y * S + x) * 4;
+          if (data[i + 3] < 128) continue;
+          const r = data[i], g = data[i + 1], b = data[i + 2];
+          const nx = (x + 0.5) / S - 0.5;
+          const dist2 = (nx * nx + ny * ny) / 0.5;
+          let w = 1 - dist2 * 0.85;
+          if (w <= 0.02) continue;
+          const hsl = _rgbToHsl(r, g, b); const h = hsl[0], s = hsl[1], l = hsl[2];
+          if (l > 0.93) w *= 0.22; else if (l > 0.86) w *= 0.55;
+          if (l < 0.06) w *= 0.5;
+          if (s >= 0.12 && l > 0.08 && l < 0.94) {
+            const cw = w * (0.35 + s * 2.2);
+            let bin = (h / seg) | 0; if (bin >= HB) bin = HB - 1;
+            hW[bin] += cw; hR[bin] += r * cw; hG[bin] += g * cw; hBl[bin] += b * cw;
+          } else { nW += w; nR += r * w; nG += g * w; nB += b * w; }
+        }
+      }
+      let bi = -1, best = -1;
+      for (let i = 0; i < HB; i++) {
+        const sm = hW[i] + 0.5 * (hW[(i + HB - 1) % HB] + hW[(i + 1) % HB]);
+        if (sm > best) { best = sm; bi = i; }
+      }
+      let cW = 0, cR = 0, cG = 0, cB = 0;
+      if (bi >= 0) for (const k of [(bi + HB - 1) % HB, bi, (bi + 1) % HB]) { cW += hW[k]; cR += hR[k]; cG += hG[k]; cB += hBl[k]; }
+      if (cW > 0 && cW >= nW * 0.85) { const r = cR / cW, g = cG / cW, b = cB / cW; return { hex: _toHex(r, g, b), rgb: [Math.round(r), Math.round(g), Math.round(b)] }; }
+      if (nW > 0) { const r = nR / nW, g = nG / nW, b = nB / nW; return { hex: _toHex(r, g, b), rgb: [Math.round(r), Math.round(g), Math.round(b)] }; }
+      if (cW > 0) { const r = cR / cW, g = cG / cW, b = cB / cW; return { hex: _toHex(r, g, b), rgb: [Math.round(r), Math.round(g), Math.round(b)] }; }
+      return FALLBACK;
+    } catch (e) { return FALLBACK; }
+  }
+  function colorNameJP(rgb) {
+    let r = 0, g = 0, b = 0;
+    if (Array.isArray(rgb)) { r = +rgb[0] || 0; g = +rgb[1] || 0; b = +rgb[2] || 0; }
+    r = Math.max(0, Math.min(255, r)); g = Math.max(0, Math.min(255, g)); b = Math.max(0, Math.min(255, b));
+    const hex = _toHex(r, g, b);
+    const hsl = _rgbToHsl(r, g, b), h = hsl[0], s = hsl[1], l = hsl[2];
+    const chroma = Math.max(r, g, b) - Math.min(r, g, b);
+    const out = name => ({ name, hex, rgb: [Math.round(r), Math.round(g), Math.round(b)] });
+    if (chroma < 20 || s < 0.10) {
+      if (l >= 0.90) return out('白'); if (l >= 0.80) return out('オフホワイト');
+      if (l <= 0.12) return out('黒'); if (l <= 0.30) return out('チャコール'); return out('グレー');
+    }
+    if (h >= 16 && h < 45) {
+      if (s >= 0.60 && l >= 0.45 && l < 0.72) return out('オレンジ');
+      if (l >= 0.72) return out('ベージュ');
+      if (l >= 0.50) return out(s >= 0.35 ? 'キャメル' : 'ベージュ');
+      if (l >= 0.34) return out(s >= 0.38 ? 'キャメル' : 'モカ');
+      if (l >= 0.22) return out(s >= 0.50 ? 'ブラウン' : 'モカ');
+      return out('ブラウン');
+    }
+    if (h < 16 || h >= 345) {
+      if (l <= 0.30) return out('ボルドー');
+      if (l >= 0.72 || (s < 0.55 && l >= 0.60)) return out('ピンク');
+      if (s < 0.40 && l < 0.50) return out('ボルドー');
+      return out('レッド');
+    }
+    if (h < 95) {
+      if (l < 0.32) return out('オリーブ');
+      if (s < 0.35) return out(l >= 0.78 ? 'ベージュ' : 'カーキ');
+      if (h < 70) return out(l >= 0.55 ? 'イエロー' : 'オリーブ');
+      return out('カーキ');
+    }
+    if (h < 160) {
+      if (l < 0.30) return out('グリーン');
+      if (s < 0.28 && l < 0.60) return out('カーキ');
+      return out('グリーン');
+    }
+    if (h < 200) {
+      if (l >= 0.72) return out('水色');
+      if (s < 0.32) return out('くすみブルー');
+      return out('グリーン');
+    }
+    if (h < 255) {
+      if (l >= 0.74) return out('水色');
+      if (l <= 0.26) return out('ネイビー');
+      if (s < 0.32) return out(l < 0.45 ? 'ネイビー' : 'くすみブルー');
+      return out(l < 0.40 ? 'ネイビー' : 'ブルー');
+    }
+    if (h < 300) return out('パープル');
+    if (l <= 0.32) return out('ボルドー');
+    if (h < 320 && l < 0.50) return out('パープル');
+    return out('ピンク');
+  }
+
+  /* (C) 名前/ファイル名/形状ヒューリスティック（ネット不要） */
+  var _ALL_SEASONS = ['spring', 'summer', 'autumn', 'winter'];
+  var _AW = ['autumn', 'winter'];
+  var GARMENT_SEASON_HINTS = [
+    { kw: ['ニット','knit','セーター','sweater','ウール','wool','カシミヤ','カシミア','cashmere','ダウン','down','ボア','boa','フリース','fleece','コーデュロイ','コール天','corduroy','ツイード','tweed','モヘア','mohair','アンゴラ','タートル','turtleneck','ハイネック','起毛','裏起毛','裏ボア','厚手','中綿','キルティング','quilt','メルトン','melton','ムートン','ファー','fur','ニットキャップ','ビーニー','beanie','マフラー','手袋','グローブ'], seasons: _AW },
+    { kw: ['リネン','linen','麻','メッシュ','mesh','シアー','sheer','半袖','ノースリーブ','sleeveless','タンク','tank','キャミ','camisole','ドライ','クール','涼','水着','swim','ラッシュ','ショーパン','ショートパンツ','サンダル','sandal','ミュール','mule','ビーサン','gauze','ガーゼ','シャンブレー'], seasons: ['summer'] },
+    { kw: ['カーディガン','cardigan','シャツジャケット','シャケット','trench','トレンチ','スプリング','薄手','ライトアウター','デニムジャケット','gジャン'], seasons: ['spring','autumn'] }
+  ];
+  var GARMENT_LEXICON = [
+    { cat: 'outer', jp: 'コート',        kw: ['コート','coat','チェスター','chester','ステンカラー','ロングコート'], season: _AW },
+    { cat: 'outer', jp: 'ダウン',        kw: ['ダウン','down jacket','ダウンジャケット','ダウンコート'], season: ['winter'] },
+    { cat: 'outer', jp: 'トレンチコート', kw: ['トレンチ','trench'], season: ['spring','autumn'] },
+    { cat: 'outer', jp: 'ブルゾン',      kw: ['ブルゾン','blouson','ma-1','ma1','ミリタリー','マウンテンパーカー','ナイロンジャケット','アノラック'], season: ['spring','autumn'] },
+    { cat: 'outer', jp: 'デニムジャケット', kw: ['デニムジャケット','gジャン','ジージャン','denim jacket','jean jacket','trucker'], season: ['spring','autumn'] },
+    { cat: 'outer', jp: 'ジャケット',    kw: ['テーラードジャケット','ジャケット','jacket','ブレザー','blazer'], season: ['spring','autumn'] },
+    { cat: 'outer', jp: 'カーディガン',  kw: ['カーディガン','cardigan','カーデ'], season: ['spring','autumn'] },
+    { cat: 'outer', jp: 'ベスト',        kw: ['ベスト','vest','ジレ','gilet'] },
+    { cat: 'outer', jp: 'アウター',      kw: ['アウター','outer','コーチジャケット','coach jacket','ボアジャケット','キルティング'], season: _AW },
+    { cat: 'top', jp: 'パーカー',    kw: ['パーカー','hoodie','フーディ','プルオーバー','pullover'] },
+    { cat: 'top', jp: 'スウェット',  kw: ['スウェット','スエット','sweatshirt','トレーナー','crewneck'] },
+    { cat: 'top', jp: 'ニット',      kw: ['ニット','knit','セーター','sweater','タートルネック','turtleneck','ハイネック'], season: _AW },
+    { cat: 'top', jp: 'Tシャツ',     kw: ['tシャツ','ティーシャツ','t-shirt','tee','tシャ','カットソー','cut and sew','ロンt','ロングt','long sleeve tee'] },
+    { cat: 'top', jp: 'ブラウス',    kw: ['ブラウス','blouse'] },
+    { cat: 'top', jp: 'シャツ',      kw: ['シャツ','shirt','オックスフォード','oxford','ネルシャツ','flannel','ダンガリー','ワイシャツ','ボタンダウン'] },
+    { cat: 'top', jp: 'タンクトップ', kw: ['タンクトップ','タンク','tank','キャミソール','キャミ','camisole','ノースリーブ','sleeveless'], season: ['summer'] },
+    { cat: 'top', jp: 'ポロシャツ',  kw: ['ポロ','polo'] },
+    { cat: 'top', jp: 'トップス',    kw: ['トップス','tops','ビスチェ'] },
+    { cat: 'top', jp: 'ワンピース',  kw: ['ワンピース','ワンピ','dress','ドレス','オールインワン','サロペット','salopette','jumpsuit','オーバーオール','overall'] },
+    { cat: 'bottom', jp: 'デニムパンツ',  kw: ['デニム','denim','ジーンズ','ジーパン','jeans','jean'] },
+    { cat: 'bottom', jp: 'スラックス',    kw: ['スラックス','slacks','トラウザー','trouser','テーパード','ワイドパンツ','wide pants'] },
+    { cat: 'bottom', jp: 'チノパン',      kw: ['チノ','chino','chinos'] },
+    { cat: 'bottom', jp: 'ショートパンツ', kw: ['ショートパンツ','ショーパン','ハーフパンツ','short pants','shorts','ショーツ'], season: ['summer'] },
+    { cat: 'bottom', jp: 'カーゴパンツ',  kw: ['カーゴ','cargo','ジョガー','jogger','スウェットパンツ','sweatpants','トラックパンツ'] },
+    { cat: 'bottom', jp: 'レギンス',      kw: ['レギンス','leggings','スパッツ'] },
+    { cat: 'bottom', jp: 'スカート',      kw: ['スカート','skirt','フレアスカート','タイトスカート','プリーツスカート','マキシスカート'] },
+    { cat: 'bottom', jp: 'パンツ',        kw: ['パンツ','pants','ボトムス','bottoms','bottom'] },
+    { cat: 'shoes', jp: 'スニーカー',   kw: ['スニーカー','sneaker','sneakers','ランニングシューズ','コンバース','converse','ナイキ','nike','アディダス','adidas','キャンバスシューズ'] },
+    { cat: 'shoes', jp: 'ブーツ',       kw: ['ブーツ','boots','boot','ムートンブーツ','チェルシーブーツ','サイドゴア'], season: _AW },
+    { cat: 'shoes', jp: 'ローファー',   kw: ['ローファー','loafer','loafers'] },
+    { cat: 'shoes', jp: 'パンプス',     kw: ['パンプス','pumps','ヒール','heels','high heel'] },
+    { cat: 'shoes', jp: 'サンダル',     kw: ['サンダル','sandal','sandals','ミュール','mule','ビーチサンダル','ビーサン'], season: ['summer'] },
+    { cat: 'shoes', jp: 'バレエシューズ', kw: ['バレエ','ballet','フラットシューズ','flat shoes'] },
+    { cat: 'shoes', jp: 'レザーシューズ', kw: ['革靴','レザーシューズ','dress shoes','oxford shoes','ダービー','モンクストラップ'] },
+    { cat: 'shoes', jp: 'シューズ',     kw: ['シューズ','shoes','shoe','靴'] },
+    { cat: 'acc', jp: 'リュック',       kw: ['リュック','バックパック','backpack','デイパック'] },
+    { cat: 'acc', jp: 'トートバッグ',   kw: ['トート','tote'] },
+    { cat: 'acc', jp: 'ショルダーバッグ', kw: ['ショルダーバッグ','ショルダー','shoulder bag','クロスボディ'] },
+    { cat: 'acc', jp: 'バッグ',         kw: ['バッグ','バック','bag','かばん','鞄','ハンドバッグ','クラッチ','clutch','ポーチ','pouch'] },
+    { cat: 'acc', jp: 'キャップ',       kw: ['キャップ','cap','ベースボールキャップ'] },
+    { cat: 'acc', jp: 'ニット帽',       kw: ['ニット帽','ビーニー','beanie'], season: _AW },
+    { cat: 'acc', jp: '帽子',           kw: ['帽子','hat','ハット','バケットハット','bucket','ベレー','beret'] },
+    { cat: 'acc', jp: 'ベルト',         kw: ['ベルト','belt'] },
+    { cat: 'acc', jp: 'マフラー',       kw: ['マフラー','muffler','ストール','stole'], season: _AW },
+    { cat: 'acc', jp: 'スカーフ',       kw: ['スカーフ','scarf','バンダナ'] },
+    { cat: 'acc', jp: '手袋',           kw: ['手袋','グローブ','gloves'], season: ['winter'] },
+    { cat: 'acc', jp: 'ソックス',       kw: ['ソックス','socks','靴下'] },
+    { cat: 'acc', jp: 'メガネ',         kw: ['メガネ','眼鏡','めがね','glasses','サングラス','sunglasses'] },
+    { cat: 'acc', jp: 'ピアス',         kw: ['ピアス','イヤリング','earring','earrings'] },
+    { cat: 'acc', jp: 'ネックレス',     kw: ['ネックレス','necklace','チョーカー'] },
+    { cat: 'acc', jp: '腕時計',         kw: ['腕時計','時計','watch'] },
+    { cat: 'acc', jp: '小物',           kw: ['小物','アクセ','accessory','acc'] }
+  ];
+  function _normText(s) {
+    if (!s) return '';
+    s = String(s).toLowerCase();
+    s = s.replace(/\.[a-z0-9]{1,5}$/i, '');
+    s = s.replace(/[_\-.]+/g, ' ');
+    s = s.replace(/[！-～]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
+    return s;
+  }
+  function _addUnique(arr, vals) { for (var i = 0; i < vals.length; i++) if (arr.indexOf(vals[i]) === -1) arr.push(vals[i]); return arr; }
+  function guessFromText(name, filename) {
+    var hay = (_normText(name) + ' ' + _normText(filename)).trim();
+    var out = { cats: [], seasons: [], garmentWordJP: null };
+    if (!hay) return out;
+    for (var i = 0; i < GARMENT_LEXICON.length; i++) {
+      var entry = GARMENT_LEXICON[i], hit = false;
+      for (var k = 0; k < entry.kw.length; k++) if (entry.kw[k] && hay.indexOf(entry.kw[k]) !== -1) { hit = true; break; }
+      if (!hit) continue;
+      _addUnique(out.cats, [entry.cat]);
+      if (!out.garmentWordJP) out.garmentWordJP = entry.jp;
+      if (entry.season) _addUnique(out.seasons, entry.season);
+    }
+    for (var hh = 0; hh < GARMENT_SEASON_HINTS.length; hh++) {
+      var hint = GARMENT_SEASON_HINTS[hh];
+      for (var j = 0; j < hint.kw.length; j++) if (hint.kw[j] && hay.indexOf(hint.kw[j]) !== -1) { _addUnique(out.seasons, hint.seasons); break; }
+    }
+    return out;
+  }
+  function shapeHint(w, h) {
+    var res = { cats: [], weight: 0 };
+    w = +w; h = +h;
+    if (!w || !h || w <= 0 || h <= 0) return res;
+    var r = w / h;
+    if (r >= 1.35) { res.cats = ['shoes', 'acc']; res.weight = r >= 1.7 ? 0.35 : 0.2; }
+    else if (r <= 0.62) { res.cats = ['bottom', 'top']; res.weight = r <= 0.5 ? 0.35 : 0.2; }
+    return res;
+  }
+  function defaultSeasonsFor(category, garmentWordJP) {
+    var g = garmentWordJP || '';
+    var byGarment = {
+      'ダウン': ['winter'], 'ニット帽': _AW, 'マフラー': _AW, '手袋': ['winter'],
+      'ブーツ': _AW, 'コート': _AW, 'トレンチコート': ['spring','autumn'], 'ファーコート': _AW,
+      'ニット': _AW, 'カーディガン': ['spring','autumn'], 'ジャケット': ['spring','autumn'],
+      'ブルゾン': ['spring','autumn'], 'デニムジャケット': ['spring','autumn'],
+      'サンダル': ['summer'], 'ショートパンツ': ['summer'], 'タンクトップ': ['summer'], '水着': ['summer']
+    };
+    if (byGarment[g]) return byGarment[g].slice();
+    switch (category) {
+      case 'outer': return _AW.slice();
+      default:      return _ALL_SEASONS.slice();
+    }
+  }
+
+  /* (D) 撮影画像を一度だけデコードして色/AIと保存で共有 */
+  let _detCache = { file: null, dataUrl: null };
+  let _detSeq = 0;                 // 世代ガード（保存時にも++して判別結果を破棄）
+  let _catTouched = false, _seasonTouched = false; // ユーザーが手動で触ったら上書きしない
+  function readForDetect(file, cb) {
+    resizeImage(file, dataUrl => {
+      if (!dataUrl) { cb(null); return; }
+      _detCache = { file, dataUrl };
+      const img = new Image();
+      img.onload = () => cb({ dataUrl, img });
+      img.onerror = () => cb(null);
+      img.src = dataUrl;
+    });
+  }
+
+  /* (E) 統合：信頼できるAI > 名前 > 弱い形状 > なし。決して reject しない */
+  function autoDetect(file, opts) {
+    opts = opts || {};
+    const userName = (opts.name || "").trim(), filename = opts.filename || "";
+    return new Promise(resolve => {
+      readForDetect(file, async r => {
+        if (!r) { resolve({ cats: [], seasons: [], nameSuggestion: "", colorJP: "", garmentJP: "", catLabel: "", source: "none", confidence: 0 }); return; }
+        const colorJP = colorNameJP(dominantColor(r.img).rgb).name || "";
+        const text = guessFromText(userName, filename);
+        let ai = null;
+        try { ai = await classifyGarment(r.img); } catch (e) { /* offline/timeout/blocked -> 無音でフォールバック */ }
+        let cat = null, word = "", conf = 0, source = "color-only";
+        if (ai && ai.category && ai.confidence >= GARMENT_THRESHOLD) { cat = ai.category; word = ai.garmentWordJP || ""; conf = ai.confidence; source = "ai"; }
+        if (!cat && text.cats.length) { cat = text.cats[0]; source = "heuristic"; }
+        if (!cat) { const sh = shapeHint(r.img.naturalWidth, r.img.naturalHeight); if (sh.weight >= 0.3 && sh.cats.length) { cat = sh.cats[0]; source = "shape"; } }
+        if (!word) word = text.garmentWordJP || "";
+        let seasons = text.seasons.length ? text.seasons.slice() : (cat ? defaultSeasonsFor(cat, word) : []);
+        const cats = cat ? [cat] : [];
+        const catLabel = cat ? CLOSET_CATS[cat] : "";
+        let nameSuggestion = "";
+        if (!userName && (word || catLabel)) nameSuggestion = (colorJP + (word || catLabel)).trim();
+        resolve({ cats, seasons, nameSuggestion, colorJP, garmentJP: word, catLabel, source, confidence: conf });
+      });
+    });
+  }
+
+  /* (F) DOM配線：写真選択 -> 判別 -> フォーム下書き（すべて編集可・追加は非ブロック） */
+  (function () {
+    const fileEl = document.getElementById("cl-file"),
+          nameEl = document.getElementById("cl-name"),
+          st = document.getElementById("cl-detect");
+    if (!fileEl || !st) return;
+    document.querySelectorAll(".cl-cat").forEach(c => c.addEventListener("change", () => { _catTouched = true; }));
+    document.querySelectorAll(".cl-season").forEach(c => c.addEventListener("change", () => { _seasonTouched = true; }));
+    fileEl.addEventListener("change", () => {
+      const file = fileEl.files[0];
+      if (!file) { st.textContent = ""; return; }
+      const my = ++_detSeq;
+      _catTouched = false; _seasonTouched = false;   // この写真に対する手動フラグをリセット
+      st.textContent = "🔎 判別中…（端末内で処理しています）";
+      autoDetect(file, { name: nameEl.value.trim(), filename: file.name }).then(r => {
+        if (my !== _detSeq) return; // 新しい写真 or 保存済み -> 破棄
+        if (r.cats.length && !_catTouched) document.querySelectorAll(".cl-cat").forEach(c => { c.checked = r.cats.indexOf(c.value) >= 0; });
+        if (r.seasons.length && !_seasonTouched) document.querySelectorAll(".cl-season").forEach(c => { c.checked = r.seasons.indexOf(c.value) >= 0; });
+        if (!nameEl.value.trim() && r.nameSuggestion) nameEl.value = r.nameSuggestion;
+        if (r.catLabel) {
+          const tag = ((r.colorJP || "") + (r.garmentJP || "")) || r.catLabel;
+          st.textContent = (r.source === "ai" && r.confidence >= SOFT_CONF)
+            ? "判別しました：〈" + tag + "〉（" + r.catLabel + "）｜違っていたら直してください ✍️"
+            : "もしかして〈" + tag + "〉（" + r.catLabel + "）でしょうか？ ご確認ください ✍️";
+        } else if (r.colorJP) {
+          st.textContent = "色は〈" + r.colorJP + "〉と判定しました。種類はカテゴリからお選びください ✍️";
+        } else {
+          st.textContent = "うまく判別できませんでした。カテゴリをお選びください ✍️";
+        }
+      }).catch(() => { if (my === _detSeq) st.textContent = "自動判別はできませんでした。カテゴリをお選びください ✍️"; });
+    });
+  })();
+
   function addClosetItem() {
     const fileEl = document.getElementById("cl-file");
     const file = fileEl.files[0];
@@ -1965,17 +2400,22 @@
     if (!cats.length) { showToast("カテゴリを1つ以上選んでください"); return; }
     const seasons = [...document.querySelectorAll(".cl-season:checked")].map(c => c.value);
     const name = document.getElementById("cl-name").value.trim() || CLOSET_CATS[cats[0]];
-    resizeImage(file, dataUrl => {
+    const save = dataUrl => {
       if (!dataUrl) { showToast("画像の読み込みに失敗しました"); return; }
       const list = loadCloset();
       list.push({ id: "c" + Math.floor(Math.random() * 1e9) + "_" + list.length, cats, seasons, name, img: dataUrl });
       if (saveCloset(list)) {
+        _detSeq++;                                 // 進行中の判別結果を破棄
+        _detCache = { file: null, dataUrl: null };
         fileEl.value = "";
         document.getElementById("cl-name").value = "";
+        const st = document.getElementById("cl-detect"); if (st) st.textContent = "";
         renderClosetGrid();
         showToast("クローゼットに追加しました 👕");
       }
-    });
+    };
+    if (_detCache.file === file && _detCache.dataUrl) { save(_detCache.dataUrl); return; }  // 判別で読み込み済みなら再デコードしない
+    resizeImage(file, save);
   }
 
   function delClosetItem(id) { saveCloset(loadCloset().filter(x => x.id !== id)); renderClosetGrid(); }
