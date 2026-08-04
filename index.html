@@ -3,7 +3,28 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>今日のコーデ提案 👗</title>
+<title>今日のコーデ提案 👗｜体型・年齢別に全身コーデを無料提案</title>
+<meta name="description" content="性別・体型・年齢・季節から、今っぽい全身コーデを無料で提案。2026年の最新トレンドを反映し、AI画像で仕上がりイメージも確認できます。手持ちの服からの提案にも対応。" />
+<meta name="keywords" content="コーデ,コーディネート,ファッション,今日のコーデ,メンズコーデ,レディースコーデ,韓国系,Y2K,トレンド,着回し,体型別,骨格,無料" />
+<link rel="canonical" href="https://mricky0818-maker.github.io/fashion-app/" />
+<meta name="robots" content="index, follow" />
+<meta name="theme-color" content="#f4a6b8" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="今日のコーデ提案" />
+<meta property="og:title" content="今日のコーデ提案 👗｜体型・年齢別に全身コーデを無料提案" />
+<meta property="og:description" content="性別・体型・年齢・季節から今っぽい全身コーデを無料提案。2026年トレンド反映＆AI画像イメージ付き。手持ちの服からの提案にも対応。" />
+<meta property="og:url" content="https://mricky0818-maker.github.io/fashion-app/" />
+<meta property="og:image" content="https://mricky0818-maker.github.io/fashion-app/og.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:locale" content="ja_JP" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="今日のコーデ提案 👗｜体型・年齢別に全身コーデを無料提案" />
+<meta name="twitter:description" content="性別・体型・年齢・季節から今っぽい全身コーデを無料提案。2026年トレンド反映＆AI画像イメージ付き。" />
+<meta name="twitter:image" content="https://mricky0818-maker.github.io/fashion-app/og.jpg" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"今日のコーデ提案","url":"https://mricky0818-maker.github.io/fashion-app/","description":"性別・体型・年齢・季節から今っぽい全身コーデを無料提案するWebアプリ。2026年トレンド反映、AI画像イメージ付き、手持ちの服からの提案にも対応。","applicationCategory":"LifestyleApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"JPY"},"inLanguage":"ja"}
+</script>
 <style>
   :root {
     --bg: #fdf4f5;
@@ -1316,12 +1337,22 @@
         <button class="action ${isSaved ? "saved" : ""}" id="save-btn">${isSaved ? "♥ 保存済み" : "♡ お気に入り"}</button>
         <button class="action" id="copy-btn">📋 コピー</button>
       </div>
+      <div class="sources share-box">
+        <div class="palette-label">📤 このコーデをシェア</div>
+        <div class="source-btns">
+          <button class="src share-btn" data-share="native">📤 シェア</button>
+          <button class="src share-btn" data-share="x">𝕏 ポスト</button>
+          <button class="src share-btn" data-share="line">💬 LINE</button>
+          <button class="src share-btn" data-share="copy">🔗 リンク</button>
+        </div>
+      </div>
       ${promptBtn}
       ${footNote}
     `;
     el.querySelectorAll(".reroll").forEach(b => b.onclick = () => rerollItem(b.dataset.key));
     el.querySelectorAll(".shop").forEach(b => b.onclick = () => openShop(b.dataset.name));
-    el.querySelectorAll(".src").forEach(b => b.onclick = () => openSource(b.dataset.site));
+    el.querySelectorAll(".src[data-site]").forEach(b => b.onclick = () => openSource(b.dataset.site));
+    el.querySelectorAll(".share-btn").forEach(b => b.onclick = () => shareOutfit(b.dataset.share));
     document.getElementById("save-btn").onclick = toggleFav;
     document.getElementById("copy-btn").onclick = copyOutfit;
     if (!closet) {
@@ -1614,6 +1645,25 @@
 
   // ---- 実例(SNS)・買い物への誘導（外部サイトの検索を開くだけ）----
   function genderWord() { return state.current.gender === "ladies" ? "レディース" : "メンズ"; }
+
+  // ---- コーデをSNSでシェア（拡散導線）----
+  const APP_URL = "https://mricky0818-maker.github.io/fashion-app/";
+  function shareText() {
+    const o = state.current;
+    const g = o ? GENDERS[o.gender].label : "";
+    const t = (o && TASTES[o.taste]) ? TASTES[o.taste].label : "";
+    return `今日のコーデ提案してもらった✨ ${g}${t ? "・" + t : ""}\n体型・年齢に合わせて全身コーデを無料で提案してくれるよ👗\n#今日のコーデ #コーデ提案 #ファッション`;
+  }
+  function shareOutfit(kind) {
+    const url = APP_URL, text = shareText();
+    if (kind === "native") {
+      if (navigator.share) { navigator.share({ title: "今日のコーデ提案 👗", text, url }).catch(() => {}); return; }
+      kind = "x";
+    }
+    if (kind === "x") { window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, "_blank", "noopener"); return; }
+    if (kind === "line") { window.open(`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}`, "_blank", "noopener"); return; }
+    if (kind === "copy") { copyText(text + "\n" + url, "シェア用テキストをコピーしました 🔗"); return; }
+  }
 
   function openSource(site) {
     const o = state.current;

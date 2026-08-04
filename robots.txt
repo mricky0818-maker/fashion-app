@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mricky0818-maker.github.io/fashion-app/sitemap.xml
