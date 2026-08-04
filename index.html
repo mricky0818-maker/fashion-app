@@ -408,6 +408,15 @@
     transition: opacity 0.25s ease, transform 0.25s ease;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .post-ov { position: fixed; inset: 0; background: rgba(24,12,24,0.55); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 16px; }
+  .post-modal { background: var(--card); border-radius: 20px; max-width: 430px; width: 100%; max-height: 92vh; overflow: auto; padding: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.32); }
+  .post-modal-head { display: flex; justify-content: space-between; align-items: center; font-weight: 700; margin-bottom: 10px; color: var(--ink); }
+  .post-x { background: none; border: none; font-size: 1.15rem; cursor: pointer; color: var(--sub); line-height: 1; }
+  .post-img { width: 100%; border-radius: 14px; display: block; }
+  .post-cap { width: 100%; margin-top: 10px; border: 1px solid #eadfe4; border-radius: 12px; padding: 10px; font-size: 0.85rem; line-height: 1.5; font-family: inherit; resize: vertical; box-sizing: border-box; color: var(--ink); background: #fff; }
+  .post-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .post-btns .action, .post-btns .src { flex: 1 1 46%; }
+  .snspost-btn { width: 100%; margin-bottom: 8px; }
 
   footer { text-align: center; margin-top: 26px; color: var(--sub); font-size: 0.78rem; }
 
@@ -1340,6 +1349,7 @@
       </div>
       <div class="sources share-box">
         <div class="palette-label">📤 このコーデをシェア</div>
+        <button class="action snspost-btn" id="snspost-btn">📸 SNS投稿を作成（画像＋キャプション）</button>
         <div class="source-btns">
           <button class="src share-btn" data-share="native">📤 シェア</button>
           <button class="src share-btn" data-share="x">𝕏 ポスト</button>
@@ -1354,6 +1364,7 @@
     el.querySelectorAll(".shop").forEach(b => b.onclick = () => openShop(b.dataset.name));
     el.querySelectorAll(".src[data-site]").forEach(b => b.onclick = () => openSource(b.dataset.site));
     el.querySelectorAll(".share-btn").forEach(b => b.onclick = () => shareOutfit(b.dataset.share));
+    const _sp = document.getElementById("snspost-btn"); if (_sp) _sp.onclick = makeSnsPost;
     document.getElementById("save-btn").onclick = toggleFav;
     document.getElementById("copy-btn").onclick = copyOutfit;
     if (!closet) {
@@ -1664,6 +1675,87 @@
     if (kind === "x") { window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, "_blank", "noopener"); return; }
     if (kind === "line") { window.open(`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}`, "_blank", "noopener"); return; }
     if (kind === "copy") { copyText(text + "\n" + url, "シェア用テキストをコピーしました 🔗"); return; }
+  }
+
+  // ---- ワンタップSNS投稿ジェネレーター（画像カード＋キャプション）----
+  function roundRectPath(ctx, X, Y, w, h, r) {
+    r = Math.min(r, h / 2, w / 2);
+    ctx.beginPath(); ctx.moveTo(X + r, Y);
+    ctx.arcTo(X + w, Y, X + w, Y + h, r); ctx.arcTo(X + w, Y + h, X, Y + h, r);
+    ctx.arcTo(X, Y + h, X, Y, r); ctx.arcTo(X, Y, X + w, Y, r); ctx.closePath();
+  }
+  function loadSvgImage(svg) {
+    return new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg); });
+  }
+  // コーデを縦長(1080x1350)の投稿画像に描く
+  async function drawPostCard(o) {
+    const W = 1080, H = 1350, fam = "'Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif";
+    const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+    const ctx = cv.getContext("2d");
+    const g = ctx.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, "#ffe6ef"); g.addColorStop(.38, "#fdeede"); g.addColorStop(.7, "#e6f6ee"); g.addColorStop(1, "#e9edfc");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillStyle = "#3a2b39"; ctx.font = `800 64px ${fam}`; ctx.fillText("今日のコーデ ✨", W / 2, 96);
+    const meta = `${GENDERS[o.gender].label}・${(TASTES[o.taste] || {}).label || ""}・${SCENES[o.scene].label}・${SEASONS[o.season].label}`;
+    ctx.fillStyle = "#8a7f88"; ctx.font = `500 34px ${fam}`; ctx.fillText(meta, W / 2, 156);
+    const items = o.items.filter(i => i.name && !/なしでOK/.test(i.name));
+    const n = items.length || 1;
+    const icons = await Promise.all(items.map(i => loadSvgImage(garmentIcon(iconType(i.key, i.name), "#ffffff", 64))));
+    const top = 236, rowH = Math.min(152, (H - top - 270) / n);
+    ctx.textAlign = "left";
+    items.forEach((i, idx) => {
+      const y = top + idx * rowH, rx = 88, rw = W - 176, rh = rowH - 22, cy = y + rh / 2;
+      roundRectPath(ctx, rx, y, rw, rh, rh / 2); ctx.fillStyle = "rgba(255,255,255,0.74)"; ctx.fill();
+      const cxc = rx + rh / 2, col = itemColor(i.key, o), ir = rh / 2 - 14;
+      ctx.beginPath(); ctx.arc(cxc, cy, ir, 0, Math.PI * 2); ctx.fillStyle = col; ctx.fill();
+      const ic = icons[idx]; if (ic) { const s = ir * 1.5; ctx.drawImage(ic, cxc - s / 2, cy - s / 2, s, s); }
+      const tx = rx + rh + 8, maxW = rw - rh - 40;
+      ctx.fillStyle = "#a99fa6"; ctx.font = `600 24px ${fam}`; ctx.fillText((i.own ? "👕 " : "") + i.cat, tx, cy - 20);
+      ctx.fillStyle = "#33262f"; let fs = 42; do { ctx.font = `700 ${fs}px ${fam}`; if (ctx.measureText(i.name).width <= maxW) break; fs -= 2; } while (fs >= 26);
+      ctx.fillText(i.name, tx, cy + 20);
+    });
+    const by = top + n * rowH + 18;
+    if (o.palette) {
+      const sw = o.palette.colors, bw = 62, gap = 16, tot = sw.length * bw + (sw.length - 1) * gap;
+      let sx = (W - tot) / 2; sw.forEach(c => { roundRectPath(ctx, sx, by, bw, bw, 16); ctx.fillStyle = c; ctx.fill(); sx += bw + gap; });
+    }
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#3a2b39"; ctx.font = `800 40px ${fam}`; ctx.fillText("今日のコーデ提案 👗", W / 2, H - 98);
+    ctx.fillStyle = "#c76b86"; ctx.font = `600 30px ${fam}`; ctx.fillText("mricky0818-maker.github.io/fashion-app", W / 2, H - 54);
+    return cv;
+  }
+  function snsCaption(o) {
+    const gl = GENDERS[o.gender].label, t = (TASTES[o.taste] || {}).label || "";
+    const lines = o.items.filter(i => i.name && !/なしでOK/.test(i.name)).map(i => `${i.cat}：${i.name}`).join("\n");
+    const tag = t.replace(/\s|＆|&/g, "");
+    return `今日のコーデ提案 👗✨\n${gl}・${t}・${SCENES[o.scene].label}\n\n${lines}\n\n体型・年齢・季節から全身コーデを無料で提案してくれるよ🎀\n▼ここで作れる\n${APP_URL}\n\n#今日のコーデ #コーデ提案 #${tag} #${gl}コーデ #ファッション #コーディネート #お洒落さんと繋がりたい`;
+  }
+  function showPostModal(imgUrl, caption) {
+    const ov = document.createElement("div"); ov.className = "post-ov";
+    ov.innerHTML = `<div class="post-modal"><div class="post-modal-head"><span>📸 SNS投稿プレビュー</span><button class="post-x" aria-label="閉じる">✕</button></div><img class="post-img" src="${imgUrl}" alt="コーデ投稿画像" /><textarea class="post-cap" rows="8"></textarea><div class="post-btns"><button class="action" data-a="save">🖼️ 画像を保存</button><button class="action" data-a="copy">📋 文をコピー</button><button class="src" data-a="x">𝕏 Xで投稿</button><button class="src" data-a="line">💬 LINE</button></div><p class="sources-note">保存した画像をInstagram等に投稿し、コピーした文を貼り付けてください。</p></div>`;
+    document.body.appendChild(ov);
+    const capEl = ov.querySelector(".post-cap"); capEl.value = caption;
+    const close = () => ov.remove();
+    ov.addEventListener("click", e => { if (e.target === ov) close(); });
+    ov.querySelector(".post-x").onclick = close;
+    ov.querySelectorAll("[data-a]").forEach(b => b.onclick = () => {
+      const a = b.dataset.a, cap = capEl.value;
+      if (a === "save") { const link = document.createElement("a"); link.href = imgUrl; link.download = "今日のコーデ.png"; document.body.appendChild(link); link.click(); link.remove(); showToast("画像を保存しました 🖼️"); }
+      else if (a === "copy") { copyText(cap, "キャプションをコピーしました 📋"); }
+      else if (a === "x") { window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(cap)}`, "_blank", "noopener"); }
+      else if (a === "line") { window.open(`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(APP_URL)}`, "_blank", "noopener"); }
+    });
+  }
+  async function makeSnsPost() {
+    const o = state.current; if (!o) return;
+    const btn = document.getElementById("snspost-btn");
+    if (btn) { btn.disabled = true; btn.textContent = "作成中…"; }
+    try {
+      const cv = await drawPostCard(o);
+      showPostModal(cv.toDataURL("image/png"), snsCaption(o));
+    } catch (e) { showToast("投稿の作成に失敗しました"); }
+    if (btn) { btn.disabled = false; btn.textContent = "📸 SNS投稿を作成（画像＋キャプション）"; }
   }
 
   function openSource(site) {
