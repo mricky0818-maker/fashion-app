@@ -1288,9 +1288,14 @@
 
     const figureHtml = closet ? "" : `
       <div class="figure-wrap">
-        <div class="figure-cap" style="margin-top:2px">👗 このコーデのイメージ ・ ${AGES[cur.age].label} ・ ${BODY[cur.body].label}</div>
-        <button class="action ai-gen-btn" id="ai-gen-btn">🎨 AIでこのコーデの画像を生成</button>
-        <div class="ai-image" id="ai-image"><div class="ai-loading">ボタンを押すと、AIがこのコーデのリアルな画像を作ります（数秒〜20秒）。</div></div>
+        <div class="figure-cap" style="margin-top:2px">🖼️ このコーデを“リアルな画像”で見る（無料）</div>
+        <button class="action" id="prompt-btn" style="width:100%;margin-top:8px">📋 画像用プロンプトをコピー</button>
+        <p class="ai-loading" style="padding:12px">① コピー → ② 下のAIを開いて貼るだけ。<b>ChatGPT・Copilot（DALL·E3）・Gemini</b>なら、崩れないリアルな全身コーデ画像が無料で作れます。</p>
+        <div class="source-btns" style="margin-top:0">
+          <button class="src" data-ai="chatgpt">🤖 ChatGPTで作る</button>
+          <button class="src" data-ai="copilot">🎨 Copilotで作る</button>
+          <button class="src" data-ai="gemini">✨ Geminiで作る</button>
+        </div>
       </div>`;
 
     const tasteAdvice = closet ? "" : `<p class="advice-line">💁 <b>${TASTES[cur.taste].label}</b>の着こなし：${TASTES[cur.taste].note}</p>`;
@@ -1304,9 +1309,7 @@
         </div>
       </div>` : "";
 
-    const promptBtn = closet ? "" : `
-        <button class="action" id="prompt-btn" style="width:100%;margin-top:10px">🖼️ このコーデのAI画像プロンプトをコピー</button>
-        <p class="sources-note">💡 <b>もっとリアルで正確な画像がほしい人へ：</b>このプロンプトをコピーして、<b>ChatGPT・Microsoft Copilot（Bing画像生成）・Gemini</b> など高精度なAI画像ツールに貼るだけ。上のAI画像よりずっとキレイ・正確に出せます（多くは無料）。</p>`;
+    const promptBtn = "";
     const affOn = !!affiliateId();
     const affNote = affOn ? `<p class="sources-note">※ ショッピングの🛒リンクはアフィリエイト広告（楽天）を含みます。</p>` : "";
     const footNote = (closet
@@ -1378,9 +1381,8 @@
     document.getElementById("save-btn").onclick = toggleFav;
     document.getElementById("copy-btn").onclick = copyOutfit;
     if (!closet) {
-      document.getElementById("prompt-btn").onclick = copyPrompt;
-      const aiBtn = document.getElementById("ai-gen-btn");
-      if (aiBtn) aiBtn.onclick = generateAiImage;
+      const pb = document.getElementById("prompt-btn"); if (pb) pb.onclick = copyPrompt;
+      el.querySelectorAll("[data-ai]").forEach(b => b.onclick = () => openAiTool(b.dataset.ai));
     }
     el.classList.remove("show");
     void el.offsetWidth;
@@ -1447,6 +1449,17 @@
 
   function copyPrompt() {
     copyText(aiImagePrompt(state.current), "コピー！ChatGPT等のAI画像生成に貼ると高精度な画像が作れます 🖼️");
+  }
+  // プロンプトをコピーして、選んだAI画像ツールを新しいタブで開く（貼るだけ）
+  function openAiTool(kind) {
+    const o = state.current; if (!o) return;
+    copyText(aiImagePrompt(o), "プロンプトをコピー！開いたAIに貼り付けてください 📋");
+    const urls = {
+      chatgpt: "https://chatgpt.com/",
+      copilot: "https://www.bing.com/images/create/ai-image-generator",
+      gemini: "https://gemini.google.com/app",
+    };
+    window.open(urls[kind] || urls.chatgpt, "_blank", "noopener");
   }
 
   // 系統ごとの英語スタイル表現（画像全体の世界観を指定）
