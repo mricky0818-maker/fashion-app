@@ -892,6 +892,11 @@
         if (f.length) pool = f;
       }
     }
+    // メンズは甘すぎるピンク／パステル基調のパレットを避ける
+    if (state.gender === "mens") {
+      const f = pool.filter(p => !/ピンク|ペール/.test(p.name));
+      if (f.length) pool = f;
+    }
     return pick(pool);
   }
 
@@ -1252,16 +1257,37 @@
       ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
 
+  // 靴の種類ごとの自然な色（アイコン用）。革靴系＝茶、スニーカー＝白系、ブーツ＝黒茶 など
+  function shoeHex(name) {
+    if (/白|ホワイト/.test(name)) return "#efece6";
+    if (/黒|ブラック/.test(name)) return "#2c2c2e";
+    if (/ローファー|革靴|レザーシューズ|ドレス|パンプス|ヒール|オックスフォード|モカシン/.test(name)) return "#5a3b28";
+    if (/ブーツ/.test(name))           return "#3a2c25";
+    if (/バレエ|フラット|パレエ/.test(name)) return "#c79aa0";
+    if (/サンダル|ミュール|グルカ/.test(name)) return "#b8996f";
+    if (/スニーカー|トレイル|ランナー|ランニング|サンバ|ダッド|厚底/.test(name)) return "#e7e3dc";
+    return "#6a5f57";
+  }
+  // デニムの自然な色（アイコン用）。名称に色指定があればそれを優先、なければインディゴ
+  function denimHex(name) {
+    if (/白|ホワイト/.test(name)) return "#e8e4dc";
+    if (/黒|ブラック/.test(name)) return "#2f3138";
+    if (/グレー|アッシュ/.test(name)) return "#8b9099";
+    if (/ライト|淡|薄|ウォッシュ|ケミカル/.test(name)) return "#8fb0c8";
+    return "#3f6591";
+  }
+  function isDenim(name) { return /デニム|ジーンズ|ジーパン/.test(name || ""); }
+
   function itemColor(key, cur) {
     if (!cur.palette) return "#9a94a0";
     const pal = cur.palette.colors;
-    const outerItem = cur.items.find(i => i.key === "outer");
-    const outer = outerItem ? outerItem.name : "";
+    const nameOf = (k) => { const it = (cur.items || []).find(i => i.key === k); return it ? it.name : ""; };
+    const outer = nameOf("outer");
     const hasOuter = !!outer && !/なし|OK|羽織/.test(outer);
+    if (key === "shoes")  return shoeHex(nameOf("shoes"));
+    if (key === "bottom") return isDenim(nameOf("bottom")) ? denimHex(nameOf("bottom")) : pal[1];
     if (key === "top")    return hasOuter ? pal[2] : pal[0];
-    if (key === "bottom") return pal[1];
     if (key === "outer")  return pal[0];
-    if (key === "shoes")  return "#6a6470";
     return pal[1];
   }
 
@@ -1589,7 +1615,13 @@
   }
   // アイテムごとの色（パレット由来。デニム/シューズ/小物は自然な色に補正）
   function colorFor(key, name, o) {
-    if (key === "shoes") { if (/白|ホワイト/.test(name)) return "white"; if (/黒|ブラック/.test(name)) return "black"; return ""; }
+    if (key === "shoes") {
+      if (/白|ホワイト/.test(name)) return "white";
+      if (/黒|ブラック/.test(name)) return "black";
+      if (/ローファー|革靴|レザーシューズ|ドレス|パンプス|ヒール|オックスフォード|モカシン/.test(name)) return "brown";
+      if (/ブーツ/.test(name)) return "dark brown";
+      return "";
+    }
     if (key === "acc") return "";
     if (key === "bottom" && /デニム|ジーンズ|ジーパン/.test(name)) {
       if (/白/.test(name)) return "white"; if (/黒|ブラック/.test(name)) return "black";
