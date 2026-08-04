@@ -1396,33 +1396,172 @@
     copyText(outfitToPrompt(state.current), "画像生成用プロンプトをコピーしました 🖼️");
   }
 
-  // 日本語のアイテム名を、AIが理解しやすい英語の服の種類に変換
-  function garmentEn(key, name) {
-    if (!name) return null;
-    const rules = {
-      top: [[/タートル/, "turtleneck sweater"], [/カーデ|カーディガン/, "cardigan"], [/ニット|セーター/, "knit sweater"], [/パーカー|フーディ|ジップ/, "hoodie"], [/スウェット|トレーナー/, "sweatshirt"], [/ワンピ/, "dress"], [/ブラウス/, "blouse"], [/シャツ|ポロ/, "shirt"], [/タンク|キャミ/, "tank top"], [/カットソー|ロンT|ロゴ|T/, "t-shirt"]],
-      bottom: [[/ワンピ/, "dress"], [/スカパン/, "skort"], [/ロング|マキシ/, "long skirt"], [/プリーツ/, "pleated skirt"], [/スカート/, "skirt"], [/デニム|ジーンズ|ジーパン/, "jeans"], [/ワイド/, "wide-leg trousers"], [/ショー|ハーフ|短パン/, "shorts"], [/レギンス|タイツ/, "leggings"], [/ジョガー|トラック|スウェットパンツ/, "jogger pants"], [/スラックス|パンツ|チノ|カーゴ/, "trousers"]],
-      outer: [[/トレンチ/, "trench coat"], [/チェスター/, "chester coat"], [/コート/, "long coat"], [/ダウン|中綿/, "down jacket"], [/カバーオール/, "denim jacket"], [/スタジャン|スタジアム/, "varsity jacket"], [/ブルゾン|MA-1|コーチ|マウンテン|ナイロン|ボア|フリース/, "blouson jacket"], [/ボレロ/, "bolero"], [/カーデ|カーディガン/, "cardigan"], [/ジレ|ベスト/, "vest"], [/ジャケット/, "jacket"], [/パーカー/, "hoodie"]],
-      shoes: [[/ブーツ/, "boots"], [/パンプス|ヒール/, "heels"], [/サンダル/, "sandals"], [/メリージェーン|バレエ/, "ballet flats"], [/厚底/, "platform shoes"], [/ローファー|プレーントゥ|革靴|レザーシューズ/, "loafers"], [/スニーカー|シューズ|スリッポン|ハイカット/, "sneakers"]],
-    };
-    const list = rules[key];
-    if (!list) return null;
-    for (const [re, en] of list) if (re.test(name)) return en;
+  // 系統ごとの英語スタイル表現（画像全体の世界観を指定）
+  const STYLE_EN = {
+    any: "trendy 2026 SNS street style", simple: "minimalist clean style", adult: "elegant refined grown-up style",
+    korean: "Korean minimalist chic style", feminine: "romantic feminine style", mode: "avant-garde monochrome mode style",
+    street: "urban streetwear style", natural: "natural earthy relaxed style", kirekaji: "smart-casual style",
+    y2k: "Y2K early-2000s retro style", vintage: "vintage retro mix style", sporty: "sporty athleisure style",
+  };
+  const SCENE_EN = {
+    casual: "casual city street", smart: "chic city outing", biz: "modern office", date: "romantic date",
+    friends: "friends hangout", sport: "athletic", relax: "relaxed at-home", outing: "weekend outdoor trip",
+  };
+  // 慣用的な固有アイテム（先にここで確定）
+  const GARMENT_SPECIAL = [
+    [/ジャーマントレーナー/, "german army trainer sneakers"], [/サンバ/, "samba retro sneakers"],
+    [/バブーシュカ/, "babushka headscarf"], [/ネッククーラー/, "cooling neck band"],
+    [/ぬいぐるみ.*チャーム|バッグチャーム/, "plush bag charm"], [/ルーズソックス/, "loose slouch socks"],
+    [/レッグウォーマー/, "leg warmers"], [/デッキシューズ/, "boat shoes"], [/グルカサンダル/, "gurkha sandals"],
+    [/コクーンコート/, "cocoon coat"], [/(バルマカーン|ステンカラー)コート/, "balmacaan coat"],
+    [/革靴|ストレートチップ/, "leather dress shoes"],
+  ];
+  // 素材・シルエット・ディテールの修飾語（順に最大3つ拾って基本形の前に付ける）
+  const GARMENT_MODS = [
+    [/オーバーサイズ|ビッグ|ざっくり|ゆる/, "oversized"], [/クロップド|チビT|ちびT|ベビーT|ベビーフィット/, "cropped"],
+    [/ハイウエスト/, "high-waisted"], [/ローライズ/, "low-rise"], [/バレル/, "barrel-leg"], [/バルーン/, "balloon"], [/バギー/, "baggy"], [/カーゴ/, "cargo"],
+    [/ワイド/, "wide-leg"], [/センタープレス/, "center-crease"], [/ストレート/, "straight-cut"], [/テーパード/, "tapered"],
+    [/スキニー/, "skinny"], [/タイト/, "fitted"], [/アンクル/, "ankle-length"], [/マキシ/, "maxi"], [/ミディ/, "midi"],
+    [/ミニ/, "mini"], [/ロング/, "long"], [/セットアップ/, "matching-set"],
+    [/シアー/, "sheer"], [/チュール/, "tulle"], [/レース/, "lace"], [/サテン/, "satin"], [/ベロア/, "velvet"],
+    [/コーデュロイ/, "corduroy"], [/ツイード/, "tweed"], [/レザー/, "leather"], [/スエード/, "suede"],
+    [/デニム|ジーンズ/, "denim"], [/リネン|麻/, "linen"], [/コットン|綿/, "cotton"], [/メッシュ/, "mesh"], [/ウール|メルトン/, "wool"],
+    [/モヘア/, "mohair"], [/ケーブル/, "cable-knit"], [/ムートン/, "shearling"], [/(?<!ロー)ファー/, "faux-fur"],
+    [/キルティング/, "quilted"], [/中綿|パデッド/, "padded"], [/裏起毛|裏毛|起毛/, "fleece-lined"],
+    [/ハイゲージ/, "fine-gauge"], [/ローゲージ/, "chunky-knit"],
+    [/ホルター/, "halter-neck"], [/モックネック/, "mock-neck"], [/ハイネック/, "high-neck"], [/スタンドカラー/, "stand-collar"],
+    [/バンドカラー/, "band-collar"], [/オープンカラー|開襟/, "open-collar"], [/ボウタイ/, "bow-tie"], [/リボン/, "ribbon-tie"],
+    [/フリル/, "ruffled"], [/パフ/, "puff-sleeve"], [/ペプラム/, "peplum"], [/ギャザー/, "gathered"], [/プリーツ/, "pleated"],
+    [/ティアード/, "tiered"], [/フレア/, "flared"], [/花柄/, "floral-print"], [/ドット/, "polka-dot"], [/ボーダー/, "striped"],
+    [/チェック|ネル/, "plaid"], [/レトロ柄/, "retro-print"], [/ロゴ|グラフィック|カレッジ/, "logo-print"],
+    [/ヴィンテージ|レトロ/, "vintage-style"], [/とろみ/, "drapey"], [/半袖/, "short-sleeve"], [/ノースリーブ/, "sleeveless"],
+    [/リブ/, "ribbed"], [/アシメ/, "asymmetric"], [/Vネック|浅めV/, "v-neck"], [/ノーカラー/, "collarless"], [/ショート丈/, "cropped-length"], [/無地/, "solid-color"], [/薄手/, "lightweight"], [/厚手/, "heavy"],
+  ];
+  // 日本語アイテム名 → 基本の英語の服の種類
+  function garmentBase(key, name) {
+    if (key === "top") {
+      if (/ワンピ/.test(name)) return "dress";
+      if (/キャミ/.test(name)) return "camisole"; if (/タンク/.test(name)) return "tank top";
+      if (/ボレロ/.test(name)) return "bolero"; if (/ポロ/.test(name)) return "polo shirt";
+      if (/ブラウス/.test(name)) return "blouse"; if (/タートル/.test(name)) return "turtleneck sweater";
+      if (/カーデ|カーディガン/.test(name)) return "cardigan"; if (/ハーフジップ/.test(name)) return "half-zip pullover";
+      if (/ジップ/.test(name)) return "zip-up hoodie"; if (/パーカー|フーディ/.test(name)) return "hoodie";
+      if (/トラックトップ/.test(name)) return "track jacket"; if (/スウェット|トレーナー/.test(name)) return "sweatshirt";
+      if (/ヘンリー/.test(name)) return "henley shirt"; if (/ニット|セーター/.test(name)) return "sweater";
+      if (/ゲームシャツ/.test(name)) return "sports jersey"; if (/ボウリングシャツ/.test(name)) return "bowling shirt";
+      if (/ベースボールシャツ/.test(name)) return "baseball jersey"; if (/シャツ/.test(name)) return "shirt";
+      if (/ジレ|ベスト/.test(name)) return "vest"; return "t-shirt";
+    }
+    if (key === "bottom") {
+      if (/スカパン/.test(name)) return "skort"; if (/ワンピ/.test(name)) return "dress";
+      if (/スカート/.test(name)) return "skirt"; if (/デニム|ジーンズ|ジーパン/.test(name)) return "jeans";
+      if (/ショーツ|ハーフパンツ|短パン|ショートパンツ/.test(name)) return "shorts"; if (/レギンス|タイツ/.test(name)) return "leggings";
+      if (/ジョガー/.test(name)) return "jogger pants"; if (/トラックパンツ/.test(name)) return "track pants";
+      if (/スウェットパンツ/.test(name)) return "sweatpants"; if (/カーゴ/.test(name)) return "cargo pants";
+      if (/チノ/.test(name)) return "chinos"; if (/ベイカー/.test(name)) return "baker pants";
+      if (/ワークパンツ/.test(name)) return "work pants"; return "trousers";
+    }
+    if (key === "outer") {
+      if (/トレンチ/.test(name)) return "trench coat"; if (/チェスター/.test(name)) return "chesterfield coat";
+      if (/ダッフル/.test(name)) return "duffle coat"; if (/モッズ/.test(name)) return "mods parka";
+      if (/コクーン/.test(name)) return "cocoon coat"; if (/パファー/.test(name)) return "puffer coat";
+      if (/ダウン/.test(name)) return "down jacket"; if (/ムートン/.test(name)) return /コート/.test(name) ? "shearling coat" : "shearling jacket";
+      if (/ファー/.test(name)) return /コート/.test(name) ? "fur coat" : "fur jacket";
+      if (/デニムジャケット|カバーオール/.test(name)) return "denim jacket"; if (/スタジャン|スタジアム/.test(name)) return "varsity jacket";
+      if (/コーチジャケット/.test(name)) return "coach jacket"; if (/マウンテンパーカー/.test(name)) return "mountain parka";
+      if (/アノラック/.test(name)) return "anorak"; if (/ウインドブレーカー|ウインドシェル/.test(name)) return "windbreaker";
+      if (/MA-?1/.test(name)) return "MA-1 bomber jacket"; if (/トラックジャケット/.test(name)) return "track jacket";
+      if (/ブルゾン/.test(name)) return "blouson jacket"; if (/テーラード/.test(name)) return "blazer";
+      if (/カーデ|カーディガン/.test(name)) return "cardigan"; if (/ボレロ/.test(name)) return "bolero";
+      if (/ジレ|ベスト/.test(name)) return "vest"; if (/羽織/.test(name)) return "open overshirt";
+      if (/コート/.test(name)) return "coat"; return "jacket";
+    }
+    if (key === "shoes") {
+      if (/コインローファー/.test(name)) return "penny loafers"; if (/(厚底|チャンキー)ローファー/.test(name)) return "platform loafers";
+      if (/ローファー/.test(name)) return "loafers"; if (/プラットフォームメリージェーン/.test(name)) return "platform mary jane shoes";
+      if (/メリージェーン/.test(name)) return "mary jane shoes"; if (/バレエ/.test(name)) return "ballet flats";
+      if (/ポインテッド/.test(name)) return "pointed-toe flats"; if (/パンプス/.test(name)) return "pumps"; if (/ヒール/.test(name)) return "heels";
+      if (/ウエスタンブーツ/.test(name)) return "western boots"; if (/チャッカ/.test(name)) return "chukka boots";
+      if (/サイドゴア|チェルシー/.test(name)) return "chelsea boots"; if (/ワークブーツ/.test(name)) return "work boots";
+      if (/ロングブーツ|筒太め|スリムロング/.test(name)) return "knee-high boots"; if (/ショートブーツ|アンクルブーツ/.test(name)) return "ankle boots";
+      if (/ブーツ/.test(name)) return "boots"; if (/グルカ/.test(name)) return "gurkha sandals"; if (/サンダル/.test(name)) return "sandals";
+      if (/ダービー|プレーントゥ/.test(name)) return "derby shoes"; if (/スリッポン/.test(name)) return "slip-on shoes";
+      if (/(ダッド|ボリューム|チャンキー)スニーカー/.test(name)) return "chunky sneakers";
+      if (/(レトロラン|ランニング)/.test(name)) return "retro running sneakers"; if (/(ローテク|ロープロファイル|薄底)/.test(name)) return "low-profile sneakers";
+      if (/スケート/.test(name)) return "skate sneakers"; if (/トレイル/.test(name)) return "trail sneakers";
+      if (/ハイカット/.test(name)) return "high-top sneakers"; if (/厚底/.test(name)) return "platform sneakers";
+      if (/スニーカー|トレーニング|ランニング/.test(name)) return "sneakers"; if (/フラット/.test(name)) return "flats"; return "sneakers";
+    }
+    if (key === "acc") {
+      if (/チャーム/.test(name)) return "bag charm"; if (/カゴ/.test(name)) return "straw basket bag";
+      if (/クラッチ/.test(name)) return "clutch bag"; if (/サコッシュ/.test(name)) return "small crossbody bag";
+      if (/ボディバッグ|ウエストバッグ/.test(name)) return "belt bag"; if (/リュック|バックパック/.test(name)) return "backpack";
+      if (/メッセンジャー/.test(name)) return "messenger bag"; if (/トート/.test(name)) return "tote bag";
+      if (/マイクロミニ|ハーフムーン|ミニショルダー|ミニバッグ|ミニ.*バッグ/.test(name)) return "mini handbag";
+      if (/ショルダー|クロス/.test(name)) return "shoulder bag"; if (/ブリーフ|ビジネスバッグ/.test(name)) return "briefcase";
+      if (/バッグ/.test(name)) return "handbag"; if (/キャップ/.test(name)) return "baseball cap"; if (/ビーニー/.test(name)) return "beanie";
+      if (/ハット|帽/.test(name)) return "hat"; if (/サングラス/.test(name)) return "sunglasses"; if (/眼鏡|メガネ/.test(name)) return "glasses";
+      if (/ネックレス/.test(name)) return "necklace"; if (/イヤリング|ピアス/.test(name)) return "earrings";
+      if (/バングル|ブレス/.test(name)) return "bracelet"; if (/リング|指輪/.test(name)) return "ring"; if (/ベルト/.test(name)) return "belt";
+      if (/スカーフ|ストール|マフラー/.test(name)) return "scarf"; if (/バンダナ/.test(name)) return "bandana";
+      if (/ヘアクリップ|ヘアバンド/.test(name)) return "hair accessory"; if (/ソックス|靴下/.test(name)) return "socks";
+      if (/リストバンド/.test(name)) return "wristband"; if (/グローブ/.test(name)) return "gloves";
+      if (/腕時計|ウォッチ|時計/.test(name)) return "watch"; if (/アクセ/.test(name)) return "delicate jewelry"; return "handbag";
+    }
     return null;
+  }
+  // 日本語のアイテム名を、AIが理解しやすい英語（素材＋シルエット＋基本形）に変換
+  function garmentEn(key, name) {
+    if (!name || /なしでOK/.test(name)) return null;
+    for (const [re, en] of GARMENT_SPECIAL) if (re.test(name)) return en;
+    const base = garmentBase(key, name);
+    if (!base) return null;
+    const mods = [];
+    for (const [re, en] of GARMENT_MODS) if (re.test(name)) { if (base.indexOf(en) === -1 && !(en === "denim" && base === "jeans") && !(en === "faux-fur" && /fur/.test(base))) mods.push(en); }
+    const uniq = [...new Set(mods)].slice(0, 3);
+    return (uniq.join(" ") + " " + base).trim();
+  }
+  // アイテムごとの色（パレット由来。デニム/シューズ/小物は自然な色に補正）
+  function colorFor(key, name, o) {
+    if (key === "shoes") { if (/白|ホワイト/.test(name)) return "white"; if (/黒|ブラック/.test(name)) return "black"; return ""; }
+    if (key === "acc") return "";
+    if (key === "bottom" && /デニム|ジーンズ|ジーパン/.test(name)) {
+      if (/白/.test(name)) return "white"; if (/黒|ブラック/.test(name)) return "black";
+      if (/グレー|アッシュ/.test(name)) return "gray"; return "blue";
+    }
+    return hexToColorName(itemColor(key, o)) || "";
+  }
+  // 色＋英語アイテム名。複数形の靴やパンツには冠詞を付けない
+  function garmentPhrase(key, name, o) {
+    const g = garmentEn(key, name); if (!g) return null;
+    const col = colorFor(key, name, o);
+    const core = (col ? col + " " : "") + g;
+    const plural = /(flats|jeans|shorts|trousers|chinos|leggings|pants|sneakers|loafers|boots|sandals|heels|pumps|glasses|earrings|socks|warmers|gloves|shoes)$/.test(g);
+    const art = /^[aeiou]/i.test(core) ? "an " : "a ";
+    return (plural ? "" : art) + core;
   }
 
   // 実際のアイテムを反映したAI画像プロンプト（コーデとの一致度を上げる）
   function aiImagePrompt(o) {
-    const g = o.gender === "ladies" ? "woman" : "man";
-    const ageMap = { a1: "young teenager", a2: "teenager", a3: "young adult", a4: "person late 20s", a5: "person early 30s", a6: "person mid 30s", a7: "person in 40s" };
-    const bodyMap = { slim: "slim", std: "average", plump: "plus-size curvy", sturdy: "athletic broad" };
-    const it = {};
-    o.items.forEach(i => { it[i.key] = i.name; });
+    const it = {}; o.items.forEach(i => { it[i.key] = i.name; });
+    const young = (o.age === "a1" || o.age === "a2");
+    const person = young ? (o.gender === "ladies" ? "teenage girl" : "teenage boy") : (o.gender === "ladies" ? "woman" : "man");
+    const ageEn = { a1: "about 13 years old", a2: "about 17 years old", a3: "in early 20s", a4: "in late 20s", a5: "in early 30s", a6: "in mid 30s", a7: "in 40s" }[o.age] || "";
+    const bodyEn = { slim: "slim slender", std: "average build", plump: "plus-size curvy", sturdy: "athletic broad-shouldered" }[o.body] || "";
+    const styleEn = STYLE_EN[o.taste] || "trendy 2026 fashion";
+    const seasonEn = { spring: "spring", summer: "summer", autumn: "autumn", winter: "winter" }[o.season] || "";
+    const sceneEn = SCENE_EN[o.scene] || "everyday";
+    const parts = [];
+    const tp = garmentPhrase("top", it.top, o); if (tp) parts.push("wearing " + tp);
+    const bp = garmentPhrase("bottom", it.bottom, o); if (bp) parts.push(bp);
     const hasOuter = it.outer && !/なし|OK|羽織/.test(it.outer);
-    const wearing = [garmentEn("top", it.top), garmentEn("bottom", it.bottom), hasOuter ? garmentEn("outer", it.outer) : null, garmentEn("shoes", it.shoes)].filter(Boolean).join(", ");
-    const colors = o.palette ? [...new Set(o.palette.colors.map(hexToColorName).filter(Boolean))].join(", ") : "";
-    return `full body fashion lookbook photo of a ${bodyMap[o.body] || ""} ${ageMap[o.age] || "adult"} ${g} wearing ${wearing}, `
-      + `${colors} color palette, standing pose, plain studio background, soft natural lighting, photorealistic, sharp focus, detailed face and clothing`;
+    if (hasOuter) { const op = garmentPhrase("outer", it.outer, o); if (op) parts.push("layered with " + op); }
+    const sp = garmentPhrase("shoes", it.shoes, o); if (sp) parts.push(sp);
+    const ag = garmentEn("acc", it.acc);
+    if (ag) { const bagish = /(bag|tote|backpack|clutch|briefcase|charm|purse)/.test(ag); const ap = garmentPhrase("acc", it.acc, o); if (ap) parts.push((bagish ? "carrying " : "accessorized with ") + ap); }
+    const outfit = parts.join(", ");
+    return `full-body fashion lookbook photograph of a ${bodyEn} ${person} ${ageEn}, ${styleEn}, ${outfit}. `
+      + `${sceneEn} setting, ${seasonEn}. Full body from head to shoes visible, entire outfit in frame, standing front-facing pose, single person alone, natural body proportions, realistic anatomy, soft natural daylight, photorealistic editorial fashion photography, sharp focus, highly detailed fabric textures and true-to-description colors, no text, no watermark, no extra people.`;
   }
 
   // 16進カラーを、AIが理解しやすい英語の色名に近似変換
@@ -1452,7 +1591,7 @@
     if (!box) return;
     const prompt = aiImagePrompt(cur);
     const seed = Math.floor(Math.random() * 1e6);
-    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=768&nologo=true&model=flux&seed=${seed}`;
+    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=768&height=1152&nologo=true&model=flux&seed=${seed}`;
     box.innerHTML = `<div class="ai-loading">🎨 AIが画像を生成中…（10〜20秒ほどかかります）</div>`;
     if (btn) { btn.disabled = true; btn.textContent = "生成中…"; }
     const img = new Image();
