@@ -1296,7 +1296,9 @@
         </div>
       </div>` : "";
 
-    const promptBtn = closet ? "" : `<button class="action" id="prompt-btn" style="width:100%;margin-top:10px">🖼️ AI画像生成用プロンプトをコピー</button>`;
+    const promptBtn = closet ? "" : `
+        <button class="action" id="prompt-btn" style="width:100%;margin-top:10px">🖼️ このコーデのAI画像プロンプトをコピー</button>
+        <p class="sources-note">💡 <b>もっとリアルで正確な画像がほしい人へ：</b>このプロンプトをコピーして、<b>ChatGPT・Microsoft Copilot（Bing画像生成）・Gemini</b> など高精度なAI画像ツールに貼るだけ。上のAI画像よりずっとキレイ・正確に出せます（多くは無料）。</p>`;
     const affOn = !!affiliateId();
     const affNote = affOn ? `<p class="sources-note">※ ショッピングの🛒リンクはアフィリエイト広告（楽天）を含みます。</p>` : "";
     const footNote = (closet
@@ -1436,7 +1438,7 @@
   }
 
   function copyPrompt() {
-    copyText(outfitToPrompt(state.current), "画像生成用プロンプトをコピーしました 🖼️");
+    copyText(aiImagePrompt(state.current), "コピー！ChatGPT等のAI画像生成に貼ると高精度な画像が作れます 🖼️");
   }
 
   // 系統ごとの英語スタイル表現（画像全体の世界観を指定）
