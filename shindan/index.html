@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>骨格診断×パーソナルカラー診断｜無料で似合う「次の1着」まで — スタイルコンパス</title>
+<meta name="description" content="骨格タイプとパーソナルカラーを10問で無料診断。診断して終わりじゃなく、手持ちに足りない“似合う次の1着”まで提案します。イエベ・ブルベ、骨格ストレート・ウェーブ・ナチュラル対応。" />
+<meta name="keywords" content="骨格診断,パーソナルカラー診断,無料,イエベ,ブルベ,骨格ストレート,骨格ウェーブ,骨格ナチュラル,似合う服,コーデ,次の1着,診断" />
+<link rel="canonical" href="https://mricky0818-maker.github.io/fashion-app/shindan/" />
+<meta name="robots" content="index, follow" />
+<meta name="theme-color" content="#ff2d87" />
+<!-- Google Analytics (GA4) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8C3BWE4BTF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-8C3BWE4BTF');
+</script>
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="今日のコーデ提案" />
+<meta property="og:title" content="骨格×パーソナルカラー診断｜似合う「次の1着」まで無料で" />
+<meta property="og:description" content="10問で骨格タイプとパーソナルカラーを無料診断。手持ちに足りない“似合う次の1着”まで提案します。" />
+<meta property="og:url" content="https://mricky0818-maker.github.io/fashion-app/shindan/" />
+<meta property="og:image" content="https://mricky0818-maker.github.io/fashion-app/og.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:locale" content="ja_JP" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="骨格×パーソナルカラー診断｜似合う「次の1着」まで無料で" />
+<meta name="twitter:description" content="10問で骨格タイプとパーソナルカラーを無料診断。手持ちに足りない“似合う次の1着”まで提案。" />
+<meta name="twitter:image" content="https://mricky0818-maker.github.io/fashion-app/og.jpg" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"スタイルコンパス｜骨格×パーソナルカラー診断","url":"https://mricky0818-maker.github.io/fashion-app/shindan/","description":"骨格タイプとパーソナルカラーを10問で無料診断し、手持ちに足りない似合う次の1着まで提案するWebアプリ。","applicationCategory":"LifestyleApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"JPY"},"inLanguage":"ja"}
+</script>
+<style>
+  :root{
+    --ground:#FFF4F8; --panel:#FFFFFF; --panel-2:#FFE6F1; --ink:#361F2B; --muted:#A97E91;
+    --line:#FBD3E4; --accent:#FF2D87; --accent-ink:#DB1770; --accent-soft:#FFDBEC;
+    --gold:#8B2FE0; --gold-soft:#F0E2FF; --good:#5BB98F;
+    --sans:"Hiragino Maru Gothic ProN","Hiragino Maru Gothic Pro",YuGothic,"Yu Gothic","M PLUS Rounded 1c","Rounded Mplus 1c",Meiryo,system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --ground:#1E1620; --panel:#291D2A; --panel-2:#35263A; --ink:#F6E9F0; --muted:#BFA3B4;
+    --line:#3E2E42; --accent:#FF4C97; --accent-ink:#FF8FBB; --accent-soft:#3E2233;
+    --gold:#A55CF0; --gold-soft:#2E2140; --good:#84CBA3;
+  }}
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{background:var(--ground);color:var(--ink);font-family:var(--sans);line-height:1.75;
+    -webkit-font-smoothing:antialiased;font-feature-settings:"palt" 1;}
+  .wrap{max-width:640px;margin:0 auto;padding:20px 18px 40px;min-height:100vh;}
+  .brand{display:flex;align-items:center;gap:8px;font-size:.82rem;letter-spacing:.03em;color:var(--muted);padding:8px 0 18px;}
+  .brand b{color:var(--accent-ink);font-weight:800;} .brand .tent{color:var(--muted);font-weight:600;}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:26px;padding:28px 22px;
+    box-shadow:0 26px 60px -38px rgba(120,30,85,.5);animation:pop .45s ease both;}
+  @keyframes pop{from{opacity:0;transform:translateY(10px) scale(.99);}to{opacity:1;transform:none;}}
+
+  .eyebrow{display:inline-block;font-size:.74rem;letter-spacing:.05em;color:var(--accent-ink);
+    background:var(--accent-soft);padding:6px 14px;border-radius:999px;font-weight:700;margin:0 0 16px;}
+  h1{font-size:clamp(1.6rem,5vw,2.15rem);line-height:1.3;margin:0 0 10px;text-wrap:balance;letter-spacing:.01em;}
+  .lede{color:var(--muted);margin:0 0 24px;}
+
+  .btn{appearance:none;border:0;cursor:pointer;font-family:var(--sans);font-weight:800;font-size:1.02rem;
+    background:var(--accent);color:#fff;border-radius:999px;padding:15px 22px;width:100%;
+    box-shadow:0 12px 26px -12px rgba(255,45,135,.55);transition:transform .14s ease,box-shadow .14s ease,filter .14s ease;}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 16px 32px -12px rgba(255,45,135,.7);filter:brightness(1.04);}
+  .btn:active{transform:translateY(0);}
+  .btn.gold{background:var(--gold);box-shadow:0 12px 26px -12px rgba(139,47,224,.55);}
+  .btn.gold:hover{box-shadow:0 16px 32px -12px rgba(139,47,224,.7);}
+  .btn.ghost{background:var(--panel);color:var(--accent-ink);border:1.5px solid var(--accent-soft);box-shadow:none;font-weight:700;}
+  .btn.ghost:hover{border-color:var(--accent);}
+  .btn:focus-visible,.opt:focus-visible,.chip:focus-visible,.shop a:focus-visible,.site-foot a:focus-visible{outline:2.5px solid var(--accent);outline-offset:2px;}
+
+  .prog{display:flex;align-items:center;gap:10px;margin-bottom:20px;font-size:.78rem;color:var(--muted);font-weight:700;}
+  .prog .bar{flex:1;height:10px;background:var(--panel-2);border-radius:999px;overflow:hidden;}
+  .prog .fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:999px;transition:width .35s ease;}
+  .axis-tag{display:inline-block;font-size:.72rem;letter-spacing:.04em;color:var(--accent-ink);background:var(--accent-soft);
+    padding:5px 12px;border-radius:999px;font-weight:700;margin-bottom:12px;}
+  .qtext{font-size:1.22rem;font-weight:800;line-height:1.5;margin:0 0 20px;text-wrap:balance;}
+  .opts{display:flex;flex-direction:column;gap:11px;}
+  .opt{appearance:none;text-align:left;cursor:pointer;font-family:var(--sans);font-size:1rem;font-weight:600;color:var(--ink);
+    background:var(--panel);border:1.5px solid var(--line);border-radius:18px;padding:15px 17px;line-height:1.55;
+    transition:border-color .14s ease,background .14s ease,transform .14s ease;}
+  .opt:hover{border-color:var(--accent);background:var(--accent-soft);transform:translateY(-1px);}
+  .opt:active{transform:translateY(0);}
+
+  .verdict{text-align:center;padding:18px 14px;margin-bottom:4px;border-radius:20px;
+    background:linear-gradient(135deg,var(--accent-soft),var(--gold-soft));}
+  .verdict .big{font-size:clamp(1.6rem,6vw,2.25rem);font-weight:900;line-height:1.28;color:var(--ink);}
+  .verdict .big .x{color:var(--accent-ink);font-weight:600;margin:0 .25em;}
+  .verdict .sub{color:var(--ink);opacity:.72;margin-top:8px;font-size:.95rem;}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px;}
+  .mini{background:var(--panel-2);border:1px solid var(--line);border-radius:18px;padding:16px 16px;}
+  .mini .k{font-size:.72rem;letter-spacing:.04em;color:var(--accent-ink);font-weight:800;margin-bottom:6px;}
+  .mini h3{margin:0 0 5px;font-size:1.1rem;}
+  .mini p{margin:0;font-size:.86rem;color:var(--muted);line-height:1.6;}
+  .swatches{display:flex;gap:7px;margin-top:12px;}
+  .sw{width:28px;height:28px;border-radius:50%;border:2px solid var(--panel);box-shadow:0 2px 6px -1px rgba(0,0,0,.16);}
+  .note{font-size:.82rem;color:var(--muted);margin-top:20px;line-height:1.65;background:var(--panel-2);padding:12px 15px;border-radius:16px;}
+
+  .grid-chips{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 10px;}
+  .chip{appearance:none;cursor:pointer;font-family:var(--sans);font-size:.92rem;font-weight:600;text-align:left;color:var(--ink);
+    background:var(--panel);border:1.5px solid var(--line);border-radius:16px;padding:13px 13px 13px 42px;position:relative;
+    line-height:1.45;transition:border-color .14s ease,background .14s ease,transform .14s ease;}
+  .chip:hover{transform:translateY(-1px);}
+  .chip::before{content:"";position:absolute;left:14px;top:50%;transform:translateY(-50%);width:20px;height:20px;
+    border-radius:8px;border:2px solid var(--muted);transition:all .14s ease;}
+  .chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);}
+  .chip[aria-pressed="true"]::before{background:var(--accent);border-color:var(--accent);}
+  .chip[aria-pressed="true"]::after{content:"✓";position:absolute;left:17px;top:50%;transform:translateY(-50%);color:#fff;font-size:.82rem;font-weight:900;}
+
+  .rec{border:2px solid var(--gold);background:var(--gold-soft);border-radius:22px;padding:22px 20px;margin-top:6px;}
+  .rec .k{font-size:.74rem;letter-spacing:.05em;color:var(--gold);font-weight:800;}
+  .rec h2{margin:8px 0 6px;font-size:1.55rem;line-height:1.3;}
+  .rec .why{color:var(--ink);font-size:.92rem;margin:0 0 12px;line-height:1.7;}
+  .rec .color-row{display:flex;align-items:center;gap:10px;margin:14px 0;font-size:.86rem;color:var(--muted);font-weight:600;}
+  .shop{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+  .shop a{flex:1 1 140px;text-align:center;text-decoration:none;font-weight:800;font-size:.94rem;
+    padding:14px;border-radius:999px;background:var(--panel);border:1.5px solid var(--line);color:var(--accent-ink);
+    transition:border-color .14s ease,transform .14s ease,box-shadow .14s ease;}
+  .shop a.rk{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .shop a:hover{transform:translateY(-2px);box-shadow:0 12px 22px -12px rgba(255,45,135,.5);}
+  .shop a:active{transform:translateY(0);}
+  .foot-actions{display:flex;flex-direction:column;gap:11px;margin-top:24px;}
+
+  .site-foot{text-align:center;margin-top:26px;}
+  .site-foot a{color:var(--muted);font-size:.86rem;font-weight:700;text-decoration:none;
+    border:1.5px solid var(--line);border-radius:999px;padding:9px 18px;display:inline-block;transition:border-color .14s ease,color .14s ease;}
+  .site-foot a:hover{border-color:var(--accent);color:var(--accent-ink);}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);opacity:0;
+    background:var(--ink);color:#fff;font-size:.86rem;font-weight:700;padding:11px 18px;border-radius:999px;
+    pointer-events:none;transition:all .25s ease;z-index:5;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+  @media (max-width:420px){.split,.grid-chips{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">🧭 <b>スタイルコンパス</b><span class="tent">（骨格×パーソナルカラー診断）</span></div>
+  <div id="app" aria-live="polite"></div>
+  <footer class="site-foot"><a href="../">← 今日のコーデ提案（無料コーデ生成）へ</a></footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  function ev(name, params){ try{ if(window.gtag){ gtag('event', name, params||{}); } }catch(e){} }
+
+  var RAKUTEN_AFF_ID = "56490013.c21395ce.56490014.4d2b0d54";
+  function rakutenAff(kw){
+    var target = "https://search.rakuten.co.jp/search/mall/"+encodeURIComponent(kw)+"/";
+    return "https://hb.afl.rakuten.co.jp/ichiba/"+encodeURIComponent(RAKUTEN_AFF_ID)+"/?pc="+encodeURIComponent(target)+"&m="+encodeURIComponent(target);
+  }
+
+  var KOKKAKU = {
+    S:{name:"ストレート", tag:"直線的で立体感、上重心。シンプルで質のいい素材が映えるタイプ。",
+       silh:"Iライン・ジャストサイズ・首元すっきり", material:"ハリのある上質素材", hint:"Iラインでジャストに"},
+    W:{name:"ウェーブ", tag:"曲線的でソフト、下重心。柔らか素材とハイウエストが得意。",
+       silh:"ソフト・曲線・ハイウエスト", material:"とろみ／柔らかい素材", hint:"とろみ素材でメリハリを"},
+    N:{name:"ナチュラル", tag:"骨格がしっかり、フレーム感。ラフで厚みのある素材が似合う。",
+       silh:"ラフ・大きめ・レイヤード", material:"天然素材・厚手", hint:"ラフな厚手素材で"}
+  };
+  var PC = {
+    spring:{name:"イエベ春", tag:"明るくクリアで軽やか", word:"キャメル", white:"アイボリー",
+      colors:["#E8952F","#F1746E","#7FC08A","#5FC4D6","#F5CB4B"]},
+    summer:{name:"ブルベ夏", tag:"柔らかくスモーキー", word:"ラベンダー", white:"オフホワイト",
+      colors:["#8AA6DA","#C39AD0","#8FC7C0","#E9A7BE","#AEB6E0"]},
+    autumn:{name:"イエベ秋", tag:"深みのあるアースカラー", word:"ブラウン", white:"生成り",
+      colors:["#B4702F","#8A6A3C","#7C894E","#C0865A","#9E4A32"]},
+    winter:{name:"ブルベ冬", tag:"はっきりコントラスト", word:"ネイビー", white:"純白",
+      colors:["#2E4C93","#B41F6B","#178A6E","#6A2E8F","#14161B"]}
+  };
+
+  var QUESTIONS = [
+    {axis:"k", q:"首まわり・上半身の印象に近いのは？", a:[
+      {t:"首は短めで肩に厚み。上半身に立体感がある", s:"S"},
+      {t:"首は長め、肩は華奢で薄い。下重心に感じる", s:"W"},
+      {t:"骨や関節がしっかりして、肩のフレームが目立つ", s:"N"}]},
+    {axis:"k", q:"手の甲・手首の感じは？", a:[
+      {t:"手のひらに厚みがあり、関節は目立たない", s:"S"},
+      {t:"手が小さめで薄く、爪も小さい", s:"W"},
+      {t:"手が大きめで、関節・筋・血管が目立つ", s:"N"}]},
+    {axis:"k", q:"肌の質感は？", a:[
+      {t:"ハリと弾力があり、肌に厚みを感じる", s:"S"},
+      {t:"ふんわり柔らかく、薄い印象", s:"W"},
+      {t:"かためでドライな質感", s:"N"}]},
+    {axis:"k", q:"太るとまず出やすいのは？", a:[
+      {t:"上半身・体の前側から", s:"S"},
+      {t:"下半身・腰まわりから", s:"W"},
+      {t:"全体的に骨感が残りやすい", s:"N"}]},
+    {axis:"k", q:"しっくりくる素材は？", a:[
+      {t:"ハリのあるきれいめ素材（コットンシャツなど）", s:"S"},
+      {t:"柔らかい素材（とろみ・シフォンなど）", s:"W"},
+      {t:"天然素材や厚手（リネン・ローゲージなど）", s:"N"}]},
+    {axis:"p", q:"肌の色みに近いのは？", a:[
+      {t:"黄みよりで血色が明るい", s:"spring"},
+      {t:"青みよりで明るくソフト", s:"summer"},
+      {t:"黄みよりで深みがある", s:"autumn"},
+      {t:"青みよりでコントラストが強い", s:"winter"}]},
+    {axis:"p", q:"似合うアクセサリーは？", a:[
+      {t:"明るいゴールド", s:"spring"},
+      {t:"上品なシルバー・プラチナ", s:"summer"},
+      {t:"マットなゴールド・古美色", s:"autumn"},
+      {t:"輝くシルバー", s:"winter"}]},
+    {axis:"p", q:"白を着るなら得意なのは？", a:[
+      {t:"アイボリー・生成り", s:"spring"},
+      {t:"ソフトなオフホワイト", s:"summer"},
+      {t:"ベージュがかった生成り", s:"autumn"},
+      {t:"くっきりした純白", s:"winter"}]},
+    {axis:"p", q:"得意な色の印象は？", a:[
+      {t:"明るくクリアなパステル", s:"spring"},
+      {t:"柔らかいスモーキーカラー", s:"summer"},
+      {t:"こっくり深いアースカラー", s:"autumn"},
+      {t:"はっきりビビッド or モノトーン", s:"winter"}]},
+    {axis:"p", q:"髪・瞳の印象は？", a:[
+      {t:"明るめの茶色、瞳も明るい", s:"spring"},
+      {t:"ソフトな黒〜こげ茶で優しい印象", s:"summer"},
+      {t:"深みのある茶色でこっくり", s:"autumn"},
+      {t:"真っ黒でコントラストが強い", s:"winter"}]}
+  ];
+
+  var STAPLES = [
+    {id:"pants",   label:"きれいめパンツ（センタープレス）", w:5, q:"センタープレス パンツ"},
+    {id:"wshirt",  label:"白シャツ／ブラウス",             w:5, q:"白シャツ"},
+    {id:"knit",    label:"シンプルニット",                 w:4, q:"ニット"},
+    {id:"jacket",  label:"テーラードジャケット",           w:4, q:"テーラードジャケット"},
+    {id:"denim",   label:"デニム",                         w:4, q:"デニム"},
+    {id:"onepiece",label:"きれいめワンピース",             w:3, q:"ワンピース きれいめ"},
+    {id:"skirt",   label:"スカート",                       w:3, q:"スカート"},
+    {id:"coat",    label:"きれいめコート",                 w:3, q:"コート きれいめ"}
+  ];
+
+  var state = { phase:"intro", qi:0, ans:[], owned:{} };
+  var app = document.getElementById("app");
+
+  function keyMax(obj, order){
+    var best=order[0];
+    for(var i=1;i<order.length;i++){ if(obj[order[i]]>obj[best]) best=order[i]; }
+    return best;
+  }
+  function computeTypes(){
+    var kc={S:0,W:0,N:0}, pc={spring:0,summer:0,autumn:0,winter:0};
+    state.ans.forEach(function(s,i){ if(QUESTIONS[i].axis==="k") kc[s]++; else pc[s]++; });
+    return { k:keyMax(kc,["S","W","N"]), p:keyMax(pc,["spring","summer","autumn","winter"]) };
+  }
+
+  function toast(msg){
+    var el=document.getElementById("toast"); el.textContent=msg; el.classList.add("show");
+    setTimeout(function(){ el.classList.remove("show"); }, 1800);
+  }
+
+  function render(){
+    if(state.phase==="intro") return renderIntro();
+    if(state.phase==="quiz")  return renderQuiz();
+    if(state.phase==="result")return renderResult();
+    if(state.phase==="closet")return renderCloset();
+    if(state.phase==="final") return renderFinal();
+  }
+
+  function renderIntro(){
+    app.innerHTML =
+      '<div class="card">'+
+        '<p class="eyebrow">無料診断 ・ 10問 ・ 約1分</p>'+
+        '<h1>診断して、終わりにしない。</h1>'+
+        '<p class="lede">骨格 × パーソナルカラーを10問で診断。そのまま「あなたに似合って、いま持っていない“次の1着”」まで案内します。</p>'+
+        '<button class="btn" id="start">診断をはじめる</button>'+
+      '</div>';
+    document.getElementById("start").onclick=function(){ ev('shindan_start'); state.phase="quiz"; state.qi=0; state.ans=[]; render(); };
+  }
+
+  function renderQuiz(){
+    var i=state.qi, Q=QUESTIONS[i], pct=Math.round((i/QUESTIONS.length)*100);
+    var axisLabel = Q.axis==="k" ? "骨格タイプ" : "パーソナルカラー";
+    var opts = Q.a.map(function(o,idx){
+      return '<button class="opt" data-s="'+o.s+'">'+o.t+'</button>';
+    }).join("");
+    app.innerHTML =
+      '<div class="card">'+
+        '<div class="prog"><span>'+(i+1)+' / '+QUESTIONS.length+'</span>'+
+          '<span class="bar"><span class="fill" style="width:'+pct+'%"></span></span></div>'+
+        '<div class="axis-tag">'+axisLabel+'</div>'+
+        '<p class="qtext">'+Q.q+'</p>'+
+        '<div class="opts">'+opts+'</div>'+
+      '</div>';
+    Array.prototype.forEach.call(app.querySelectorAll(".opt"), function(btn){
+      btn.onclick=function(){
+        state.ans[i]=btn.getAttribute("data-s");
+        if(i+1<QUESTIONS.length){ state.qi=i+1; render(); }
+        else { state.phase="result"; render(); }
+      };
+    });
+  }
+
+  function renderResult(){
+    var t=computeTypes(), K=KOKKAKU[t.k], P=PC[t.p];
+    state.types=t;
+    ev('shindan_complete', {kokkaku:K.name, pc:P.name});
+    var sw=P.colors.map(function(c){ return '<span class="sw" style="background:'+c+'"></span>'; }).join("");
+    app.innerHTML =
+      '<div class="card">'+
+        '<div style="text-align:center;"><span class="eyebrow">あなたの診断結果 ✨</span></div>'+
+        '<div class="verdict"><div class="big">'+K.name+'<span class="x">×</span>'+P.name+'</div>'+
+          '<div class="sub">'+K.tag+'</div></div>'+
+        '<div class="split">'+
+          '<div class="mini"><div class="k">骨格</div><h3>'+K.name+'</h3><p>得意：'+K.silh+'<br>素材：'+K.material+'</p></div>'+
+          '<div class="mini"><div class="k">カラー</div><h3>'+P.name+'</h3><p>'+P.tag+'<br>白は'+P.white+'が◎</p>'+
+            '<div class="swatches">'+sw+'</div></div>'+
+        '</div>'+
+        '<div class="foot-actions">'+
+          '<button class="btn" id="toCloset">次へ：手持ちをチェック</button>'+
+          '<button class="btn ghost" id="share">診断結果をシェア</button>'+
+        '</div>'+
+        '<p class="note">※ 診断はあくまで目安です。似合う「軸」を知って、最後は「好き」も大切に。</p>'+
+      '</div>';
+    document.getElementById("toCloset").onclick=function(){ state.phase="closet"; render(); };
+    document.getElementById("share").onclick=function(){
+      ev('shindan_share', {kokkaku:K.name, pc:P.name});
+      var text="私は「骨格"+K.name+" × "+P.name+"」でした！ #スタイルコンパス";
+      var url="https://mricky0818-maker.github.io/fashion-app/shindan/";
+      if(navigator.share){ navigator.share({text:text, url:url}).catch(function(){}); }
+      else if(navigator.clipboard){ navigator.clipboard.writeText(text+" "+url).then(function(){ toast("結果をコピーしました"); }); }
+      else { toast(text); }
+    };
+  }
+
+  function renderCloset(){
+    ev('shindan_closet_view');
+    var chips = STAPLES.map(function(s){
+      var on = state.owned[s.id] ? "true":"false";
+      return '<button class="chip" role="checkbox" aria-pressed="'+on+'" data-id="'+s.id+'">'+s.label+'</button>';
+    }).join("");
+    app.innerHTML =
+      '<div class="card">'+
+        '<p class="eyebrow">手持ちチェック</p>'+
+        '<h1 style="font-size:1.4rem;">持っているものにチェック</h1>'+
+        '<p class="lede">全部登録しなくてOK。持っている“土台アイテム”を選ぶだけ。足りない1着を見つけます。</p>'+
+        '<div class="grid-chips">'+chips+'</div>'+
+        '<div class="foot-actions"><button class="btn gold" id="toFinal">「次の1着」を見る</button></div>'+
+      '</div>';
+    Array.prototype.forEach.call(app.querySelectorAll(".chip"), function(btn){
+      btn.onclick=function(){
+        var id=btn.getAttribute("data-id");
+        state.owned[id]=!state.owned[id];
+        btn.setAttribute("aria-pressed", state.owned[id]?"true":"false");
+      };
+    });
+    document.getElementById("toFinal").onclick=function(){ state.phase="final"; render(); };
+  }
+
+  function renderFinal(){
+    var t=state.types||computeTypes(), K=KOKKAKU[t.k], P=PC[t.p];
+    var missing = STAPLES.filter(function(s){ return !state.owned[s.id]; });
+    var rec = null;
+    missing.forEach(function(s){ if(!rec || s.w>rec.w) rec=s; });
+    ev('shindan_recommend', {item: rec?rec.label:"complete", kokkaku:K.name, pc:P.name});
+
+    var body;
+    if(rec){
+      var query = rec.q + " " + P.word;
+      var rk = rakutenAff(query);
+      var az = "https://www.amazon.co.jp/s?k="+encodeURIComponent(query);
+      body =
+        '<div class="rec">'+
+          '<div class="k">あなたの次の1着</div>'+
+          '<h2>'+rec.label+'</h2>'+
+          '<p class="why">着回しの土台で、いま手持ちに無い1着。<b>'+K.hint+'</b>、色は'+P.name+'の<b>'+P.word+'</b>を選ぶと、骨格もカラーもハマります。</p>'+
+          '<div class="color-row"><span>おすすめカラー</span>'+
+            P.colors.slice(0,4).map(function(c){return '<span class="sw" style="background:'+c+'"></span>';}).join("")+'</div>'+
+          '<div class="shop">'+
+            '<a class="rk" href="'+rk+'" target="_blank" rel="noopener sponsored" data-shop="rakuten">楽天で探す</a>'+
+            '<a href="'+az+'" target="_blank" rel="noopener" data-shop="amazon">Amazonで探す</a>'+
+          '</div>'+
+        '</div>'+
+        '<p class="note">※ 楽天リンクからのご購入で当サイトに紹介料が入ることがあります（価格は変わりません）。</p>';
+    } else {
+      body =
+        '<div class="rec">'+
+          '<div class="k">土台はコンプリート</div>'+
+          '<h2>基本は揃っています 🎉</h2>'+
+          '<p class="why">土台アイテムは万全。次は'+P.name+'の差し色（'+P.word+'系）や小物で“似合う”を伸ばすフェーズです。</p>'+
+        '</div>';
+    }
+    app.innerHTML =
+      '<div class="card">'+
+        '<p class="eyebrow" style="color:var(--gold);background:var(--gold-soft);">診断 → 処方</p>'+
+        '<h1 style="font-size:1.35rem;">'+K.name+' × '+P.name+' のあなたへ</h1>'+
+        body+
+        '<div class="foot-actions">'+
+          '<button class="btn ghost" id="restart">最初からやり直す</button>'+
+        '</div>'+
+      '</div>';
+    Array.prototype.forEach.call(app.querySelectorAll(".shop a"), function(a){
+      a.addEventListener("click", function(){ ev('shindan_shop_click', {shop:a.getAttribute("data-shop"), item: rec?rec.label:""}); });
+    });
+    document.getElementById("restart").onclick=function(){ state={phase:"intro",qi:0,ans:[],owned:{}}; render(); };
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
