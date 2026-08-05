@@ -304,6 +304,8 @@
   }
   .closet-card .cc-use input { accent-color: var(--accent); width: 13px; height: 13px; cursor: pointer; margin: 0; }
   .closet-card.sel { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 13px; }
+  .closet-card .cc-style { display: block; width: 100%; margin-top: 5px; border: none; background: var(--grad); color: #fff; font-weight: 700; border-radius: 8px; padding: 5px 4px; font-size: 0.64rem; line-height: 1.2; cursor: pointer; font-family: inherit; }
+  .closet-card .cc-style:hover { filter: brightness(1.06); }
   .go.closet-go { background: var(--card); color: var(--accent-dark); border: 2px solid var(--accent); box-shadow: none; margin-top: 10px; font-size: 1rem; }
   .go.closet-go:hover { background: var(--soft); transform: translateY(-1px); box-shadow: none; filter: none; }
   .hist { display: flex; align-items: center; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); font-size: 0.85rem; }
@@ -552,6 +554,7 @@
       <label><input type="checkbox" class="cl-season" value="autumn" checked />秋</label>
       <label><input type="checkbox" class="cl-season" value="winter" checked />冬</label>
     </div>
+    <p class="cl-styling-hint" style="font-size:.8rem;color:var(--accent-dark);margin:8px 2px 0;font-weight:600">💡 「この服、どう着回そう？」——各アイテムの<b>「🪄 この服でコーデ」</b>で、その1着を主役に、足りない分はおすすめで補った全身コーデを提案します。</p>
     <div class="closet-grid" id="closet-grid"></div>
     <p class="panel-note">写真は端末内（ブラウザ）にのみ保存され、外部へは送信されません。写真を選ぶと、端末内のAIが色と種類をその場で判別し、カテゴリ・名前・シーズンを自動で下書きします（写真は一切アップロードされず、判別に使うAIデータだけが初回に一度だけ読み込まれます）。判別結果はあくまで目安ですので、いつでも自由に直せます。オフラインや対応していない端末、うまく判別できないときは、色と入力名からの簡易判定に切り替わり、「追加」はいつでも押せます。最終的に登録されるのは、チェックした項目と名前がそのままの内容です。上の「👕 手持ちの服からコーデを提案」で、登録した服からコーデを組みます。</p>
   </details>
@@ -2528,9 +2531,11 @@
         <button class="cc-del" data-id="${it.id}" title="削除">✕</button>
         <label class="cc-use"><input type="checkbox" class="cc-use-cb" data-id="${it.id}"${on ? " checked" : ""} />使う</label>
         <div class="cc-cat">${escapeHtml(it.name)}<br>${catLabel}<br><span style="opacity:.75">${seasonsLabel(itemSeasons(it))}</span></div>
+        <button class="cc-style" data-id="${it.id}">🪄 この服でコーデ</button>
       </div>`;
     }).join("");
     grid.querySelectorAll(".cc-del").forEach(b => b.onclick = () => delClosetItem(b.dataset.id));
+    grid.querySelectorAll(".cc-style").forEach(b => b.onclick = () => suggestHybrid(b.dataset.id));
     grid.querySelectorAll(".cc-use-cb").forEach(cb => cb.onchange = () => {
       if (cb.checked) hybridSel.add(cb.dataset.id); else hybridSel.delete(cb.dataset.id);
       cb.closest(".closet-card").classList.toggle("sel", cb.checked);
@@ -2578,8 +2583,9 @@
     document.getElementById("go-closet").textContent = "👕 手持ちの服からもう一回 🔁";
   }
 
-  // 手持ちアイテムを活かしつつ、無いカテゴリはおすすめで補完して提案
-  function suggestHybrid() {
+  // 手持ちアイテムを活かしつつ、無いカテゴリはおすすめで補完して提案。
+  // anchorId を渡すと、その1着だけを主役に固定して残りをおすすめで組む（「この服でコーデ」）。
+  function suggestHybrid(anchorId) {
     const list = loadCloset();
     const owned = {};
     ["top", "bottom", "outer", "shoes", "acc"].forEach(k => owned[k] = list.filter(x => itemCats(x).includes(k)));
@@ -2597,7 +2603,7 @@
       return { key: k, cat: (CATS.find(c => c.key === k) || {}).cat || CLOSET_CATS[k], name: it.name, id: it.id, img: it.img, own: true };
     };
     const suggestPick = (k) => ({ key: k, cat: (CATS.find(c => c.key === k) || {}).cat, name: pickItemName(k, gender, base, temp, taste, { age: state.age, body: state.body, height: state.height }), own: false });
-    const selected = list.filter(x => hybridSel.has(x.id));
+    const selected = anchorId ? list.filter(x => x.id === anchorId) : list.filter(x => hybridSel.has(x.id));
     const hasSel = selected.length > 0;
     const selPick = (k) => {
       const pool = selected.filter(x => itemCats(x).includes(k) && !used.has(x.id));
