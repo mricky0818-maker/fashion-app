@@ -126,6 +126,13 @@
   .shop a:hover{transform:translateY(-2px);box-shadow:0 12px 22px -12px rgba(255,45,135,.5);}
   .shop a:active{transform:translateY(0);}
   .foot-actions{display:flex;flex-direction:column;gap:11px;margin-top:24px;}
+  .share-row{display:flex;gap:8px;margin-top:10px;}
+  .sbtn{flex:1;appearance:none;cursor:pointer;font-family:var(--sans);font-weight:800;font-size:.82rem;
+    border-radius:999px;padding:11px 8px;border:1.5px solid var(--line);background:var(--panel);color:var(--accent-ink);
+    transition:border-color .14s ease,transform .14s ease;}
+  .sbtn:hover{transform:translateY(-1px);border-color:var(--accent);}
+  .sbtn.line{color:#06C755;} .sbtn.x{color:var(--ink);}
+  .sbtn:focus-visible{outline:2.5px solid var(--accent);outline-offset:2px;}
 
   .site-foot{text-align:center;margin-top:26px;}
   .site-foot a{color:var(--muted);font-size:.86rem;font-weight:700;text-decoration:none;
@@ -160,6 +167,46 @@
   function rakutenAff(kw){
     var target = "https://search.rakuten.co.jp/search/mall/"+encodeURIComponent(kw)+"/";
     return "https://hb.afl.rakuten.co.jp/ichiba/"+encodeURIComponent(RAKUTEN_AFF_ID)+"/?pc="+encodeURIComponent(target)+"&m="+encodeURIComponent(target);
+  }
+
+  // ---- シェア（若者向け：結果カード画像＋ワンタップ共有） ----
+  var SHARE_URL = "https://mricky0818-maker.github.io/fashion-app/shindan/";
+  function shareText(K,P){ return "私は「骨格"+K.name+" × "+P.name+"」でした！みんなは何タイプ？ #スタイルコンパス #骨格診断 #パーソナルカラー診断"; }
+  function rr(x,a,b,w,h,r){ x.beginPath(); x.moveTo(a+r,b); x.arcTo(a+w,b,a+w,b+h,r); x.arcTo(a+w,b+h,a,b+h,r); x.arcTo(a,b+h,a,b,r); x.arcTo(a,b,a+w,b,r); x.closePath(); }
+  function wrapJP(x,t,cx,cy,maxw,lh){ t=t||""; var line="",yy=cy; for(var i=0;i<t.length;i++){ var tt=line+t[i]; if(x.measureText(tt).width>maxw&&line){ x.fillText(line,cx,yy); line=t[i]; yy+=lh; } else line=tt; } if(line) x.fillText(line,cx,yy); }
+  function buildCardBlob(K,P,cb){
+    var W=1080,H=1350,c=document.createElement("canvas"); c.width=W; c.height=H; var x=c.getContext("2d");
+    var F='"Hiragino Maru Gothic ProN","Yu Gothic","M PLUS Rounded 1c",sans-serif';
+    var g=x.createLinearGradient(0,0,W,H); g.addColorStop(0,"#FF2D87"); g.addColorStop(1,"#8B2FE0"); x.fillStyle=g; x.fillRect(0,0,W,H);
+    x.fillStyle="#fff"; rr(x,70,150,W-140,H-320,56); x.fill();
+    x.textAlign="center";
+    x.fillStyle="#DB1770"; x.font="700 40px "+F; x.fillText("🧭 スタイルコンパス診断", W/2, 268);
+    x.fillStyle="#361F2B"; x.font="800 96px "+F; x.fillText("骨格"+K.name, W/2, 456);
+    x.fillStyle="#DB1770"; x.font="600 52px "+F; x.fillText("×", W/2, 540);
+    x.fillStyle="#8B2FE0"; x.font="800 96px "+F; x.fillText(P.name, W/2, 636);
+    x.fillStyle="#6b5563"; x.font="400 38px "+F; wrapJP(x,K.tag,W/2,724,W-280,52);
+    var n=P.colors.length,d=92,gp=30,tot=n*d+(n-1)*gp,sx=(W-tot)/2+d/2,sy=930;
+    for(var i=0;i<n;i++){ x.beginPath(); x.fillStyle=P.colors[i]; x.arc(sx+i*(d+gp),sy,d/2,0,Math.PI*2); x.fill(); }
+    x.fillStyle="#8B2FE0"; x.font="700 46px "+F; x.fillText("あなたは何タイプ？無料で診断", W/2, 1120);
+    x.fillStyle="#A97E91"; x.font="400 32px "+F; x.fillText("スタイルコンパス / 骨格×パーソナルカラー診断", W/2, 1180);
+    if(c.toBlob){ c.toBlob(function(b){ cb(b,c); }, "image/png"); } else { cb(null,c); }
+  }
+  function doShare(K,P,ch){
+    ev('shindan_share',{channel:ch,kokkaku:K.name,pc:P.name});
+    var text=shareText(K,P);
+    if(ch==="line"){ window.open("https://social-plugins.line.me/lineit/share?url="+encodeURIComponent(SHARE_URL)+"&text="+encodeURIComponent(text),"_blank","noopener"); return; }
+    if(ch==="x"){ window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text)+"&url="+encodeURIComponent(SHARE_URL),"_blank","noopener"); return; }
+    buildCardBlob(K,P,function(blob,canvas){
+      var file=null; try{ if(blob) file=new File([blob],"stylecompass.png",{type:"image/png"}); }catch(e){}
+      if(ch==="native" && file && navigator.canShare && navigator.canShare({files:[file]})){
+        navigator.share({files:[file],text:text,url:SHARE_URL}).catch(function(){}); return;
+      }
+      try{
+        var url = blob ? URL.createObjectURL(blob) : canvas.toDataURL("image/png");
+        var a=document.createElement("a"); a.href=url; a.download="stylecompass.png"; document.body.appendChild(a); a.click(); a.remove();
+        toast("画像を保存しました。ストーリーズやLINEに投稿してね");
+      }catch(e){ if(navigator.share){ navigator.share({text:text,url:SHARE_URL}).catch(function(){}); } else if(navigator.clipboard){ navigator.clipboard.writeText(text+" "+SHARE_URL); toast("結果をコピーしました"); } else toast(text); }
+    });
   }
 
   var KOKKAKU = {
@@ -318,19 +365,20 @@
         '</div>'+
         '<div class="foot-actions">'+
           '<button class="btn" id="toCloset">次へ：手持ちをチェック</button>'+
-          '<button class="btn ghost" id="share">診断結果をシェア</button>'+
+          '<button class="btn ghost" id="share">📲 結果を画像でシェア</button>'+
         '</div>'+
-        '<p class="note">※ 診断はあくまで目安です。似合う「軸」を知って、最後は「好き」も大切に。</p>'+
+        '<div class="share-row">'+
+          '<button class="sbtn line" data-ch="line">LINE</button>'+
+          '<button class="sbtn x" data-ch="x">X</button>'+
+          '<button class="sbtn" data-ch="save">画像を保存</button>'+
+        '</div>'+
+        '<p class="note">結果カードを保存して、ストーリーズやLINEでシェア → 友だちもそのまま診断できます。<br>※診断はあくまで目安です。最後は「好き」も大切に。</p>'+
       '</div>';
     document.getElementById("toCloset").onclick=function(){ state.phase="closet"; render(); };
-    document.getElementById("share").onclick=function(){
-      ev('shindan_share', {kokkaku:K.name, pc:P.name});
-      var text="私は「骨格"+K.name+" × "+P.name+"」でした！ #スタイルコンパス";
-      var url="https://mricky0818-maker.github.io/fashion-app/shindan/";
-      if(navigator.share){ navigator.share({text:text, url:url}).catch(function(){}); }
-      else if(navigator.clipboard){ navigator.clipboard.writeText(text+" "+url).then(function(){ toast("結果をコピーしました"); }); }
-      else { toast(text); }
-    };
+    document.getElementById("share").onclick=function(){ doShare(K,P,"native"); };
+    Array.prototype.forEach.call(app.querySelectorAll(".share-row .sbtn"), function(b){
+      b.onclick=function(){ doShare(K,P,b.getAttribute("data-ch")); };
+    });
   }
 
   function renderCloset(){
