@@ -350,6 +350,9 @@
     cursor: pointer;
     font-family: inherit;
     transition: all 0.15s ease;
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
   }
   .src:hover { border-color: var(--accent); color: var(--accent); }
 
@@ -1053,11 +1056,15 @@
     return pick(c.src(gender, base, temp));
   }
 
+  // 夏の暑い/暖かい日はアウター不要（涼しい/寒いなら羽織りOK）
+  function outerAllowed(season, temp) { return !(season === "summer" && (temp === "hot" || temp === "warm")); }
+
   function suggest() {
     const { gender, scene, temp, taste } = state;
     const sc = SUBSCENES[scene][state.sub];
     const base = sc.base;                       // アイテムを引く元シーン
-    const items = CATS.map(c => ({ key:c.key, cat:c.cat, emoji:c.emoji, name: pickItemName(c.key, gender, base, temp, taste, { age: state.age, body: state.body, height: state.height }) }));
+    let items = CATS.map(c => ({ key:c.key, cat:c.cat, emoji:c.emoji, name: pickItemName(c.key, gender, base, temp, taste, { age: state.age, body: state.body, height: state.height }) }));
+    if (!outerAllowed(state.season, temp)) items = items.filter(i => i.key !== "outer");
     state.current = {
       gender, scene, temp, base, taste,
       sub: state.sub, subLabel: sc.label, subTip: sc.tip,
@@ -1370,9 +1377,9 @@
         <button class="action" id="prompt-btn" style="width:100%;margin-top:8px">📋 画像用プロンプトをコピー</button>
         <p class="ai-loading" style="padding:12px">① コピー → ② 下のAIを開いて貼るだけ。<b>ChatGPT・Copilot（DALL·E3）・Gemini</b>なら、崩れないリアルな全身コーデ画像が無料で作れます。</p>
         <div class="source-btns" style="margin-top:0">
-          <button class="src" data-ai="chatgpt">🤖 ChatGPTで作る</button>
-          <button class="src" data-ai="copilot">🎨 Copilotで作る</button>
-          <button class="src" data-ai="gemini">✨ Geminiで作る</button>
+          <a class="src" data-ai="chatgpt" href="https://chatgpt.com/" target="_blank" rel="noopener">🤖 ChatGPTで作る</a>
+          <a class="src" data-ai="copilot" href="https://copilot.microsoft.com/" target="_blank" rel="noopener">🎨 Copilotで作る</a>
+          <a class="src" data-ai="gemini" href="https://gemini.google.com/app" target="_blank" rel="noopener">✨ Geminiで作る</a>
         </div>
       </div>`;
 
@@ -1460,7 +1467,8 @@
     document.getElementById("copy-btn").onclick = copyOutfit;
     if (!closet) {
       const pb = document.getElementById("prompt-btn"); if (pb) pb.onclick = copyPrompt;
-      el.querySelectorAll("[data-ai]").forEach(b => b.onclick = () => openAiTool(b.dataset.ai));
+      // クリックでプロンプトをコピー→リンクは通常タップで遷移（アプリが入っていればOSがアプリで開きやすい）
+      el.querySelectorAll("a[data-ai]").forEach(a => a.onclick = () => copyText(aiImagePrompt(cur), "プロンプトをコピー！開いたAIに貼り付けてください 📋"));
     }
     el.classList.remove("show");
     void el.offsetWidth;
@@ -1511,18 +1519,6 @@
   function copyPrompt() {
     copyText(aiImagePrompt(state.current), "コピー！ChatGPT等のAI画像生成に貼ると高精度な画像が作れます 🖼️");
   }
-  // プロンプトをコピーして、選んだAI画像ツールを新しいタブで開く（貼るだけ）
-  function openAiTool(kind) {
-    const o = state.current; if (!o) return;
-    copyText(aiImagePrompt(o), "プロンプトをコピー！開いたAIに貼り付けてください 📋");
-    const urls = {
-      chatgpt: "https://chatgpt.com/",
-      copilot: "https://www.bing.com/images/create/ai-image-generator",
-      gemini: "https://gemini.google.com/app",
-    };
-    window.open(urls[kind] || urls.chatgpt, "_blank", "noopener");
-  }
-
   // 体型：主語に添える短い形容（性別中立・敬意ある表現）。未成年には付けない（aiImagePrompt側で制御）。
   const BODY_ADJ = {
     xslim: "very slim, slender", slim: "slim, lean", std: "average-build",
@@ -2516,7 +2512,7 @@
     };
     const sc = SUBSCENES[state.scene][state.sub];
     const items = [pickCat("top", true), pickCat("bottom", true)];
-    if (byCat.outer.length && (cold || Math.random() < 0.4)) items.push(pickCat("outer", false));
+    if (outerAllowed(state.season, state.temp) && byCat.outer.length && (cold || Math.random() < 0.4)) items.push(pickCat("outer", false));
     if (byCat.shoes.length) items.push(pickCat("shoes", false));
     if (byCat.acc.length) items.push(pickCat("acc", false));
     state.current = {
@@ -2563,8 +2559,8 @@
     // 選択があれば「選んだアイテムのみ手持ち＋残りはおすすめ」、無ければ「持っている物を自動で使う」
     const slot = (k) => hasSel ? (selPick(k) || suggestPick(k)) : ((owned[k].length ? ownedPick(k) : null) || suggestPick(k));
     const items = [slot("top"), slot("bottom")];
-    const wantOuter = cold || Math.random() < 0.4
-      || (hasSel ? selected.some(x => itemCats(x).includes("outer")) : owned.outer.length > 0);
+    const wantOuter = outerAllowed(state.season, temp) && (cold || Math.random() < 0.4
+      || (hasSel ? selected.some(x => itemCats(x).includes("outer")) : owned.outer.length > 0));
     if (wantOuter) items.push(slot("outer"));
     items.push(slot("shoes"));
     items.push(slot("acc"));
