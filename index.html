@@ -209,10 +209,6 @@
     border-radius: 20px;
   }
   .figure-cap { font-size: 0.76rem; color: var(--sub); }
-  .ai-gen-btn { margin-top: 12px; width: auto; }
-  .ai-image { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 8px; padding: 0 12px; }
-  .ai-image:empty { display: none; }
-  .ai-photo { width: 100%; max-width: 320px; border-radius: 16px; border: 1px solid var(--line); display: block; box-shadow: var(--shadow); }
   .ai-loading { font-size: 0.84rem; color: var(--sub); padding: 22px; text-align: center; line-height: 1.6; }
 
   .advice {
@@ -1512,23 +1508,6 @@
     copyText(outfitToText(state.current), "コピーしました 📋");
   }
 
-  // 画像生成AIに貼り付ける用のプロンプトを組み立てる
-  function outfitToPrompt(o) {
-    const genderJp = o.gender === "ladies" ? "女性" : "男性";
-    const it = {};
-    o.items.forEach(i => { it[i.key] = i.name; });
-    const hasOuter = !!it.outer && !/なし|OK|羽織/.test(it.outer);
-    const wear = [it.top, it.bottom, hasOuter ? it.outer : null, it.shoes]
-      .filter(Boolean).join("、");
-    const colors = o.palette.colors.join("、");
-    return `全身が頭から足先まで写ったリアルなファッション写真。`
-      + `${AGES[o.age].label}の${genderJp}、身長約${o.height}cm、${BODY[o.body].label}体型。`
-      + `${wear}を着用し、小物は${it.acc}。`
-      + `配色は「${o.palette.name}」（${colors}）。`
-      + `シーンは${SCENES[o.scene].label}・${o.subLabel}、${SEASONS[o.season].label}、${TIMES[o.time].label}、${TEMPS[o.temp].label}日。`
-      + `明るいスタジオ背景、自然な立ちポーズ、高解像度、写実的。`;
-  }
-
   function copyPrompt() {
     copyText(aiImagePrompt(state.current), "コピー！ChatGPT等のAI画像生成に貼ると高精度な画像が作れます 🖼️");
   }
@@ -1777,36 +1756,6 @@
     if (h < 255) return light < 105 ? "navy" : "blue";
     if (h < 300) return "purple";
     return "pink";
-  }
-
-  // ---- 無料AI画像生成（キー不要・pollinations.ai）でコーデ画像を作る ----
-  function generateAiImage() {
-    const cur = state.current;
-    if (!cur || cur.source === "closet") return;
-    const box = document.getElementById("ai-image");
-    const btn = document.getElementById("ai-gen-btn");
-    if (!box) return;
-    const prompt = aiImagePrompt(cur);
-    const seed = Math.floor(Math.random() * 1e6);
-    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=768&height=1152&nologo=true&model=flux&seed=${seed}`;
-    box.innerHTML = `<div class="ai-loading">🎨 AIが画像を生成中…（10〜20秒ほどかかります）</div>`;
-    if (btn) { btn.disabled = true; btn.textContent = "生成中…"; }
-    const img = new Image();
-    img.onload = () => {
-      box.innerHTML = "";
-      img.className = "ai-photo";
-      box.appendChild(img);
-      const cap = document.createElement("div");
-      cap.className = "figure-cap";
-      cap.textContent = "🎨 AI生成画像（毎回変わります・実在の人物ではありません）";
-      box.appendChild(cap);
-      if (btn) { btn.disabled = false; btn.textContent = "🎨 もう一度AIで生成"; }
-    };
-    img.onerror = () => {
-      box.innerHTML = `<div class="ai-loading">生成に失敗しました。混雑しているかもしれません。もう一度お試しください。</div>`;
-      if (btn) { btn.disabled = false; btn.textContent = "🎨 AIでリアルな画像を生成"; }
-    };
-    img.src = url;
   }
 
   // ---- 実例(SNS)・買い物への誘導（外部サイトの検索を開くだけ）----
