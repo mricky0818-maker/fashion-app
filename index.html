@@ -1072,6 +1072,7 @@
       height: state.height, weight: state.weight, body: state.body,
       items,
       palette: pickPalette(),
+      colorScheme: state.color,
     };
     render();
     pushHistory(state.current);
@@ -1317,23 +1318,27 @@
   }
 
   // 靴の種類ごとの自然な色（アイコン用）。革靴系＝茶、スニーカー＝白系、ブーツ＝黒茶 など
-  function shoeHex(name) {
+  // 選んだ好みの色スキーム（any/mono/warm/cool/natural）を取り出す
+  function schemeOf(cur) { return (cur && cur.colorScheme) || "any"; }
+  function shoeHex(name, scheme) {
     if (/白|ホワイト/.test(name)) return "#efece6";
     if (/黒|ブラック/.test(name)) return "#2c2c2e";
-    if (/ローファー|革靴|レザーシューズ|ドレス|パンプス|ヒール|オックスフォード|モカシン/.test(name)) return "#5a3b28";
-    if (/ブーツ/.test(name))           return "#3a2c25";
-    if (/バレエ|フラット|パレエ/.test(name)) return "#c79aa0";
-    if (/サンダル|ミュール|グルカ/.test(name)) return "#b8996f";
+    const mono = scheme === "mono";
+    if (/ローファー|革靴|レザーシューズ|ドレス|パンプス|ヒール|オックスフォード|モカシン/.test(name)) return mono ? "#35363a" : "#5a3b28";
+    if (/ブーツ/.test(name))           return mono ? "#2e2f33" : "#3a2c25";
+    if (/バレエ|フラット|パレエ/.test(name)) return mono ? "#d9d9de" : "#c79aa0";
+    if (/サンダル|ミュール|グルカ/.test(name)) return mono ? "#9a9aa0" : "#b8996f";
     if (/スニーカー|トレイル|ランナー|ランニング|サンバ|ダッド|厚底/.test(name)) return "#e7e3dc";
-    return "#6a5f57";
+    return mono ? "#5a5a5e" : "#6a5f57";
   }
-  // デニムの自然な色（アイコン用）。名称に色指定があればそれを優先、なければインディゴ
-  function denimHex(name) {
+  // デニムの自然な色（アイコン用）。名称に色指定があればそれを優先、モノトーン時はグレー系
+  function denimHex(name, scheme) {
     if (/白|ホワイト/.test(name)) return "#e8e4dc";
     if (/黒|ブラック/.test(name)) return "#2f3138";
     if (/グレー|アッシュ/.test(name)) return "#8b9099";
-    if (/ライト|淡|薄|ウォッシュ|ケミカル/.test(name)) return "#8fb0c8";
-    return "#3f6591";
+    const mono = scheme === "mono";
+    if (/ライト|淡|薄|ウォッシュ|ケミカル/.test(name)) return mono ? "#c7c7cb" : "#8fb0c8";
+    return mono ? "#5b5e64" : "#3f6591";
   }
   function isDenim(name) { return /デニム|ジーンズ|ジーパン/.test(name || ""); }
 
@@ -1343,10 +1348,11 @@
     if (!cur.palette) return "#9a94a0";
     const pal = cur.palette.colors;
     const nameOf = (k) => { const it = (cur.items || []).find(i => i.key === k); return it ? it.name : ""; };
+    const scheme = schemeOf(cur);
     const outer = nameOf("outer");
     const hasOuter = !!outer && !/なし|OK|羽織/.test(outer);
-    if (key === "shoes")  return shoeHex(nameOf("shoes"));
-    if (key === "bottom") return isDenim(nameOf("bottom")) ? denimHex(nameOf("bottom")) : pal[1];
+    if (key === "shoes")  return shoeHex(nameOf("shoes"), scheme);
+    if (key === "bottom") return isDenim(nameOf("bottom")) ? denimHex(nameOf("bottom"), scheme) : pal[1];
     if (key === "top")    return hasOuter ? pal[2] : pal[0];
     if (key === "outer")  return pal[0];
     return pal[1];
@@ -1682,9 +1688,11 @@
   }
   // アイテムごとの色（パレット由来。デニム/シューズ/小物は自然な色に補正）
   function colorFor(key, name, o) {
+    const mono = schemeOf(o) === "mono";
     if (key === "shoes") {
       if (/白|ホワイト/.test(name)) return "white";
       if (/黒|ブラック/.test(name)) return "black";
+      if (mono) { if (/ブーツ/.test(name)) return "black"; if (/バレエ|フラット/.test(name)) return "light grey"; return "grey"; }
       if (/ローファー|革靴|レザーシューズ|ドレス|パンプス|ヒール|オックスフォード|モカシン/.test(name)) return "brown";
       if (/ブーツ/.test(name)) return "dark brown";
       return "";
@@ -1692,7 +1700,9 @@
     if (key === "acc") return "";
     if (key === "bottom" && /デニム|ジーンズ|ジーパン/.test(name)) {
       if (/白/.test(name)) return "white"; if (/黒|ブラック/.test(name)) return "black";
-      if (/グレー|アッシュ/.test(name)) return "gray"; return "blue";
+      if (/グレー|アッシュ/.test(name)) return "gray";
+      if (mono) return /ライト|淡|薄|ウォッシュ|ケミカル/.test(name) ? "light grey" : "charcoal grey";
+      return "blue";
     }
     return hexToColorName(itemColor(key, o)) || "";
   }
@@ -1706,9 +1716,80 @@
     return (plural ? "" : art) + core;
   }
 
+  // 手持ちの服の写真から「大きなプリント/柄」を検出（無地の影・シワを誤検出しないよう保守的）
+  function detectGraphic(imgEl) {
+    const NONE = { graphic: false, printColor: "" };
+    try {
+      if (!imgEl) return NONE;
+      const iw = imgEl.naturalWidth || imgEl.width, ih = imgEl.naturalHeight || imgEl.height;
+      if (!iw || !ih) return NONE;
+      const S = 56;
+      const cv = document.createElement('canvas'); cv.width = S; cv.height = S;
+      const ctx = cv.getContext('2d', { willReadFrequently: true });
+      if (!ctx) return NONE;
+      ctx.drawImage(imgEl, 0, 0, S, S);
+      let data; try { data = ctx.getImageData(0, 0, S, S).data; } catch (e) { return NONE; }
+      // ベース生地色＝外周（プリントは端まで届きにくい）
+      let bR = 0, bG = 0, bB = 0, bN = 0;
+      for (let y = 0; y < S; y++) { const ny = (y + 0.5) / S - 0.5;
+        for (let x = 0; x < S; x++) { const i = (y * S + x) * 4; if (data[i + 3] < 128) continue;
+          const nx = (x + 0.5) / S - 0.5;
+          if (Math.max(Math.abs(nx), Math.abs(ny)) > 0.34) { bR += data[i]; bG += data[i + 1]; bB += data[i + 2]; bN++; }
+        }
+      }
+      if (bN < 40) return NONE;
+      const baseR = bR / bN, baseG = bG / bN, baseB = bB / bN;
+      const TH2 = 95 * 95;
+      let roi = 0, pr = 0, pR = 0, pG = 0, pB = 0, cx = 0, cy = 0;
+      for (let y = 0; y < S; y++) { const ny = (y + 0.5) / S - 0.5;
+        for (let x = 0; x < S; x++) { const i = (y * S + x) * 4; if (data[i + 3] < 128) continue;
+          const nx = (x + 0.5) / S - 0.5;
+          if (Math.max(Math.abs(nx), Math.abs(ny)) >= 0.30) continue;   // 中央部だけ
+          roi++;
+          const dr = data[i] - baseR, dg = data[i + 1] - baseG, db = data[i + 2] - baseB;
+          if (dr * dr + dg * dg + db * db > TH2) { pr++; pR += data[i]; pG += data[i + 1]; pB += data[i + 2]; cx += nx; cy += ny; }
+        }
+      }
+      if (roi < 60 || pr < Math.max(20, roi * 0.14)) return NONE;   // 小さすぎ＝ロゴ/シワ
+      if (pr / roi > 0.72) return NONE;                             // 2トーン生地の可能性
+      const gx = cx / pr, gy = cy / pr;
+      if (Math.abs(gx) > 0.22 || Math.abs(gy) > 0.24) return NONE;  // 胸中央付近のみ
+      const prR = pR / pr, prG = pG / pr, prB = pB / pr;
+      const bl = _rgbToHsl(baseR, baseG, baseB), pl = _rgbToHsl(prR, prG, prB);
+      const dHue = Math.min(Math.abs(bl[0] - pl[0]), 360 - Math.abs(bl[0] - pl[0]));
+      const chromaDiff = dHue > 40 && pl[1] > 0.18 && bl[1] > 0.05;
+      if (Math.abs(bl[2] - pl[2]) < 0.28 && !chromaDiff) return NONE; // 同系色の影を除外
+      return { graphic: true, printColor: _toHex(prR, prG, prB) };
+    } catch (e) { return NONE; }
+  }
+  // 名前からモチーフ語（garmentEnが拾わないスカル系のみ。ボーダー/花柄等の柄はgarmentEnが担当）
+  function motifFromName(name) { return /スカル|ドクロ|骸骨|skull/i.test(name || "") ? "skull" : ""; }
+  // プリント色を英語語に（モノトーン時はグレースケール）
+  function printColorWord(hex, o) {
+    if (!hex) return "";
+    if (schemeOf(o) === "mono") {
+      const m = /#?([0-9a-fA-F]{6})/.exec(hex); if (!m) return "";
+      const n = parseInt(m[1], 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+      const l = (Math.max(r, g, b) + Math.min(r, g, b)) / 510;
+      return l > 0.72 ? "white" : (l < 0.30 ? "black" : "grey");
+    }
+    return hexToColorName(hex) || "";
+  }
+  // 写真で検出した大きなプリント/スカル柄を、プロンプトに文章で足す（無地・柄無しは空＝無回帰）
+  function graphicSuffix(item, o) {
+    if (!item) return "";
+    const motif = motifFromName(item.name);
+    if (!item.graphic && !motif) return "";
+    const col = printColorWord(item.printColor, o);
+    const pos = (item.key === "bottom") ? " all over" : " across the center chest";
+    const size = (item.key === "bottom") ? "an all-over" : "a large";
+    return `, with ${size} ${col ? col + " " : ""}${motif ? motif + " " : ""}graphic print${pos}`;
+  }
+
   // 実際のアイテムを反映したAI画像プロンプト（コーデとの一致度を上げる）
   function aiImagePrompt(o) {
     const it = {}; o.items.forEach(i => { it[i.key] = i.name; });
+    const itemOf = (k) => o.items.find(i => i.key === k);
     const isTeen = (o.age === "a1" || o.age === "a2");
     const person = isTeen ? (o.gender === "ladies" ? "Japanese teenage girl" : "Japanese teenage boy") : (o.gender === "ladies" ? "Japanese woman" : "Japanese man");
     const ageEn = { a1: "about 13 years old", a2: "about 17 years old", a3: "in early 20s", a4: "in late 20s", a5: "in early 30s", a6: "in mid 30s", a7: "in 40s" }[o.age] || "";
@@ -1720,11 +1801,19 @@
     const ageHintEn = (o.scene === "sport" || o.scene === "relax") ? "" : (AGE_PROMPT_HINT[AGE_BAND[o.age]] || "");
     const seasonEn = { spring: "spring", summer: "summer", autumn: "autumn", winter: "winter" }[o.season] || "";
     const sceneEn = SCENE_EN[o.scene] || "everyday";
+    // 好みの色スキームを画像全体の配色として明示（おまかせ=any は付けない＝無回帰）
+    const scheme = schemeOf(o);
+    const paletteEn = {
+      mono:    "strict monochrome black-white-and-grey color palette, no other colors",
+      warm:    "cohesive warm-toned color palette of soft earthy and warm hues",
+      cool:    "cohesive cool-toned color palette of calm blue, teal and grey hues",
+      natural: "soft natural color palette of muted earthy neutral tones",
+    }[scheme] || "";
     const parts = [];
-    const tp = garmentPhrase("top", it.top, o); if (tp) parts.push("wearing " + tp);
-    const bp = garmentPhrase("bottom", it.bottom, o); if (bp) parts.push(bp);
+    const tp = garmentPhrase("top", it.top, o); if (tp) parts.push("wearing " + tp + graphicSuffix(itemOf("top"), o));
+    const bp = garmentPhrase("bottom", it.bottom, o); if (bp) parts.push(bp + graphicSuffix(itemOf("bottom"), o));
     const hasOuter = it.outer && !/なし|OK|羽織/.test(it.outer);
-    if (hasOuter) { const op = garmentPhrase("outer", it.outer, o); if (op) parts.push("layered with " + op); }
+    if (hasOuter) { const op = garmentPhrase("outer", it.outer, o); if (op) parts.push("layered with " + op + graphicSuffix(itemOf("outer"), o)); }
     const sp = garmentPhrase("shoes", it.shoes, o); if (sp) parts.push(sp);
     const ag = garmentEn("acc", it.acc);
     if (ag) { const bagish = /(bag|tote|backpack|clutch|briefcase|charm|purse)/.test(ag); const ap = garmentPhrase("acc", it.acc, o); if (ap) parts.push((bagish ? "carrying " : "accessorized with ") + ap); }
@@ -1732,10 +1821,10 @@
     let subject = "a " + (bodyLead ? bodyLead + " " : "") + person + (ageEn ? " " + ageEn : "");
     subject = subject.replace(/^a ([aeiou])/i, "an $1");
     const vibe = [styleEn, ageHintEn].filter(Boolean).join(", ");
-    // 選んだコーデ(outfit)を主語直後に置いて最優先に。体型補足→雰囲気→シーン/季節→撮影指定の順。
+    // 選んだコーデ(outfit)を主語直後に置いて最優先に。体型補足→雰囲気→配色→シーン/季節→撮影指定の順。
     return `full-body fashion lookbook photograph of ${subject}, ${outfit}. `
       + (bodyEmph ? bodyEmph + ". " : "")
-      + `${vibe}. ${sceneEn}, ${seasonEn} season. `
+      + `${vibe}. ${paletteEn ? paletteEn + ". " : ""}${sceneEn}, ${seasonEn} season. `
       + `Full body from head to shoes visible, entire outfit in frame, standing front-facing pose, single person alone, realistic anatomy, clean uncluttered background, soft natural daylight with professional studio lighting, photorealistic high-resolution editorial fashion photography, sharp focus, highly detailed fabric textures and true-to-description colors and patterns, no text, no watermark.`;
   }
 
@@ -2368,6 +2457,7 @@
   let _detCache = { file: null, dataUrl: null };
   let _detSeq = 0;                 // 世代ガード（保存時にも++して判別結果を破棄）
   let _catTouched = false, _seasonTouched = false; // ユーザーが手動で触ったら上書きしない
+  let _detGraphic = { dataUrl: null, graphic: false, printColor: "" }; // 判別時に柄検出をキャッシュ
   function readForDetect(file, cb) {
     resizeImage(file, dataUrl => {
       if (!dataUrl) { cb(null); return; }
@@ -2387,6 +2477,9 @@
       readForDetect(file, async r => {
         if (!r) { resolve({ cats: [], seasons: [], nameSuggestion: "", colorJP: "", garmentJP: "", catLabel: "", source: "none", confidence: 0 }); return; }
         const colorJP = colorNameJP(dominantColor(r.img).rgb).name || "";
+        let _gr = { graphic: false, printColor: "" };
+        try { _gr = detectGraphic(r.img); } catch (e) {}
+        _detGraphic = { dataUrl: r.dataUrl, graphic: _gr.graphic, printColor: _gr.printColor };
         const text = guessFromText(userName, filename);
         let ai = null;
         try { ai = await classifyGarment(r.img); } catch (e) { /* offline/timeout/blocked -> 無音でフォールバック */ }
@@ -2446,19 +2539,29 @@
     if (!cats.length) { showToast("カテゴリを1つ以上選んでください"); return; }
     const seasons = [...document.querySelectorAll(".cl-season:checked")].map(c => c.value);
     const name = document.getElementById("cl-name").value.trim() || CLOSET_CATS[cats[0]];
-    const save = dataUrl => {
-      if (!dataUrl) { showToast("画像の読み込みに失敗しました"); return; }
+    const finish = (dataUrl, gr) => {
       const list = loadCloset();
-      list.push({ id: "c" + Math.floor(Math.random() * 1e9) + "_" + list.length, cats, seasons, name, img: dataUrl });
+      const rec = { id: "c" + Math.floor(Math.random() * 1e9) + "_" + list.length, cats, seasons, name, img: dataUrl };
+      if (gr && gr.graphic) { rec.graphic = true; rec.printColor = gr.printColor || ""; }  // 柄あり＝プロンプトに描写を足す
+      list.push(rec);
       if (saveCloset(list)) {
         _detSeq++;                                 // 進行中の判別結果を破棄
         _detCache = { file: null, dataUrl: null };
+        _detGraphic = { dataUrl: null, graphic: false, printColor: "" };
         fileEl.value = "";
         document.getElementById("cl-name").value = "";
         const st = document.getElementById("cl-detect"); if (st) st.textContent = "";
         renderClosetGrid();
         showToast("クローゼットに追加しました 👕");
       }
+    };
+    const save = dataUrl => {
+      if (!dataUrl) { showToast("画像の読み込みに失敗しました"); return; }
+      if (_detGraphic.dataUrl === dataUrl) { finish(dataUrl, _detGraphic); return; }  // 判別時に解析済み
+      const im = new Image();
+      im.onload = () => { let gr = null; try { gr = detectGraphic(im); } catch (e) {} finish(dataUrl, gr); };
+      im.onerror = () => finish(dataUrl, null);
+      im.src = dataUrl;
     };
     if (_detCache.file === file && _detCache.dataUrl) { save(_detCache.dataUrl); return; }  // 判別で読み込み済みなら再デコードしない
     resizeImage(file, save);
@@ -2511,7 +2614,7 @@
       const it = pick(pref.length ? pref : pool);
       used.add(it.id);
       const catName = (CATS.find(c => c.key === k) || {}).cat || CLOSET_CATS[k];
-      return { key: k, cat: catName, name: it.name, id: it.id, img: it.img };
+      return { key: k, cat: catName, name: it.name, id: it.id, img: it.img, graphic: it.graphic, printColor: it.printColor };
     };
     const sc = SUBSCENES[state.scene][state.sub];
     const items = [pickCat("top", true), pickCat("bottom", true)];
@@ -2524,6 +2627,7 @@
       taste: state.taste, temp: state.temp, season: state.season, time: state.time, age: state.age,
       height: state.height, weight: state.weight, body: state.body,
       items: items.filter(Boolean),
+      colorScheme: state.color,
     };
     render();
     pushHistory(state.current);
@@ -2573,7 +2677,7 @@
       if (!pool.length) return null;
       const pref = pool.filter(seasonOk);
       const it = pick(pref.length ? pref : pool); used.add(it.id);
-      return { key: k, cat: (CATS.find(c => c.key === k) || {}).cat || CLOSET_CATS[k], name: it.name, id: it.id, img: it.img, own: true };
+      return { key: k, cat: (CATS.find(c => c.key === k) || {}).cat || CLOSET_CATS[k], name: it.name, id: it.id, img: it.img, own: true, graphic: it.graphic, printColor: it.printColor };
     };
     const suggestPick = (k) => ({ key: k, cat: (CATS.find(c => c.key === k) || {}).cat, name: pickItemName(k, gender, base, temp, taste, { age: state.age, body: state.body, height: state.height }), own: false });
     const selected = anchorId ? list.filter(x => x.id === anchorId) : list.filter(x => hybridSel.has(x.id));
@@ -2582,7 +2686,7 @@
       const pool = selected.filter(x => itemCats(x).includes(k) && !used.has(x.id));
       if (!pool.length) return null;
       const it = pick(pool); used.add(it.id);
-      return { key: k, cat: (CATS.find(c => c.key === k) || {}).cat || CLOSET_CATS[k], name: it.name, id: it.id, img: it.img, own: true };
+      return { key: k, cat: (CATS.find(c => c.key === k) || {}).cat || CLOSET_CATS[k], name: it.name, id: it.id, img: it.img, own: true, graphic: it.graphic, printColor: it.printColor };
     };
     // 選択があれば「選んだアイテムのみ手持ち＋残りはおすすめ」、無ければ「持っている物を自動で使う」
     const slot = (k) => hasSel ? (selPick(k) || suggestPick(k)) : ((owned[k].length ? ownedPick(k) : null) || suggestPick(k));
@@ -2603,7 +2707,8 @@
       season: state.season, time: state.time, age: state.age,
       height: state.height, weight: state.weight, body: state.body,
       items: itemsClean,
-      palette: anchorColor ? harmonyPalette(anchorColor) : pickPalette(),
+      palette: state.color !== "any" ? pickPalette() : (anchorColor ? harmonyPalette(anchorColor) : pickPalette()),
+      colorScheme: state.color,
     };
     render();
     pushHistory(state.current);
