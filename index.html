@@ -1592,6 +1592,7 @@
     [/フリル/, "ruffled"], [/パフ/, "puff-sleeve"], [/ペプラム/, "peplum"], [/ギャザー/, "gathered"], [/プリーツ/, "pleated"],
     [/ティアード/, "tiered"], [/フレア/, "flared"], [/花柄/, "floral-print"], [/ドット/, "polka-dot"], [/ボーダー/, "striped"],
     [/チェック|ネル/, "plaid"], [/レトロ柄/, "retro-print"], [/ロゴ|グラフィック|カレッジ/, "logo-print"],
+    [/ストライプ/, "striped"], [/水玉/, "polka-dot"], [/迷彩|カモフラ/, "camo-print"], [/ヒョウ柄|レオパード/, "leopard-print"], [/タイダイ/, "tie-dye"], [/ペイズリー/, "paisley"], [/ギンガム/, "gingham"], [/アーガイル/, "argyle"], [/総柄/, "all-over print"], [/プリント/, "graphic-print"],
     [/ヴィンテージ|レトロ/, "vintage-style"], [/とろみ/, "drapey"], [/半袖/, "short-sleeve"], [/ノースリーブ/, "sleeveless"],
     [/リブ/, "ribbed"], [/アシメ/, "asymmetric"], [/Vネック|浅めV/, "v-neck"], [/ノーカラー/, "collarless"], [/ショート丈/, "cropped-length"], [/無地/, "solid-color"], [/薄手/, "lightweight"], [/厚手/, "heavy"],
   ];
@@ -1735,7 +1736,7 @@
     return `full-body fashion lookbook photograph of ${subject}, ${outfit}. `
       + (bodyEmph ? bodyEmph + ". " : "")
       + `${vibe}. ${sceneEn}, ${seasonEn} season. `
-      + `Full body from head to shoes visible, entire outfit in frame, standing front-facing pose, single person alone, realistic anatomy, soft natural daylight, photorealistic editorial fashion photography, sharp focus, highly detailed fabric textures and true-to-description colors, no text, no watermark.`;
+      + `Full body from head to shoes visible, entire outfit in frame, standing front-facing pose, single person alone, realistic anatomy, clean uncluttered background, soft natural daylight with professional studio lighting, photorealistic high-resolution editorial fashion photography, sharp focus, highly detailed fabric textures and true-to-description colors and patterns, no text, no watermark.`;
   }
 
   // 16進カラーを、AIが理解しやすい英語の色名に近似変換
@@ -2151,7 +2152,7 @@
       if (!imgEl) return FALLBACK;
       const iw = imgEl.naturalWidth || imgEl.width, ih = imgEl.naturalHeight || imgEl.height;
       if (!iw || !ih) return FALLBACK;
-      const S = 40;
+      const S = 56;
       const cv = document.createElement('canvas'); cv.width = S; cv.height = S;
       const ctx = cv.getContext('2d', { willReadFrequently: true });
       if (!ctx) return FALLBACK;
@@ -2176,7 +2177,7 @@
           if (l > 0.93) w *= 0.22; else if (l > 0.86) w *= 0.55;
           if (l < 0.06) w *= 0.5;
           if (s >= 0.12 && l > 0.08 && l < 0.94) {
-            const cw = w * (0.35 + s * 2.2);
+            const cw = w * (0.5 + s * 1.1);   // 彩度への過剰な重みを抑え、面積の広いベース色を拾いやすく（柄物対策）
             let bin = (h / seg) | 0; if (bin >= HB) bin = HB - 1;
             hW[bin] += cw; hR[bin] += r * cw; hG[bin] += g * cw; hBl[bin] += b * cw;
           } else { nW += w; nR += r * w; nG += g * w; nB += b * w; }
@@ -2189,7 +2190,7 @@
       }
       let cW = 0, cR = 0, cG = 0, cB = 0;
       if (bi >= 0) for (const k of [(bi + HB - 1) % HB, bi, (bi + 1) % HB]) { cW += hW[k]; cR += hR[k]; cG += hG[k]; cB += hBl[k]; }
-      if (cW > 0 && cW >= nW * 0.85) { const r = cR / cW, g = cG / cW, b = cB / cW; return { hex: _toHex(r, g, b), rgb: [Math.round(r), Math.round(g), Math.round(b)] }; }
+      if (cW > 0 && cW >= nW * 1.05) { const r = cR / cW, g = cG / cW, b = cB / cW; return { hex: _toHex(r, g, b), rgb: [Math.round(r), Math.round(g), Math.round(b)] }; }
       if (nW > 0) { const r = nR / nW, g = nG / nW, b = nB / nW; return { hex: _toHex(r, g, b), rgb: [Math.round(r), Math.round(g), Math.round(b)] }; }
       if (cW > 0) { const r = cR / cW, g = cG / cW, b = cB / cW; return { hex: _toHex(r, g, b), rgb: [Math.round(r), Math.round(g), Math.round(b)] }; }
       return FALLBACK;
