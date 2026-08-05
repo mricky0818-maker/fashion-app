@@ -1338,6 +1338,8 @@
   function isDenim(name) { return /デニム|ジーンズ|ジーパン/.test(name || ""); }
 
   function itemColor(key, cur) {
+    const _own = (cur.items || []).find(i => i.key === key);
+    if (_own && _own.color) return _own.color;   // 手持ちアイテムは写真から取った実物色を優先
     if (!cur.palette) return "#9a94a0";
     const pal = cur.palette.colors;
     const nameOf = (k) => { const it = (cur.items || []).find(i => i.key === k); return it ? it.name : ""; };
@@ -2530,7 +2532,32 @@
 
   // 手持ちアイテムを活かしつつ、無いカテゴリはおすすめで補完して提案。
   // anchorId を渡すと、その1着だけを主役に固定して残りをおすすめで組む（「この服でコーデ」）。
-  function suggestHybrid(anchorId) {
+  // 手持ち写真から主要色HEXを取得（非同期・失敗時null）
+  function imgToDominantHex(dataUrl) {
+    return new Promise(res => {
+      if (!dataUrl) { res(null); return; }
+      const im = new Image();
+      im.onload = () => { try { res(dominantColor(im).hex); } catch (e) { res(null); } };
+      im.onerror = () => res(null);
+      im.src = dataUrl;
+    });
+  }
+  // 主役（手持ちの服）の色に“合わせた”配色。おすすめ側は主役を引き立てるニュートラルで受ける。
+  function harmonyPalette(baseHex) {
+    const m = /#?([0-9a-fA-F]{6})/.exec(baseHex || "");
+    if (!m) return pickPalette();
+    const n = parseInt(m[1], 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+    const hsl = _rgbToHsl(r, g, b), h = hsl[0], s = hsl[1];
+    const jp = (colorNameJP([r, g, b]) || {}).name || "";
+    let colors;
+    if (s < 0.14) colors = ["#efece7", "#9aa6b2", "#3a3a3c"];                // 無彩/ベージュ→アイボリー/くすみブルー/チャコール
+    else if (h < 70 || h >= 330) colors = ["#efe7dc", "#c9b79c", "#5a4a3a"]; // 暖色→アイボリー/キャメル/ブラウン
+    else if (h < 170) colors = ["#eef0e8", "#a7a58c", "#3f4a3a"];            // 緑系→オフ白/セージ/ダークカーキ
+    else colors = ["#eef1f4", "#9aa3b0", "#2b3550"];                         // 青紫系→オフ白/クールグレー/ネイビー
+    return { name: (jp ? jp + "を主役に" : "主役を引き立てる配色"), tags: [], colors };
+  }
+
+  async function suggestHybrid(anchorId) {
     const list = loadCloset();
     const owned = {};
     ["top", "bottom", "outer", "shoes", "acc"].forEach(k => owned[k] = list.filter(x => itemCats(x).includes(k)));
@@ -2564,14 +2591,18 @@
     if (wantOuter) items.push(slot("outer"));
     items.push(slot("shoes"));
     items.push(slot("acc"));
+    const itemsClean = items.filter(Boolean);
+    // 主役＝手持ちの服の“実物色”を写真から取得（プロンプトの色精度＆配色の軸に使う）
+    await Promise.all(itemsClean.filter(i => i.own && i.img).map(async i => { i.color = await imgToDominantHex(i.img); }));
+    const anchorColor = (itemsClean.find(i => i.own && i.color) || {}).color;
     state.current = {
       source: "hybrid",
       gender, scene, temp, base, taste,
       sub: state.sub, subLabel: sc.label, subTip: sc.tip,
       season: state.season, time: state.time, age: state.age,
       height: state.height, weight: state.weight, body: state.body,
-      items: items.filter(Boolean),
-      palette: pickPalette(),
+      items: itemsClean,
+      palette: anchorColor ? harmonyPalette(anchorColor) : pickPalette(),
     };
     render();
     pushHistory(state.current);
