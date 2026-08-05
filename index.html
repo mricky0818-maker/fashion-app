@@ -1710,7 +1710,7 @@
   function aiImagePrompt(o) {
     const it = {}; o.items.forEach(i => { it[i.key] = i.name; });
     const isTeen = (o.age === "a1" || o.age === "a2");
-    const person = isTeen ? (o.gender === "ladies" ? "teenage girl" : "teenage boy") : (o.gender === "ladies" ? "woman" : "man");
+    const person = isTeen ? (o.gender === "ladies" ? "Japanese teenage girl" : "Japanese teenage boy") : (o.gender === "ladies" ? "Japanese woman" : "Japanese man");
     const ageEn = { a1: "about 13 years old", a2: "about 17 years old", a3: "in early 20s", a4: "in late 20s", a5: "in early 30s", a6: "in mid 30s", a7: "in 40s" }[o.age] || "";
     // 体型：未成年(a1/a2)には体重・体格の記述を一切付けない（安全配慮）。それ以外は主語に前置＋補足文で再現を強める。
     const bodyLead = isTeen ? "" : (BODY_ADJ[o.body] || "");
