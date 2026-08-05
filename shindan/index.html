@@ -17,6 +17,8 @@
   gtag('js', new Date());
   gtag('config', 'G-8C3BWE4BTF');
 </script>
+<!-- GoatCounter (privacy-friendly analytics, public dashboard) -->
+<script data-goatcounter="https://stylecompass.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="今日のコーデ提案" />
 <meta property="og:title" content="骨格×パーソナルカラー診断｜似合う「次の1着」まで無料で" />
@@ -149,7 +151,10 @@
 <script>
 (function(){
   "use strict";
-  function ev(name, params){ try{ if(window.gtag){ gtag('event', name, params||{}); } }catch(e){} }
+  function ev(name, params){
+    try{ if(window.gtag){ gtag('event', name, params||{}); } }catch(e){}
+    try{ if(window.goatcounter && window.goatcounter.count){ window.goatcounter.count({path:name, title:"[event] "+name, event:true}); } }catch(e){}
+  }
 
   var RAKUTEN_AFF_ID = "56490013.c21395ce.56490014.4d2b0d54";
   function rakutenAff(kw){
