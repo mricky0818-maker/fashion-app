@@ -152,7 +152,8 @@
   <div class="brand">🧭 <b>スタイルコンパス</b><span class="tent">（骨格×パーソナルカラー診断）</span></div>
   <div id="app" aria-live="polite"></div>
   <footer class="site-foot">
-    <div style="margin-bottom:12px;font-size:.85rem;color:var(--muted);">骨格タイプ別ガイド：<a href="straight/" style="color:var(--accent-ink);font-weight:700;text-decoration:none;">ストレート</a> ・ <a href="wave/" style="color:var(--accent-ink);font-weight:700;text-decoration:none;">ウェーブ</a> ・ <a href="natural/" style="color:var(--accent-ink);font-weight:700;text-decoration:none;">ナチュラル</a></div>
+    <div style="margin-bottom:10px;font-size:.85rem;color:var(--muted);">骨格タイプ別ガイド：<a href="straight/" style="color:var(--accent-ink);font-weight:700;text-decoration:none;">ストレート</a> ・ <a href="wave/" style="color:var(--accent-ink);font-weight:700;text-decoration:none;">ウェーブ</a> ・ <a href="natural/" style="color:var(--accent-ink);font-weight:700;text-decoration:none;">ナチュラル</a></div>
+    <div style="margin-bottom:12px;font-size:.85rem;color:var(--muted);">パーソナルカラー別ガイド：<a href="spring/" style="color:var(--accent-ink);font-weight:700;text-decoration:none;">イエベ春</a> ・ <a href="summer/" style="color:var(--accent-ink);font-weight:700;text-decoration:none;">ブルベ夏</a> ・ <a href="autumn/" style="color:var(--accent-ink);font-weight:700;text-decoration:none;">イエベ秋</a> ・ <a href="winter/" style="color:var(--accent-ink);font-weight:700;text-decoration:none;">ブルベ冬</a></div>
     <a href="../">← 今日のコーデ提案（無料コーデ生成）へ</a>
   </footer>
 </div>
@@ -367,6 +368,7 @@
             '<div class="swatches">'+sw+'</div></div>'+
         '</div>'+
         '<a href="'+(t.k==="S"?"straight":t.k==="W"?"wave":"natural")+'/" style="display:block;text-align:center;margin:16px 0 0;color:var(--accent-ink);font-weight:700;font-size:.92rem;text-decoration:none;">→ 骨格'+K.name+'に似合う服・コーデをもっと見る</a>'+
+        '<a href="'+t.p+'/" style="display:block;text-align:center;margin:8px 0 0;color:var(--accent-ink);font-weight:700;font-size:.92rem;text-decoration:none;">→ '+P.name+'に似合う色・服をもっと見る</a>'+
         '<div class="foot-actions">'+
           '<button class="btn" id="toCloset">次へ：手持ちをチェック</button>'+
           '<button class="btn ghost" id="share">📲 結果を画像でシェア</button>'+
