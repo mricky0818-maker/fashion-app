@@ -138,6 +138,11 @@
   .site-foot a{color:var(--muted);font-size:.86rem;font-weight:700;text-decoration:none;
     border:1.5px solid var(--line);border-radius:999px;padding:9px 18px;display:inline-block;transition:border-color .14s ease,color .14s ease;}
   .site-foot a:hover{border-color:var(--accent);color:var(--accent-ink);}
+  .guide-block{margin-bottom:16px;}
+  .guide-block .glabel{font-size:.78rem;color:var(--muted);font-weight:700;margin-bottom:8px;}
+  .guide-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;}
+  .site-foot .gchip{color:var(--accent-ink);background:var(--accent-soft);border:1px solid transparent;border-radius:999px;padding:8px 15px;font-size:.82rem;font-weight:700;display:inline-block;}
+  .site-foot .gchip:hover{border-color:var(--accent);color:var(--accent-ink);}
 
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);opacity:0;
     background:var(--ink);color:#fff;font-size:.86rem;font-weight:700;padding:11px 18px;border-radius:999px;
@@ -152,8 +157,23 @@
   <div class="brand">🧭 <b>スタイルコンパス</b><span class="tent">（骨格×パーソナルカラー診断）</span></div>
   <div id="app" aria-live="polite"></div>
   <footer class="site-foot">
-    <div style="margin-bottom:10px;font-size:.85rem;color:var(--muted);">骨格タイプ別ガイド：<a href="straight/" style="color:var(--accent-ink);font-weight:700;text-decoration:none;">ストレート</a> ・ <a href="wave/" style="color:var(--accent-ink);font-weight:700;text-decoration:none;">ウェーブ</a> ・ <a href="natural/" style="color:var(--accent-ink);font-weight:700;text-decoration:none;">ナチュラル</a></div>
-    <div style="margin-bottom:12px;font-size:.85rem;color:var(--muted);">パーソナルカラー別ガイド：<a href="spring/" style="color:var(--accent-ink);font-weight:700;text-decoration:none;">イエベ春</a> ・ <a href="summer/" style="color:var(--accent-ink);font-weight:700;text-decoration:none;">ブルベ夏</a> ・ <a href="autumn/" style="color:var(--accent-ink);font-weight:700;text-decoration:none;">イエベ秋</a> ・ <a href="winter/" style="color:var(--accent-ink);font-weight:700;text-decoration:none;">ブルベ冬</a></div>
+    <div class="guide-block">
+      <div class="glabel">骨格タイプ別ガイド</div>
+      <div class="guide-chips">
+        <a class="gchip" href="straight/">ストレート</a>
+        <a class="gchip" href="wave/">ウェーブ</a>
+        <a class="gchip" href="natural/">ナチュラル</a>
+      </div>
+    </div>
+    <div class="guide-block">
+      <div class="glabel">パーソナルカラー別ガイド</div>
+      <div class="guide-chips">
+        <a class="gchip" href="spring/">イエベ春</a>
+        <a class="gchip" href="summer/">ブルベ夏</a>
+        <a class="gchip" href="autumn/">イエベ秋</a>
+        <a class="gchip" href="winter/">ブルベ冬</a>
+      </div>
+    </div>
     <a href="../">← 今日のコーデ提案（無料コーデ生成）へ</a>
   </footer>
 </div>
