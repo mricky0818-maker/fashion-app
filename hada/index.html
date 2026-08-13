@@ -3,14 +3,42 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>肌ログ｜部位別に記録して、肌荒れの原因を見つける</title>
-<meta name="description" content="でこ・こめかみ・頬・フェイスライン・口周り・顎・鼻を毎日5段階で記録。食べたもの、睡眠時間、スキンケア、洗顔・クレンジングの種類まで残して、どれが原因で肌の調子が落ちるかを自動で分析します。無料・登録不要・データは端末の中だけ。" />
-<meta name="robots" content="noindex, nofollow" />
+<title>肌カルテ｜部位別に記録して、肌荒れの原因を見つける無料アプリ</title>
+<meta name="description" content="でこ・こめかみ・鼻・頬・口周り・顎・フェイスラインを毎日5段階で記録。食べたもの、睡眠時間、スキンケア、洗顔・クレンジングの種類まで残すと、どれが原因で肌の調子が落ちているかを統計で見つけます。無料・登録不要・記録は端末の中だけ。" />
+<meta name="keywords" content="肌荒れ,原因,記録,アプリ,肌 日記,ニキビ 記録,部位別,スキンケア 記録,肌 カルテ,無料" />
+<link rel="canonical" href="https://mricky0818-maker.github.io/fashion-app/hada/" />
+<meta name="robots" content="index, follow" />
 <meta name="theme-color" content="#12A594" />
+<link rel="manifest" href="manifest.webmanifest" />
 <link rel="icon" href="icon.svg" type="image/svg+xml" />
-<link rel="apple-touch-icon" href="icon.svg" />
+<link rel="apple-touch-icon" href="icon-192.png" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-title" content="肌ログ" />
+<meta name="apple-mobile-web-app-title" content="肌カルテ" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="肌カルテ" />
+<meta property="og:title" content="肌カルテ｜部位別に記録して、肌荒れの原因を見つける" />
+<meta property="og:description" content="7つの部位を5段階で記録。食べたもの・睡眠・スキンケア・洗顔まで残すと、どれが、どの部位に効いているかを統計で見つけます。無料・登録不要・記録は端末の中だけ。" />
+<meta property="og:url" content="https://mricky0818-maker.github.io/fashion-app/hada/" />
+<meta property="og:image" content="https://mricky0818-maker.github.io/fashion-app/hada/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:locale" content="ja_JP" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="肌カルテ｜部位別に記録して、肌荒れの原因を見つける" />
+<meta name="twitter:description" content="7つの部位を5段階で記録。何が、どの部位に効いているかを統計で見つけます。無料・登録不要。" />
+<meta name="twitter:image" content="https://mricky0818-maker.github.io/fashion-app/hada/og.png" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"肌カルテ","url":"https://mricky0818-maker.github.io/fashion-app/hada/","description":"顔の7部位ごとに肌の調子を記録し、食事・睡眠・スキンケア・洗顔との関係を統計的に分析する無料Webアプリ。記録は端末内のみに保存されます。","applicationCategory":"HealthApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"JPY"},"inLanguage":"ja"}
+</script>
+<!-- Google Analytics (GA4) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8C3BWE4BTF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-8C3BWE4BTF');
+</script>
+<script data-goatcounter="https://stylecompass.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 <style>
   :root{
     --ground:#F1FAF8; --panel:#FFFFFF; --panel-2:#E6F5F1; --ink:#17302A; --muted:#6C918A;
@@ -217,7 +245,7 @@
       <circle cx="16" cy="16" r="13.5" fill="none" stroke="currentColor" stroke-width="2.2"/>
       <path d="M21.5 10.5 L18 18 L10.5 21.5 L14 14 Z" fill="currentColor"/>
     </svg>
-    <div><b id="appName">肌ログ</b> <span class="tent">（名前は未定）</span></div>
+    <div><b id="appName">肌カルテ</b> <span class="tent">— 部位ごとに記録して原因を見つける</span></div>
     <span class="streak" id="streak" hidden></span>
   </header>
 
@@ -369,7 +397,8 @@
 
     <div class="card">
       <h2>データについて</h2>
-      <div class="privacy">🔒 記録も写真も<b>この端末の中だけ</b>に保存されます。サーバーへ送ることはありません。<br>
+      <div class="privacy">🔒 記録も写真も<b>この端末の中だけ</b>に保存されます。肌の状態・写真・食事・からだの記録が
+        サーバーへ送られることはありません（一般的なサイトと同じアクセス数の集計のみ行っています）。<br>
         ブラウザのデータを消すと記録も消えるため、ときどき書き出しておくことをおすすめします。</div>
       <div class="row" style="margin-top:12px">
         <button class="btn ghost sm" id="doExport">書き出す</button>
@@ -394,7 +423,10 @@
       <p class="disclaimer">ここで示す傾向は、あなた自身の記録にもとづく<b>統計的な目安</b>で、医学的な診断ではありません。
         症状が続く・悪化する場合は皮膚科の受診をご検討ください。</p>
     </div>
-    <p class="site-foot">© 肌ログ（名称未定）</p>
+    <p class="site-foot">
+      <a href="../shindan/">姉妹アプリ：スタイルコンパス（骨格×パーソナルカラー診断）</a><br>
+      © 肌カルテ
+    </p>
   </section>
 </div>
 
