@@ -77,7 +77,7 @@
   h2{font-size:.98rem;margin:0 0 11px;}
   .lede{color:var(--muted);margin:0 0 14px;font-size:.9rem;}
   .sub{color:var(--muted);font-size:.78rem;margin:7px 0 0;line-height:1.65;}
-  .label{font-size:.79rem;font-weight:800;color:var(--muted);letter-spacing:.03em;margin:0 0 8px;}
+  .label{font-size:.88rem;font-weight:800;color:var(--muted);letter-spacing:.03em;margin:0 0 10px;}
   .label .opt{font-weight:600;font-size:.71rem;opacity:.8;}
   .label.mt{margin-top:16px;}
 
@@ -115,9 +115,10 @@
   .bulk{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px;}
 
   /* chips */
-  .chips{display:flex;flex-wrap:wrap;gap:6px;}
-  .chip{appearance:none;cursor:pointer;font-family:var(--sans);font-size:.81rem;font-weight:700;color:var(--muted);
-    background:var(--panel);border:1.5px solid var(--line);border-radius:999px;padding:6px 12px;line-height:1.45;
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  /* 毎日タップする項目なので、指で押しやすい高さ（約47px）を確保する */
+  .chip{appearance:none;cursor:pointer;font-family:var(--sans);font-size:.95rem;font-weight:700;color:var(--muted);
+    background:var(--panel);border:1.5px solid var(--line);border-radius:999px;padding:11px 17px;line-height:1.45;
     transition:border-color .12s ease,background .12s ease,color .12s ease,transform .12s ease;}
   .chip:hover{transform:translateY(-1px);border-color:var(--accent);}
   .chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink);}
@@ -127,7 +128,7 @@
   a.chip.link{text-decoration:none;color:var(--accent-ink);}
   a.chip.link::after{content:" ›";opacity:.6;}
   .grp{margin-bottom:12px;} .grp:last-child{margin-bottom:0;}
-  .gt{font-size:.74rem;font-weight:800;color:var(--muted);margin:0 0 6px;}
+  .gt{font-size:.82rem;font-weight:800;color:var(--muted);margin:0 0 8px;}
 
   .times{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;}
   .tf{flex:1;min-width:120px;}
