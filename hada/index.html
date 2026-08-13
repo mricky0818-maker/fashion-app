@@ -213,6 +213,8 @@
   .empty-note{text-align:center;color:var(--muted);font-size:.86rem;padding:20px 8px;}
   .privacy{background:var(--accent-soft);border-radius:13px;padding:11px 13px;font-size:.78rem;color:var(--accent-ink);line-height:1.65;}
   .disclaimer{font-size:.71rem;color:var(--muted);line-height:1.7;background:var(--panel-2);border-radius:11px;padding:10px 12px;}
+  .kindhead{font-size:.75rem;font-weight:800;color:var(--accent-ink);background:var(--accent-soft);
+    display:inline-block;padding:3px 10px;border-radius:999px;margin:12px 0 2px;}
   .itemline{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:.85rem;}
   .itemline:last-child{border-bottom:0;}
   .itemline .x{margin-left:auto;appearance:none;border:0;background:none;color:var(--warn);cursor:pointer;
@@ -286,27 +288,27 @@
 
     <div class="card">
       <p class="label">食べたもの <span class="opt">（複数可）</span></p>
-      <div class="chips" id="foodRow"></div>
+      <div id="foodRow"></div>
       <p class="label mt">飲んだもの</p>
-      <div class="chips" id="drinkRow"></div>
+      <div id="drinkRow"></div>
     </div>
 
     <div class="card">
       <p class="label">使ったスキンケア <span class="opt">（朝）</span></p>
-      <div class="chips" id="skinAMRow"></div>
+      <div id="skinAMRow"></div>
       <p class="label mt">使ったスキンケア <span class="opt">（夜）</span></p>
-      <div class="chips" id="skinPMRow"></div>
+      <div id="skinPMRow"></div>
       <p class="label mt">使ったメイク用品</p>
-      <div class="chips" id="makeupRow"></div>
+      <div id="makeupRow"></div>
     </div>
 
     <div class="card">
       <p class="label">洗顔（朝） <span class="opt">（1つ選択）</span></p>
-      <div class="chips" id="washAMRow"></div>
+      <div id="washAMRow"></div>
       <p class="label mt">洗顔（夜）</p>
-      <div class="chips" id="washPMRow"></div>
+      <div id="washPMRow"></div>
       <p class="label mt">クレンジング</p>
-      <div class="chips" id="cleanseRow"></div>
+      <div id="cleanseRow"></div>
       <p class="label mt">洗いかた</p>
       <div class="chips" id="howRow"></div>
     </div>
@@ -505,6 +507,11 @@ var PRESETS = {
   wash:['洗顔フォーム','洗顔石けん','洗顔パウダー','洗顔ジェル','泡タイプ','スクラブ入り','お湯だけ'],
   cleanse:['オイル','バーム','ジェル','クリーム','ミルク','リキッド（水）','シートタイプ']
 };
+/* この4カテゴリは「種類」の下に具体的な製品をぶら下げる。
+   食べたもの・飲んだものは種類そのものが記録単位なので分けない。 */
+var HAS_KIND = {skincare:1, makeup:1, wash:1, cleanse:1};
+var KINDS = {};
+Object.keys(HAS_KIND).forEach(function(c){ KINDS[c] = PRESETS[c].concat(['その他']); });
 
 /* ================= storage ================= */
 var KEY = 'hadaLog.v2';
@@ -520,13 +527,19 @@ try {
     }
   }
 } catch(e){}
+// 種類を持たない旧データは、その名前自体が種類だったものとして引き継ぐ
+Object.keys(state.items).forEach(function(id){
+  var it = state.items[id];
+  if (it && !it.kind) it.kind = it.name;
+});
 
 function seed(){
   if (Object.keys(state.items).length) return;
   Object.keys(PRESETS).forEach(function(cat){
     PRESETS[cat].forEach(function(name, i){
       var id = cat + '_' + i;
-      state.items[id] = {id:id, cat:cat, name:name};
+      // gen = 種類だけの汎用項目。製品名を登録しない人はこれだけで使える
+      state.items[id] = {id:id, cat:cat, name:name, kind:name, gen:1};
     });
   });
   persist();
@@ -584,10 +597,25 @@ function edit(k, fn){
   saved();
 }
 function toggleIn(arr, id){ var i = arr.indexOf(id); if (i>=0) arr.splice(i,1); else arr.push(id); }
-function itemsOf(cat){
-  return Object.keys(state.items).map(function(k){ return state.items[k]; })
-    .filter(function(it){ return it.cat === cat; });
+function kindOrder(cat, kind){
+  var L = KINDS[cat];
+  if (!L) return 0;
+  var i = L.indexOf(kind);
+  return i < 0 ? 998 : i;
 }
+/* withOff=true は休止中の製品も含める。分析は過去の記録を使うので必ず含める。 */
+function itemsOf(cat, withOff){
+  return Object.keys(state.items).map(function(k){ return state.items[k]; })
+    .filter(function(it){ return it.cat === cat && (withOff || !it.off); })
+    .sort(function(a,b){
+      var d = kindOrder(cat, a.kind) - kindOrder(cat, b.kind);
+      if (d) return d;
+      if (a.kind !== b.kind) return a.kind < b.kind ? -1 : 1;
+      if (!a.gen !== !b.gen) return a.gen ? -1 : 1;
+      return a.name < b.name ? -1 : 1;
+    });
+}
+function prodLabel(it){ return it.gen ? it.kind : it.name; }
 function itemName(id){ return (state.items[id] && state.items[id].name) || id; }
 
 function toMin(t){ var a = t.split(':'); return (+a[0])*60 + (+a[1]); }
@@ -654,31 +682,98 @@ function chip(label, on, fn, cls){
 }
 function fill(box, nodes){ box.innerHTML=''; nodes.forEach(function(n){ box.appendChild(n); }); }
 
-function multiRow(boxId, cat, field){
-  var k = key(cur), r = rec(k);
-  var nodes = itemsOf(cat).map(function(it){
-    return chip(it.name, r[field].indexOf(it.id) >= 0, function(){
-      edit(k, function(x){ toggleIn(x[field], it.id); });
+/* 製品を登録していないうちは今までどおりの平らな並び。
+   1つでも登録されたら「種類」ごとの見出しつきに切り替える。 */
+function renderItemRow(boxId, cat, isOn, pick, head){
+  var box = $(boxId);
+  box.innerHTML = '';
+  var list = itemsOf(cat);
+  var grouped = HAS_KIND[cat] && list.some(function(it){ return !it.gen; });
+
+  if (!grouped) {
+    var flat = el('div','chips');
+    (head||[]).forEach(function(n){ flat.appendChild(n); });
+    list.forEach(function(it){ flat.appendChild(chip(prodLabel(it), isOn(it), function(){ pick(it); })); });
+    flat.appendChild(addChip(cat));
+    box.appendChild(flat);
+    return;
+  }
+
+  if (head && head.length) {
+    var top = el('div','chips');
+    head.forEach(function(n){ top.appendChild(n); });
+    box.appendChild(top);
+  }
+  // 見出しを立てるのは製品を登録した種類だけ。残りは今までどおり1行にまとめる
+  var order = [], byKind = {}, hasProduct = {};
+  list.forEach(function(it){
+    if (!byKind[it.kind]) { byKind[it.kind] = []; order.push(it.kind); }
+    byKind[it.kind].push(it);
+    if (!it.gen) hasProduct[it.kind] = 1;
+  });
+  order.filter(function(kd){ return hasProduct[kd]; }).forEach(function(kd){
+    var g = el('div','grp');
+    g.appendChild(el('p','gt', kd));
+    var c = el('div','chips');
+    byKind[kd].forEach(function(it){
+      c.appendChild(chip(it.gen ? '種類だけ' : it.name, isOn(it), function(){ pick(it); }));
+    });
+    var plus = el('button','chip add','＋'); plus.type='button';
+    plus.setAttribute('aria-label', kd + 'の製品を登録');
+    plus.addEventListener('click', function(){ openAdd(cat, kd); });
+    c.appendChild(plus);
+    g.appendChild(c);
+    box.appendChild(g);
+  });
+  var rest = order.filter(function(kd){ return !hasProduct[kd]; });
+  var tail = el('div','chips');
+  rest.forEach(function(kd){
+    byKind[kd].forEach(function(it){
+      tail.appendChild(chip(prodLabel(it), isOn(it), function(){ pick(it); }));
     });
   });
-  nodes.push(addChip(cat));
-  fill($(boxId), nodes);
+  tail.appendChild(addChip(cat));
+  box.appendChild(tail);
+}
+function multiRow(boxId, cat, field){
+  var k = key(cur), r = rec(k);
+  renderItemRow(boxId, cat,
+    function(it){ return r[field].indexOf(it.id) >= 0; },
+    function(it){ edit(k, function(x){ toggleIn(x[field], it.id); }); },
+    HAS_KIND[cat] ? [copyChip(field, false)] : null);
 }
 function singleRow(boxId, cat, field){
   var k = key(cur), r = rec(k);
-  var nodes = [ chip('しなかった', r[field] === 'none', function(){
+  var head = [ chip('しなかった', r[field] === 'none', function(){
     edit(k, function(x){ x[field] = (x[field]==='none') ? '' : 'none'; });
-  }, 'no') ];
-  itemsOf(cat).forEach(function(it){
-    nodes.push(chip(it.name, r[field] === it.id, function(){
-      edit(k, function(x){ x[field] = (x[field]===it.id) ? '' : it.id; });
-    }));
+  }, 'no'), copyChip(field, true) ];
+  renderItemRow(boxId, cat,
+    function(it){ return r[field] === it.id; },
+    function(it){ edit(k, function(x){ x[field] = (x[field]===it.id) ? '' : it.id; }); },
+    head);
+}
+/* 製品が増えるほど毎日のタップが増えるので、直近の記録を丸ごと持ってこられるようにする */
+function copyChip(field, single){
+  var b = el('button','chip add','前回と同じ'); b.type='button';
+  b.addEventListener('click', function(){
+    var d = addDays(cur,-1), found = null;
+    for (var i=0;i<21;i++){
+      var raw = state.records[key(d)];
+      if (raw) {
+        var n = norm(raw);
+        if (single ? n[field] : (n[field] && n[field].length)) { found = single ? n[field] : n[field].slice(); break; }
+      }
+      d = addDays(d,-1);
+    }
+    if (found == null) { alert('コピーできる直近の記録がありません。'); return; }
+    edit(key(cur), function(x){ x[field] = found; });
+    renderLog();
   });
-  nodes.push(addChip(cat));
-  fill($(boxId), nodes);
+  return b;
 }
 function addChip(cat){
-  var b = el('button','chip add','＋ 追加'); b.type='button';
+  var b = el('button','chip add', HAS_KIND[cat] ? '＋ 製品を登録' : '＋ 追加');
+  b.type='button';
   b.addEventListener('click', function(){ openAdd(cat); });
   return b;
 }
@@ -1043,30 +1138,53 @@ function quantile(sorted, p){
   var i = (sorted.length-1) * p, lo = Math.floor(i), hi = Math.ceil(i);
   return sorted[lo] + (sorted[hi]-sorted[lo]) * (i-lo);
 }
+/* 製品ごと（どの化粧水か）と、種類ごと（化粧水ぜんぶ）の両方を候補にする。
+   種類ごとは、その種類に2つ以上ぶら下がっているときだけ（1つなら製品と同じ検定になる）。 */
+function inAny(ids, arr){
+  for (var i=0;i<ids.length;i++) if (arr.indexOf(ids[i]) >= 0) return true;
+  return false;
+}
+function kindCandidates(cat, group, test){
+  var out = [], byKind = {};
+  itemsOf(cat, true).forEach(function(it){ (byKind[it.kind] = byKind[it.kind] || []).push(it.id); });
+  Object.keys(byKind).forEach(function(kd){
+    if (byKind[kd].length < 2) return;
+    var ids = byKind[kd];
+    out.push({label: kd + '（種類ぜんぶ）', group:group, test:function(r){ return test(r, ids); }});
+  });
+  return out;
+}
 function candidates(){
   var out = [];
   ['food','drink'].forEach(function(cat){
-    itemsOf(cat).forEach(function(it){
+    itemsOf(cat, true).forEach(function(it){
       out.push({label:it.name, group:CAT_L[cat], test:function(r){ return r[cat].indexOf(it.id)>=0; }});
     });
   });
-  itemsOf('skincare').forEach(function(it){
-    out.push({label:it.name, group:'スキンケア',
+  itemsOf('skincare', true).forEach(function(it){
+    out.push({label:prodLabel(it), group:'スキンケア', prod:1, kindKey:'skincare/'+it.kind,
       test:function(r){ return r.skinAM.indexOf(it.id)>=0 || r.skinPM.indexOf(it.id)>=0; }});
   });
-  itemsOf('makeup').forEach(function(it){
-    out.push({label:it.name, group:'メイク', test:function(r){ return r.makeup.indexOf(it.id)>=0; }});
+  itemsOf('makeup', true).forEach(function(it){
+    out.push({label:prodLabel(it), group:'メイク', prod:1, kindKey:'makeup/'+it.kind,
+      test:function(r){ return r.makeup.indexOf(it.id)>=0; }});
   });
-  itemsOf('wash').forEach(function(it){
-    out.push({label:it.name+'で洗顔', group:'洗顔',
+  itemsOf('wash', true).forEach(function(it){
+    out.push({label:prodLabel(it)+'で洗顔', group:'洗顔', prod:1, kindKey:'wash/'+it.kind,
       test:function(r){ return r.washAM===it.id || r.washPM===it.id; }});
   });
   out.push({label:'夜の洗顔をしなかった', group:'洗顔', test:function(r){ return r.washPM==='none'; }});
   out.push({label:'朝の洗顔をしなかった', group:'洗顔', test:function(r){ return r.washAM==='none'; }});
-  itemsOf('cleanse').forEach(function(it){
-    out.push({label:'クレンジング：'+it.name, group:'クレンジング', test:function(r){ return r.cleanse===it.id; }});
+  itemsOf('cleanse', true).forEach(function(it){
+    out.push({label:'クレンジング：'+prodLabel(it), group:'クレンジング', prod:1, kindKey:'cleanse/'+it.kind,
+      test:function(r){ return r.cleanse===it.id; }});
   });
   out.push({label:'クレンジングをしなかった', group:'クレンジング', test:function(r){ return r.cleanse==='none'; }});
+  out = out
+    .concat(kindCandidates('skincare','スキンケア', function(r,ids){ return inAny(ids,r.skinAM) || inAny(ids,r.skinPM); }))
+    .concat(kindCandidates('makeup','メイク',       function(r,ids){ return inAny(ids,r.makeup); }))
+    .concat(kindCandidates('wash','洗顔',           function(r,ids){ return ids.indexOf(r.washAM)>=0 || ids.indexOf(r.washPM)>=0; }))
+    .concat(kindCandidates('cleanse','クレンジング', function(r,ids){ return ids.indexOf(r.cleanse)>=0; }));
   HOW.forEach(function(h){
     out.push({label:h.l, group:'洗いかた', test:function(r){ return r.how.indexOf(h.id)>=0; }});
   });
@@ -1083,7 +1201,9 @@ var MIN_DAYS = 21;   // これ未満だと並べ替えの回数が足りず、�
 var MIN_A = 8;       // 少なくともこの日数はあてはまっていること
 var MIN_B = 12;      // 比較相手の日数
 var MIN_DIFF = 0.5;  // 5段階で半段以上の差がないと実用上の意味が薄い
-var ALPHA = 0.10;    // 「1つでも誤って断定する」確率の上限（全候補まとめて）
+var ALPHA = 0.05;    // 「1つでも誤って断定する」確率の上限（全候補まとめて）
+                     // 0.10 だと実測で 90日 15% まで出た。原因を名指しする以上、
+                     // 見逃しより誤検出を嫌って厳しめに寄せている。
 var LEAD_P = 0.05;   // 候補どまりとして参考表示する水準
 var MAX_SHIFTS = 150;
 
@@ -1165,6 +1285,7 @@ function analyze(){
     }
     if (best) {
       best.label = M.cands[c].label; best.group = M.cands[c].group; best.pair = M.cands[c].pair || null;
+      best.prod = M.cands[c].prod || 0; best.kindKey = M.cands[c].kindKey || null;
       best.p = tp(best.t, best.df);
     }
     obs.push(best);
@@ -1225,6 +1346,20 @@ function finish(ks, obs, nullMax, shifts, ver){
 
   var hits = list.filter(function(f){ return f.pFam != null && f.pFam <= ALPHA; })
                  .sort(function(a,b){ return Math.abs(b.t)-Math.abs(a.t); }).slice(0,8);
+
+  /* 同じ種類の製品は交互に使うので互いに排他になりやすい。
+     片方が悪いと、もう片方が「良い」として裏返しに出てしまうため、その旨を添える。 */
+  hits.forEach(function(f){
+    if (!f.prod || f.diff <= 0 || !f.kindKey) return;
+    for (var i=0;i<hits.length;i++){
+      var g = hits[i];
+      if (g !== f && g.prod && g.kindKey === f.kindKey && g.target === f.target && g.lag === f.lag && g.diff < 0) {
+        f.swap = g.label;
+        break;
+      }
+    }
+  });
+
   var hit = {};
   hits.forEach(function(f){ hit[f.label] = 1; });
   var leads = list.filter(function(f){ return !hit[f.label] && f.pOwn != null && f.pOwn <= LEAD_P; })
@@ -1307,6 +1442,10 @@ function paintInsights(){
       h.appendChild(el('span','tag', f.pFam <= 0.03 ? 'かなり確か' : 'はっきりした傾向'));
       w.appendChild(h);
       w.appendChild(el('p','d','あてはまった '+f.nA+'日 と、それ以外の '+f.nB+'日 の比較（'+f.group+'）'));
+      if (f.swap) {
+        w.appendChild(el('p','d','↩︎ 同じ種類の「'+f.swap+'」と入れ替わりで使っているようです。'
+          + 'こちらが良いというより、そちらが合っていないだけかもしれません。'));
+      }
       card.appendChild(w);
     });
     card.appendChild(el('p','sub','※ 記録の並びを'+res.shifts+'通りにずらして「関係がない場合に偶然どこまで差が出るか」を実際に計算し、'
@@ -1389,23 +1528,37 @@ function renderAdmin(){
   var box = $('itemAdmin'); box.innerHTML='';
   CATS.forEach(function(c){
     var g = el('div','grp');
-    var t = el('p','gt', c.l);
-    g.appendChild(t);
-    var list = itemsOf(c.cat);
+    g.appendChild(el('p','gt', c.l));
+    var list = itemsOf(c.cat, true);
     if (!list.length) g.appendChild(el('p','sub','（なし）'));
+    var lastKind = null;
     list.forEach(function(it){
+      if (HAS_KIND[c.cat] && it.kind !== lastKind) {
+        lastKind = it.kind;
+        var kl = el('p','kindhead', it.kind);
+        g.appendChild(kl);
+      }
       var line = el('div','itemline');
-      line.appendChild(el('span',null,it.name));
-      var x = el('button','x','削除'); x.type='button';
+      var nm = el('span', null, it.gen ? '種類だけ' : it.name);
+      if (it.off) { nm.style.opacity = '.4'; nm.textContent += '（休止中）'; }
+      line.appendChild(nm);
+      var t = el('button','x', it.off ? '再開' : '休止'); t.type='button';
+      t.style.color = 'var(--muted)'; t.style.marginLeft = 'auto';
+      t.title = '記録画面に出さなくなります。過去の記録と分析はそのまま残ります。';
+      t.addEventListener('click', function(){
+        it.off = it.off ? 0 : 1; persist(); renderAdmin(); renderLog();
+      });
+      line.appendChild(t);
+      var x = el('button','x','削除'); x.type='button'; x.style.marginLeft = '14px';
       x.addEventListener('click', function(){
-        if (!confirm('「'+it.name+'」を選択肢から削除しますか？\n（過去の記録に残っている分はそのままです）')) return;
+        if (!confirm('「'+(it.gen?it.kind:it.name)+'」を削除しますか？\n（過去の記録に残っている分はそのままです。使わなくなっただけなら「休止」がおすすめです）')) return;
         delete state.items[it.id]; persist(); renderAdmin(); renderLog();
       });
       line.appendChild(x);
       g.appendChild(line);
     });
-    var add = el('button','chip add','＋ 追加'); add.type='button';
-    add.style.marginTop='8px';
+    var add = el('button','chip add', HAS_KIND[c.cat] ? '＋ 製品を登録' : '＋ 追加'); add.type='button';
+    add.style.marginTop='10px';
     add.addEventListener('click', function(){ openAdd(c.cat); });
     g.appendChild(add);
     box.appendChild(g);
@@ -1424,18 +1577,49 @@ function closeModal(){
   $('mdSlot').innerHTML=''; $('mdBody').hidden = true;
   $('mdOk').hidden = true; $('mdCopy').hidden = true;
 }
-function openAdd(cat){
-  $('mdTitle').textContent = CAT_L[cat] + 'を追加';
+var HINT = {
+  skincare:'例：ハトムギ化粧水（ナチュリエ）',
+  makeup:'例：マシュマロフィニッシュパウダー（キャンメイク）',
+  wash:'例：パーフェクトホイップ（センカ）',
+  cleanse:'例：ソフティモ クレンジングオイル'
+};
+function openAdd(cat, presetKind){
+  var withKind = !!HAS_KIND[cat];
+  var slot = $('mdSlot');
+  slot.innerHTML = '';
+  $('mdTitle').textContent = withKind ? (CAT_L[cat] + 'の製品を登録') : (CAT_L[cat] + 'を追加');
+  var chosen = presetKind || (withKind ? KINDS[cat][0] : '');
+
+  if (withKind) {
+    slot.appendChild(el('p','label','種類'));
+    var kb = el('div','chips');
+    slot.appendChild(kb);
+    (function paint(){
+      kb.innerHTML = '';
+      KINDS[cat].forEach(function(kd){
+        var b = el('button','chip',kd); b.type='button';
+        b.setAttribute('aria-pressed', kd === chosen ? 'true' : 'false');
+        b.addEventListener('click', function(){ chosen = kd; paint(); });
+        kb.appendChild(b);
+      });
+    })();
+    var lb = el('p','label mt','製品名');
+    lb.appendChild(el('span','opt',' （メーカー名も入れておくと後で見分けやすいです）'));
+    slot.appendChild(lb);
+  }
   var inp = document.createElement('input');
-  inp.type='text'; inp.placeholder='名前（例：◯◯の化粧水）';
-  $('mdSlot').innerHTML=''; $('mdSlot').appendChild(inp);
+  inp.type = 'text';
+  inp.placeholder = withKind ? (HINT[cat] || '製品名') : '名前';
+  slot.appendChild(inp);
+  if (withKind) slot.appendChild(el('p','sub','登録すると、その製品を使った日だけを取り出して分析できるようになります。'));
+
   $('mdBody').hidden = true; $('mdCopy').hidden = true;
-  var ok = $('mdOk'); ok.hidden = false; ok.textContent = '追加';
+  var ok = $('mdOk'); ok.hidden = false; ok.textContent = '登録';
   function commit(){
     var v = inp.value.trim();
     if (!v) { inp.focus(); return; }
     var id = 'u_' + cat + '_' + Object.keys(state.items).length + '_' + Math.random().toString(36).slice(2,6);
-    state.items[id] = {id:id, cat:cat, name:v};
+    state.items[id] = {id:id, cat:cat, name:v, kind: withKind ? chosen : v};
     persist(); closeModal(); renderLog(); renderAdmin();
   }
   ok.onclick = commit;
