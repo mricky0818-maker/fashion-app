@@ -124,6 +124,8 @@
   .chip.plum[aria-pressed="true"]{border-color:var(--plum);background:var(--plum-soft);color:var(--plum);}
   .chip.no[aria-pressed="true"]{border-color:var(--warn);background:var(--warn-soft);color:var(--warn);}
   .chip.add{border-style:dashed;color:var(--accent-ink);}
+  a.chip.link{text-decoration:none;color:var(--accent-ink);}
+  a.chip.link::after{content:" ›";opacity:.6;}
   .grp{margin-bottom:12px;} .grp:last-child{margin-bottom:0;}
   .gt{font-size:.74rem;font-weight:800;color:var(--muted);margin:0 0 6px;}
 
@@ -365,6 +367,13 @@
       <h2>荒れやすい部位</h2>
       <div class="bars" id="areaBars"></div>
       <p class="sub">記録した日の平均（5がいちばん良い）。低い部位ほど荒れやすい場所です。</p>
+      <p class="label mt">その部位で起きやすいこと</p>
+      <div class="chips">
+        <a class="chip link" href="odeko/">おでこ</a>
+        <a class="chip link" href="hoho/">頬</a>
+        <a class="chip link" href="kuchimoto/">口周り</a>
+        <a class="chip link" href="ago/">あご</a>
+      </div>
     </div>
     <div class="card">
       <div class="calhead">
@@ -431,6 +440,17 @@
       <p class="disclaimer">ここで示す傾向は、あなた自身の記録にもとづく<b>統計的な目安</b>で、医学的な診断ではありません。
         症状が続く・悪化する場合は皮膚科の受診をご検討ください。</p>
     </div>
+    <div class="card">
+      <h2>部位ごとの読みもの</h2>
+      <p class="sub" style="margin:0 0 11px">その部位で起きやすいこと、よく言われる原因がどこまで確かなのかを整理しています。</p>
+      <div class="chips">
+        <a class="chip link" href="odeko/">おでこ</a>
+        <a class="chip link" href="hoho/">頬</a>
+        <a class="chip link" href="kuchimoto/">口周り</a>
+        <a class="chip link" href="ago/">あご</a>
+      </div>
+    </div>
+
     <p class="site-foot">
       <a href="../shindan/">姉妹アプリ：スタイルコンパス（骨格×パーソナルカラー診断）</a><br>
       © 肌カルテ
