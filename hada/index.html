@@ -258,6 +258,10 @@
     <div class="card" id="introCard">
       <h1>部位ごとに記録して、原因を突きとめる。</h1>
       <p class="lede">7つの部位を5段階で記録し、食べたもの・睡眠・スキンケア・洗顔まで残していくと、<b>どれが、どの部位に効いているか</b>を自動で計算します。記録も写真もこの端末の中だけに保存され、外には出ません。</p>
+      <div class="privacy" style="margin-bottom:14px">
+        ⏰ <b>使いかた</b>：肌の調子は<b>朝、顔を洗う前</b>に。その日の食事やスキンケアは<b>夜にまとめて</b>足してください。<br>
+        毎日同じタイミングで見ることで、日ごとの比較ができるようになります。
+      </div>
       <button class="btn ghost sm" id="hideIntro">はじめる</button>
     </div>
 
@@ -269,7 +273,7 @@
     <div class="saved" id="savedMsg">✓ 保存しました</div>
 
     <div class="card">
-      <p class="label">部位ごとの調子</p>
+      <p class="label">部位ごとの調子 <span class="opt">（朝・洗顔前の状態を）</span></p>
       <div class="facewrap" id="faceWrap"></div>
       <div class="agrid" id="areaGrid"></div>
       <div class="bulk">
@@ -280,10 +284,10 @@
     </div>
 
     <div class="card">
-      <p class="label">睡眠</p>
+      <p class="label">睡眠 <span class="opt">（前の晩）</span></p>
       <div class="times">
-        <label class="tf"><span>寝た時間</span><input type="time" id="sIn" /></label>
-        <label class="tf"><span>起きた時間</span><input type="time" id="sOut" /></label>
+        <label class="tf"><span>前の晩に寝た時間</span><input type="time" id="sIn" /></label>
+        <label class="tf"><span>その朝に起きた時間</span><input type="time" id="sOut" /></label>
         <div class="slen" id="sLen">—</div>
       </div>
     </div>
@@ -1154,47 +1158,67 @@ function kindCandidates(cat, group, test){
   Object.keys(byKind).forEach(function(kd){
     if (byKind[kd].length < 2) return;
     var ids = byKind[kd];
-    out.push({label: kd + '（種類ぜんぶ）', group:group, test:function(r){ return test(r, ids); }});
+    out.push({label: kd + '（種類ぜんぶ）', group:group, lags:LAG_AFTER,
+      test:function(r){ return test(r, ids); }});
   });
   return out;
 }
+/* 肌は「その日の朝・洗顔前」に測る決まりなので、同じ日付に入っている出来事の
+   ほとんどは測定より後に起きている。当日(lag 0)の検定を回すと時間が逆向きになり、
+   「荒れた朝だったからチョコを食べた」を「チョコが原因」として出しかねない。
+   測定より前に確定しているもの（前の晩の睡眠・生理）だけ lag 0 を許す。
+   食べ物は反応が遅れることがあるので2日後まで見る。 */
+var LAG_BEFORE = [0,1];   // 測定より前に起きたこと
+var LAG_AFTER  = [1];     // 測定より後に起きたこと → 効くとしたら翌朝
+var LAG_FOOD   = [1,2];
+var LAG_L = {0:'その朝', 1:'翌朝', 2:'2日後の朝'};
+function lagLabel(l){ return LAG_L[l] || ('+'+l+'日'); }
+
 function candidates(){
   var out = [];
   ['food','drink'].forEach(function(cat){
     itemsOf(cat, true).forEach(function(it){
-      out.push({label:it.name, group:CAT_L[cat], test:function(r){ return r[cat].indexOf(it.id)>=0; }});
+      out.push({label:it.name, group:CAT_L[cat], lags:LAG_FOOD,
+        test:function(r){ return r[cat].indexOf(it.id)>=0; }});
     });
   });
   itemsOf('skincare', true).forEach(function(it){
-    out.push({label:prodLabel(it), group:'スキンケア', prod:1, kindKey:'skincare/'+it.kind,
+    out.push({label:prodLabel(it), group:'スキンケア', prod:1, kindKey:'skincare/'+it.kind, lags:LAG_AFTER,
       test:function(r){ return r.skinAM.indexOf(it.id)>=0 || r.skinPM.indexOf(it.id)>=0; }});
   });
   itemsOf('makeup', true).forEach(function(it){
-    out.push({label:prodLabel(it), group:'メイク', prod:1, kindKey:'makeup/'+it.kind,
+    out.push({label:prodLabel(it), group:'メイク', prod:1, kindKey:'makeup/'+it.kind, lags:LAG_AFTER,
       test:function(r){ return r.makeup.indexOf(it.id)>=0; }});
   });
   itemsOf('wash', true).forEach(function(it){
-    out.push({label:prodLabel(it)+'で洗顔', group:'洗顔', prod:1, kindKey:'wash/'+it.kind,
+    out.push({label:prodLabel(it)+'で洗顔', group:'洗顔', prod:1, kindKey:'wash/'+it.kind, lags:LAG_AFTER,
       test:function(r){ return r.washAM===it.id || r.washPM===it.id; }});
   });
-  out.push({label:'夜の洗顔をしなかった', group:'洗顔', test:function(r){ return r.washPM==='none'; }});
-  out.push({label:'朝の洗顔をしなかった', group:'洗顔', test:function(r){ return r.washAM==='none'; }});
+  out.push({label:'夜の洗顔をしなかった', group:'洗顔', lags:LAG_AFTER, test:function(r){ return r.washPM==='none'; }});
+  out.push({label:'朝の洗顔をしなかった', group:'洗顔', lags:LAG_AFTER, test:function(r){ return r.washAM==='none'; }});
   itemsOf('cleanse', true).forEach(function(it){
     out.push({label:'クレンジング：'+prodLabel(it), group:'クレンジング', prod:1, kindKey:'cleanse/'+it.kind,
-      test:function(r){ return r.cleanse===it.id; }});
+      lags:LAG_AFTER, test:function(r){ return r.cleanse===it.id; }});
   });
-  out.push({label:'クレンジングをしなかった', group:'クレンジング', test:function(r){ return r.cleanse==='none'; }});
+  out.push({label:'クレンジングをしなかった', group:'クレンジング', lags:LAG_AFTER, test:function(r){ return r.cleanse==='none'; }});
   out = out
     .concat(kindCandidates('skincare','スキンケア', function(r,ids){ return inAny(ids,r.skinAM) || inAny(ids,r.skinPM); }))
     .concat(kindCandidates('makeup','メイク',       function(r,ids){ return inAny(ids,r.makeup); }))
     .concat(kindCandidates('wash','洗顔',           function(r,ids){ return ids.indexOf(r.washAM)>=0 || ids.indexOf(r.washPM)>=0; }))
     .concat(kindCandidates('cleanse','クレンジング', function(r,ids){ return ids.indexOf(r.cleanse)>=0; }));
   HOW.forEach(function(h){
-    out.push({label:h.l, group:'洗いかた', test:function(r){ return r.how.indexOf(h.id)>=0; }});
+    out.push({label:h.l, group:'洗いかた', lags:LAG_AFTER, test:function(r){ return r.how.indexOf(h.id)>=0; }});
   });
-  out.push({label:'睡眠が6時間未満', group:'睡眠', pair:'sleep', test:function(r){ var h=sleepH(r); return h!=null && h<6; }});
-  out.push({label:'睡眠が7時間以上', group:'睡眠', pair:'sleep', test:function(r){ var h=sleepH(r); return h!=null && h>=7; }});
-  if (state.ui.mast) out.push({label:'自慰行為あり', group:'からだ', test:function(r){ return r.mast===1; }});
+  // 睡眠は「前の晩」なので朝の測定より前に終わっている＝当日を見てよい
+  out.push({label:'睡眠が6時間未満', group:'睡眠', pair:'sleep', lags:LAG_BEFORE,
+    test:function(r){ var h=sleepH(r); return h!=null && h<6; }});
+  out.push({label:'睡眠が7時間以上', group:'睡眠', pair:'sleep', lags:LAG_BEFORE,
+    test:function(r){ var h=sleepH(r); return h!=null && h>=7; }});
+  if (state.ui.mast) out.push({label:'自慰行為あり', group:'からだ', lags:LAG_FOOD,
+    test:function(r){ return r.mast===1; }});
+  if (state.ui.period) {
+    out.push({label:'生理中', group:'からだ', lags:LAG_BEFORE, test:function(r){ return r.period==='on'||r.period==='start'; }});
+  }
   return out;
 }
 var TARGETS = [{id:'all', l:'全体'}].concat(AREAS);
@@ -1279,8 +1303,9 @@ function analyze(){
   // 実際の並びでの、候補ごとの最良の組み合わせ
   var obs = [];
   for (var c=0;c<C;c++){
-    var best = null;
-    for (var t=0;t<T;t++) for (var L=0;L<2;L++){
+    var best = null, lags = M.cands[c].lags || LAG_AFTER;
+    for (var t=0;t<T;t++) for (var li=0;li<lags.length;li++){
+      var L = lags[li];
       var r = tstat(M.X[c], M.Y[t], D, L, 0);
       if (!r) continue;
       if (!best || Math.abs(r.t) > Math.abs(best.t)) {
@@ -1310,9 +1335,9 @@ function analyze(){
     var mx = 0;
     for (var c=0;c<C;c++){
       if (!obs[c]) continue;
-      var own = 0;
-      for (var t=0;t<T;t++) for (var L=0;L<2;L++){
-        var r = tstat(M.X[c], M.Y[t], D, L, s);
+      var own = 0, lg = M.cands[c].lags || LAG_AFTER;
+      for (var t=0;t<T;t++) for (var li=0;li<lg.length;li++){
+        var r = tstat(M.X[c], M.Y[t], D, lg[li], s);
         if (!r) continue;
         var a = Math.abs(r.t);
         if (a > own) own = a;
@@ -1441,7 +1466,7 @@ function paintInsights(){
       var bad = f.diff < 0;
       var w = el('div','ins '+(bad?'bad':'good'));
       var h = el('p','h');
-      h.textContent = (bad?'⚠️ ':'✨ ')+'「'+f.label+'」の'+(f.lag?'翌日':'その日')
+      h.textContent = (bad?'⚠️ ':'✨ ')+'「'+f.label+'」の'+lagLabel(f.lag)
         +'は【'+f.target+'】が平均 '+(f.diff>0?'+':'')+f.diff.toFixed(1)+'（'+(bad?'落ちる':'良い')+'）';
       h.appendChild(el('span','tag', f.pFam <= 0.03 ? 'かなり確か' : 'はっきりした傾向'));
       w.appendChild(h);
@@ -1465,7 +1490,7 @@ function paintInsights(){
     lead.appendChild(el('p','lede','差そのものは出ていますが、'+res.tested+'項目を見比べた中では偶然の範囲を出ていません。'
       + 'いまの段階で原因と決めつけないでください。記録が増えると判定できます。'));
     res.leads.forEach(function(f){
-      lead.appendChild(el('p','d','・'+f.label+'（'+(f.lag?'翌日':'その日')+'／'+f.target+'）'
+      lead.appendChild(el('p','d','・'+f.label+'（'+lagLabel(f.lag)+'／'+f.target+'）'
         + ' 平均 '+(f.diff>0?'+':'')+f.diff.toFixed(1)+'　該当'+f.nA+'日'));
     });
     body.appendChild(lead);
@@ -1659,7 +1684,7 @@ function buildSummary(){
   if (fs.length) {
     L.push('■ 記録上、肌の状態と関係がみられたもの');
     fs.forEach(function(f){
-      L.push('・'+f.label+'（'+(f.lag?'翌日':'その日')+'／'+f.target+'）：平均 '+(f.diff>0?'+':'')+f.diff.toFixed(1)
+      L.push('・'+f.label+'（'+lagLabel(f.lag)+'／'+f.target+'）：平均 '+(f.diff>0?'+':'')+f.diff.toFixed(1)
         +'　該当'+f.nA+'日 / その他'+f.nB+'日');
     });
     L.push('');
