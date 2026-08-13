@@ -68,6 +68,8 @@
   .brand .tent{font-size:.72rem;color:var(--muted);font-weight:600;}
   .brand .streak{margin-left:auto;font-size:.72rem;font-weight:800;color:var(--accent-ink);
     background:var(--accent-soft);padding:5px 10px;border-radius:999px;white-space:nowrap;}
+  /* スマホ幅では説明文が折り返してヘッダが2行(72px)になるので、アプリ名だけ残す */
+  @media (max-width:430px){ .brand .tent{display:none;} }
 
   .card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:16px 14px;
     box-shadow:var(--shadow);margin-bottom:12px;}
@@ -123,7 +125,7 @@
   .chip.no[aria-pressed="true"]{border-color:var(--warn);background:var(--warn-soft);color:var(--warn);}
   .chip.add{border-style:dashed;color:var(--accent-ink);}
   .grp{margin-bottom:12px;} .grp:last-child{margin-bottom:0;}
-  .grp .gt{font-size:.74rem;font-weight:800;color:var(--muted);margin:0 0 6px;}
+  .gt{font-size:.74rem;font-weight:800;color:var(--muted);margin:0 0 6px;}
 
   .times{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;}
   .tf{flex:1;min-width:120px;}
@@ -726,6 +728,8 @@ function renderItemRow(boxId, cat, isOn, pick, head){
     box.appendChild(g);
   });
   var rest = order.filter(function(kd){ return !hasProduct[kd]; });
+  // 見出しを付けないと、直前の種類グループの続きに見えてしまう
+  if (rest.length) box.appendChild(el('p','gt','そのほかの種類'));
   var tail = el('div','chips');
   rest.forEach(function(kd){
     byKind[kd].forEach(function(it){
