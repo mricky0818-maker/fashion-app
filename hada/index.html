@@ -555,7 +555,7 @@ Object.keys(HAS_KIND).forEach(function(c){ KINDS[c] = PRESETS[c].concat(['その
 
 /* ================= storage ================= */
 var KEY = 'hadaLog.v2';
-var state = {v:2, ui:{intro:true, period:false, mast:true}, items:{}, records:{}};
+var state = {v:2, ui:{intro:true, period:false, mast:false}, items:{}, records:{}};
 try {
   var raw = localStorage.getItem(KEY);
   if (raw) {
@@ -563,7 +563,7 @@ try {
     if (p && typeof p === 'object') {
       state.records = p.records || {};
       state.items   = p.items || {};
-      state.ui      = Object.assign({intro:true, period:false, mast:true}, p.ui || {});
+      state.ui      = Object.assign({intro:true, period:false, mast:false}, p.ui || {});
     }
   }
 } catch(e){}
