@@ -5,21 +5,119 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>肌カルテは hadakarte.com に移転しました</title>
 <link rel="canonical" href="https://hadakarte.com/" />
-<meta http-equiv="refresh" content="0; url=https://hadakarte.com/" />
+<meta name="robots" content="noindex,follow" />
 <meta name="theme-color" content="#12A594" />
+<!--
+  このページについて（2026-08-20）
+
+  もとは meta refresh + location.replace で hadakarte.com へ即転送していた。
+  だが localStorage / IndexedDB は「オリジンごと」に分かれているため、
+  github.io で記録していた人を新ドメインへ飛ばすと、その人からは記録が消えたように見える。
+  データ自体は端末に残っているのに、即転送のせいで取り出す画面にたどり着けない状態だった。
+
+  そこで、この端末に旧データが残っているかどうかで挙動を分ける。
+   ・残っていない（大多数・クローラ含む）→ これまでどおり即転送
+   ・残っている                          → 転送を止めて、書き出しの導線を出す
+  写真は IndexedDB にあり、アプリ本体の書き出しにも元から含まれないので引き継げない。
+-->
 <style>
-  body{margin:0;background:#F1FAF8;color:#17302A;
+  :root{--accent:#12A594;--ink:#17302A;--muted:#5A7A73;--line:#CFE6E1;}
+  *{box-sizing:border-box}
+  body{margin:0;background:#F1FAF8;color:var(--ink);
     font-family:"Hiragino Maru Gothic ProN",YuGothic,"Yu Gothic",Meiryo,system-ui,sans-serif;
-    display:grid;place-items:center;min-height:100vh;line-height:1.9;padding:24px;text-align:center;}
+    display:grid;place-items:center;min-height:100vh;line-height:1.9;padding:24px;}
+  .wrap{max-width:560px;width:100%;text-align:center;}
+  .card{background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:22px 20px;margin:16px 0;text-align:left;}
+  .card.warn{border-color:var(--accent);background:linear-gradient(135deg,#E6F7F4,#fff);}
+  h1{font-size:1.15rem;margin:0 0 6px;}
+  p{margin:0 0 10px;}
+  .sub{font-size:.85rem;color:var(--muted);}
   a{color:#0C7B6F;font-weight:800;}
+  .btn{display:block;width:100%;text-align:center;text-decoration:none;font-weight:800;font-size:1rem;
+    background:var(--accent);color:#08201C;border:0;border-radius:999px;padding:14px 20px;margin:12px 0 0;cursor:pointer;}
+  .btn.ghost{background:#fff;color:#0C7B6F;border:1.5px solid var(--line);}
+  ol{margin:10px 0 0;padding-left:1.2em;font-size:.9rem;}
+  li{margin-bottom:6px;}
+  #rescue{display:none;}
 </style>
 </head>
 <body>
-  <div>
-    <p><b>肌カルテ</b>は独自ドメインへ移転しました。</p>
-    <p><a href="https://hadakarte.com/">https://hadakarte.com/</a></p>
-    <p style="font-size:.85rem;color:#6C918A">自動で移動しない場合は、上のリンクを押してください。</p>
+<div class="wrap">
+
+  <h1><b>肌カルテ</b>は独自ドメインへ移転しました</h1>
+  <p><a href="https://hadakarte.com/">https://hadakarte.com/</a></p>
+
+  <div id="rescue">
+    <div class="card warn">
+      <p><b>この端末に、前のアドレスで取った記録が<span id="days">—</span>日ぶん残っています。</b></p>
+      <p class="sub">記録はブラウザの中に、アドレスごとに別々に保存されます。そのため新しいアドレスへ移ると、この記録は自動では引き継がれません。下のボタンでファイルに書き出して、移転先で読み込んでください。</p>
+      <button class="btn" id="save">記録をファイルに書き出す</button>
+      <p class="sub" style="margin-top:12px">※ 写真は引き継げません（アプリの書き出しにもとから含まれていません）。記録の点数・食べたもの・睡眠などは引き継げます。</p>
+    </div>
+
+    <div class="card">
+      <p><b>移転先で読み込む手順</b></p>
+      <ol>
+        <li>上のボタンでファイルを保存する</li>
+        <li><a href="https://hadakarte.com/">hadakarte.com</a> を開く</li>
+        <li>下の <b>⚙️ 設定</b> タブ →「データについて」→ <b>読み込む</b></li>
+        <li>保存したファイルを選ぶ</li>
+      </ol>
+      <a class="btn ghost" href="https://hadakarte.com/">hadakarte.com を開く</a>
+      <p class="sub" style="margin-top:12px">このページの記録は、ブラウザのデータを消さないかぎり残ります。あとからここへ戻ってきても大丈夫です。</p>
+    </div>
   </div>
-  <script>location.replace("https://hadakarte.com/");</script>
+
+  <p class="sub" id="fallback">自動で移動しない場合は、上のリンクを押してください。</p>
+</div>
+
+<script>
+(function(){
+  var NEW = "https://hadakarte.com/";
+
+  // 旧データを探す。キー名が変わっていても拾えるよう hadaLog で始まるものを総当たりする。
+  function findLog(){
+    try{
+      for (var i=0;i<localStorage.length;i++){
+        var k = localStorage.key(i);
+        if (!k || k.indexOf('hadaLog') !== 0) continue;
+        var p = null;
+        try { p = JSON.parse(localStorage.getItem(k)); } catch(e){ continue; }
+        if (!p || !p.records) continue;
+        var days = Object.keys(p.records).filter(function(d){ return /^\d{4}-\d{2}-\d{2}$/.test(d); });
+        if (days.length) return { key:k, data:p, days:days.length };
+      }
+    }catch(e){}
+    return null;
+  }
+
+  var found = findLog();
+
+  if (!found){
+    location.replace(NEW);   // 記録がない人・クローラは、これまでどおり素通し
+    return;
+  }
+
+  document.getElementById('fallback').style.display = 'none';
+  document.getElementById('rescue').style.display = 'block';
+  document.getElementById('days').textContent = found.days;
+
+  document.getElementById('save').addEventListener('click', function(){
+    var out = {
+      app: 'hadaLog',
+      version: 2,
+      exportedAt: new Date().toISOString().slice(0,10),
+      items: found.data.items || {},
+      records: found.data.records || {}
+    };
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 1)], {type:'application/json'}));
+    a.download = 'hada-log-' + out.exportedAt + '.json';
+    a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+    document.getElementById('save').textContent = '書き出しました ✓　次は下の手順へ';
+  });
+})();
+</script>
 </body>
 </html>
